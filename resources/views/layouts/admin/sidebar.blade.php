@@ -23,27 +23,27 @@
             </a>
             <ul>
                 <li>
-                    <a href="{{ route('candidate.resume') }}">
+                    <a href="{{ route('admin.ranks.index') }}">
                         <div class="menu-title">Rank</div>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('candidate.view.resume') }}">
+                    <a href="{{ route('admin.shiptypes.index') }}">
                         <div class="menu-title">Shiptype</div>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('candidate.resume.hide') }}">
+                    <a href="{{ route('admin.countries.index') }}">
                         <div class="menu-title">Country</div>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('candidate.resume.hide') }}">
+                    <a href="{{ route('admin.states.index') }}">
                         <div class="menu-title">State</div>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('candidate.resume.hide') }}">
+                    <a href="{{ route('admin.mobile-country-codes.index') }}">
                         <div class="menu-title">Country Codes</div>
                     </a>
                 </li>

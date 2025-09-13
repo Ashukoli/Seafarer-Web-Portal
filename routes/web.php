@@ -8,6 +8,11 @@ use App\Http\Controllers\Candidate\CandidateController;
 use App\Http\Controllers\Frontend\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Frontend\Auth\CompanyLoginController;
+use App\Http\Controllers\Admin\RankController;
+use App\Http\Controllers\Admin\ShipTypeController;
+use App\Http\Controllers\Admin\CountryController;
+use App\Http\Controllers\Admin\StateController;
+use App\Http\Controllers\Admin\MobileCountryCodeController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -123,40 +128,45 @@ Route::controller(PageController::class)->group(function () {
 });
 
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
 
-    // ----------------------------
-    // Guest-only routes (admins not logged in)
-    // ----------------------------
+    // Guest-only admin routes (login / password request)
     Route::middleware('guest')->group(function () {
         // Show login form
-        Route::get('admin-login', [AdminLoginController::class, 'showLoginForm'])
-            ->name('admin.login.form');
+        Route::get('login', [AdminLoginController::class, 'showLoginForm'])
+            ->name('login.form');
 
-        // Submit login
+        // Process login
         Route::post('login', [AdminLoginController::class, 'login'])
-            ->name('admin.login');
+            ->name('login');
 
-        // Forgot password (optional)
+        // Forgot password (show + send)
         Route::get('password/request', [AdminLoginController::class, 'showForgotForm'])
-            ->name('admin.password.request');
-
+            ->name('password.request');
         Route::post('password/email', [AdminLoginController::class, 'sendResetLink'])
-            ->name('admin.password.email');
+            ->name('password.email');
     });
 
-    // ----------------------------
-    // Authenticated admin-only routes
-    // ----------------------------
+    // Authenticated admin routes (require auth middleware)
+    // NOTE: use the guard you prefer; if you rely on default 'web' guard keep 'auth'.
+    // If you use a custom guard for admin (e.g. 'auth:admin') replace 'auth' accordingly.
     Route::middleware('auth')->group(function () {
-        // Admin dashboard
-        Route::get('dashboard', function () {
-            return view('admin.dashboard'); // create resources/views/admin/dashboard.blade.php
-        })->name('admin.dashboard');
 
+        // Dashboard
+        Route::get('dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+
+        // Resourceful masters
+        Route::resource('ranks', RankController::class);               // admin.ranks.*
+        Route::resource('shiptypes', ShipTypeController::class);       // admin.shiptypes.*
+        Route::resource('countries', CountryController::class);        // admin.countries.*
+        Route::resource('states', StateController::class);             // admin.states.*
+        Route::resource('mobile-country-codes', MobileCountryCodeController::class)
+            ->names('admin.mobile-country-codes');
         // Logout
         Route::post('logout', [AdminLoginController::class, 'logout'])
-            ->name('admin.logout');
+            ->name('logout');
     });
 });
 
