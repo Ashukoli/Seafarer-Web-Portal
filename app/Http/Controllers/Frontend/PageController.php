@@ -51,7 +51,7 @@ class PageController extends Controller
     // Authentication / login pages
     public function candidateLogin()
     {
-        return view('frontend.auth.login'); // candidate login
+        return view('frontend.auth.candidate-login'); // candidate login
     }
 
     public function companyLogin()

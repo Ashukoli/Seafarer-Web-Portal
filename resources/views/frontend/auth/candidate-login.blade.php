@@ -9,64 +9,64 @@
     <h2 id="login-heading">Candidate Login</h2>
     <div class="title-underline" aria-hidden="true"></div>
 
-    <form id="loginForm" novalidate>
+    <form id="loginForm" method="POST" action="{{ route('candidate.login') }}">
+      @csrf
+
+      {{-- Email --}}
       <div class="mb-3">
         <label for="email" class="form-label">
-          <i class="fa fa-envelope" style="color:#197a91;"></i> Email Address
+          <i class="fa fa-envelope text-primary"></i> Email Address
         </label>
-        <input type="email" class="form-control" id="email" placeholder="test@gmail.com" required>
+        <input
+          type="email"
+          class="form-control @error('email') is-invalid @enderror"
+          id="email"
+          name="email"
+          value="{{ old('email') }}"
+          placeholder="Enter your email"
+          autocomplete="email"
+        >
+        @error('email')
+          <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
       </div>
 
+      {{-- Password --}}
       <div class="mb-3 password-wrap">
         <label for="password" class="form-label">
-          <i class="fa fa-lock" style="color:#197a91;"></i> Password
+          <i class="fa fa-lock text-primary"></i> Password
         </label>
-        <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
-        <button type="button" class="toggle-eye" aria-label="Toggle password visibility" title="Show / Hide password">
-          <i class="fa fa-eye"></i>
-        </button>
+        <input
+          type="password"
+          class="form-control @error('password') is-invalid @enderror"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        >
+        @error('password')
+          <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
       </div>
 
-      <div class="remember-row">
-        <input type="checkbox" id="remember" name="remember">
-        <label for="remember" style="margin:0; font-weight:600; color:#555;">
+      {{-- Remember me --}}
+      <div class="remember-row mb-3 d-flex align-items-center">
+        <input type="checkbox" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}>
+        <label for="remember" class="ms-2 fw-semibold text-muted">
           Remember me for 30 days
         </label>
       </div>
 
-      <button type="submit" class="login-submit">
-        <i class="fa fa-right-to-bracket" style="margin-right:10px;"></i> Login
+      {{-- Submit --}}
+      <button type="submit" id="loginSubmit" class="login-submit btn btn-primary w-100">
+        <i class="fa fa-right-to-bracket me-2"></i> Login
       </button>
     </form>
 
-    <div class="login-links">
-      <a href="#"><i class="fa fa-key"></i> Forgot Password?</a>
-      <a href="#"><i class="fa fa-user-plus"></i> New Registration</a>
+    <div class="login-links mt-3 text-center">
+      {{-- Enable only if you have the route --}}
+      {{-- <a href="{{ route('candidate.password.request') }}"><i class="fa fa-key"></i> Forgot Password?</a> --}}
+      {{-- <a href="{{ route('candidate.register.form') }}"><i class="fa fa-user-plus"></i> New Registration</a> --}}
     </div>
   </div>
 @endsection
-
-@push('scripts')
-<script>
-  // Toggle password visibility
-  (function(){
-    const eyeBtn = document.querySelector('.toggle-eye');
-    const pwd = document.getElementById('password');
-    if(!eyeBtn || !pwd) return;
-
-    eyeBtn.addEventListener('click', function(e){
-      e.preventDefault();
-      const icon = this.querySelector('i');
-      if (pwd.type === 'password') {
-        pwd.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        pwd.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    });
-  })();
-</script>
-@endpush

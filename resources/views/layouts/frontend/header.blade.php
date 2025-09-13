@@ -14,8 +14,8 @@
         <a href="#"><i class="fab fa-twitter-square"></i></a>
       </div>
       <div class="login-buttons">
-        <a href="{{ route('candidate.login') }}" class="login-btn">Candidate Login</a>
-        <a href="{{ route('company.login') }}" class="login-btn">Company Login</a>
+        <a href="{{ route('candidate.login.form') }}" class="login-btn">Candidate Login</a>
+        <a href="{{ route('company.login.page') }}" class="login-btn">Company Login</a>
      </div>
     </div>
   </div>
