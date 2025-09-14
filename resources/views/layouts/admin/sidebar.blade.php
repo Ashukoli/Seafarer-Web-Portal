@@ -53,6 +53,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.cities.index') }}">
+                        <div class="menu-title">Cities</div>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.mobile-country-codes.index') }}">
                         <div class="menu-title">Country Codes</div>
                     </a>
@@ -61,59 +66,24 @@
             </ul>
         </li>
         <li>
-            <a href="{{ route('candidate.jobs.search') }}">
-                <div class="parent-icon"><i class="bx bx-search"></i></div>
-                <div class="menu-title">Search Jobs</div>
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('candidate.jobs.hot') }}">
-                <div class="parent-icon"><i class="bx bx-briefcase"></i></div>
-                <div class="menu-title">Hot Jobs</div>
-            </a>
-        </li>
-        <li>
-            <a href="{{ route('candidate.express.service') }}">
-                <div class="parent-icon"><i class="bx bx-bolt-circle"></i></div>
-                <div class="menu-title">Express Service</div>
-            </a>
-        </li>
-        <li>
             <a href="javascript:void(0);" class="has-arrow">
-                <div class="parent-icon"><i class="bx bx-bar-chart-alt-2"></i></div>
-                <div class="menu-title">Statistics</div>
+                <div class="parent-icon"><i class="bx bx-file"></i></div>
+                <div class="menu-title">Candidate</div>
             </a>
             <ul>
                 <li>
-                    <a href="{{ route('candidate.statistics1') }}">
-                        <div class="menu-title">Applied By You</div>
+                    <a href="{{ route('admin.candidates.create') }}">
+                        <div class="menu-title">New Candidate</div>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('candidate.statistics2') }}">
-                        <div class="menu-title">Viewed Your Resume</div>
+                    <a href="#">
+                        <div class="menu-title">All Candidates</div>
                     </a>
                 </li>
             </ul>
         </li>
-        <li>
-            <a href="{{ route('candidate.messages') }}">
-                <div class="parent-icon"><i class="bx bx-message"></i></div>
-                <div class="menu-title">Messages</div>
-            </a>
-        </li>
-        <li>
-            <a href="http://tmwsmagazine.com/magazine.php" target="_blank">
-                <div class="parent-icon"><i class="bx bx-book"></i></div>
-                <div class="menu-title">TMWS Magazine</div>
-            </a>
-        </li>
-          <li>
-            <a href="{{ route('candidate.profile.delete') }}">
-                <div class="parent-icon"><i class="bx bx-trash"></i></div>
-                <div class="menu-title ">Delete Profile</div>
-            </a>
-        </li>
+
     </ul>
     <!--end navigation-->
 </aside>

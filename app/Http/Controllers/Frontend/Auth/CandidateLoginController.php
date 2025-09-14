@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Candidate\CandidateAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class CandidateLoginController extends Controller
 {
@@ -52,7 +53,9 @@ class CandidateLoginController extends Controller
 
     public function logout(Request $request)
     {
-        $this->authService->logout($request);
+        Auth::guard('web')->logout(); // or just auth()->logout()
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('candidate.login.form');
     }
 }

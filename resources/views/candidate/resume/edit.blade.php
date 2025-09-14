@@ -229,8 +229,8 @@
 
                     <!-- Date -->
                     <div class="col-md-6">
-                        <label for="lastPromotionDate" class="form-label">Last Promotion Date</label>
-                        <input type="date" class="form-control" id="lastPromotionDate" value="2025-04-02">
+                        <label for="date_of_availability" class="form-label">Date of Availability</label>
+                        <input type="date" class="form-control" id="date_of_availability" value="2025-04-02">
                     </div>
                     <!-- Form Actions -->
                     <div class="col-12 mt-4">
@@ -301,8 +301,8 @@
                         <label for="usVisa" class="form-label">US Visa</label>
                         <select class="form-select" id="usVisa">
                             <option value="" selected disabled>Select...</option>
-                            <option value="b1">B1</option>
-                            <option value="b2">B2</option>
+                            <option value="">Yes</option>
+                            <option value="">No</option>
                             <option value="none">None</option>
                         </select>
                     </div>
@@ -337,15 +337,11 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="preSeaType" class="form-label">Pre Sea Training Type</label>
-                        <select class="form-select" id="preSeaType" required>
-                            <option value="" selected disabled>Choose...</option>
-                            <option value="marine_engineering">Marine Engineering</option>
-                            <option value="nautical_science">Nautical Science</option>
-                        </select>
+                        <input type="text" class="form-control" id="preSeaType" required>
                     </div>
                     <div class="col-md-6">
-                        <label for="preSeaDate" class="form-label">Issue Date</label>
-                        <input type="date" class="form-control" id="preSeaDate" value="2025-04-02">
+                        <label for="preSeaIssueDate" class="form-label">Issue Date</label>
+                        <input type="date" class="form-control" id="preSeaIssueDate" value="2025-04-02">
                     </div>
                     <div class="col-md-6">
                         <label for="cocType" class="form-label">Select COC/COP Details</label>
@@ -357,16 +353,16 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label for="grade" class="form-label">Grade</label>
-                        <input type="text" class="form-control" id="grade" required>
+                        <label for="cocGrade" class="form-label">Grade</label>
+                        <input type="text" class="form-control" id="cocGrade" required>
                     </div>
                     <div class="col-md-6">
                         <label for="cocNumber" class="form-label">COC No.</label>
                         <input type="text" class="form-control" id="cocNumber" required>
                     </div>
                     <div class="col-md-6">
-                        <label for="cocDate" class="form-label">Expiry Date</label>
-                        <input type="date" class="form-control" id="cocDate" value="2025-04-02">
+                        <label for="cocExpiryDate" class="form-label">Expiry Date</label>
+                        <input type="date" class="form-control" id="cocExpiryDate" value="2025-04-02">
                     </div>
 
                     <!-- Form Actions -->
@@ -396,8 +392,8 @@
                 <div class="dce-entry">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="dceType" class="form-label">Select DCE & GMDSS</label>
-                            <select class="form-select dce-type-select" required>
+                            <label for="dceName" class="form-label">Select DCE & GMDSS</label>
+                            <select class="form-select dce-type-select" name="dceName[]" required>
                                 <option value="" selected disabled>Choose...</option>
                                 <option value="oil_dce">Oil DCE Level-II</option>
                                 <option value="chemical_dce">Chemical DCE Level-II</option>
@@ -405,8 +401,8 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="dceDate" class="form-label">Date</label>
-                            <input type="date" class="form-control dce-date-input" value="2025-04-02">
+                            <label for="dceValidity" class="form-label">Date</label>
+                            <input type="date" class="form-control dce-date-input" name="dceValidity[]" value="2025-04-02">
                         </div>
                     </div>
                 </div>
@@ -563,7 +559,7 @@
                         <input type="text" class="form-control" id="companyName" required>
                     </div>
                     <div class="col-md-4">
-                        <label for="companyName" class="form-label">Ship Name</label>
+                        <label for="shipName" class="form-label">Ship Name</label>
                         <input type="text" class="form-control" id="shipName" required>
                     </div>
                     <div class="col-md-4">

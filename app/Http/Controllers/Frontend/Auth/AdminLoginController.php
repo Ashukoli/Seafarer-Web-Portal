@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Admin\AdminAuthService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Auth;
 
 class AdminLoginController extends Controller
 {
@@ -28,44 +29,40 @@ class AdminLoginController extends Controller
     /**
      * Handle login (no FormRequest; server-side validation inline).
      */
-    public function login(Request $request)
+   public function login(Request $request)
     {
-        // Basic validation here (same rules as candidate)
-        $data = $request->validate([
-            'username' => 'required|string|min:3|max:100',
+        $credentials = $request->validate([
+            'email' => 'required|email',   // or use 'username' if you want
             'password' => 'required|string|min:6',
-            'remember' => 'sometimes|boolean',
         ], [
-            'username.required' => 'Please enter your username.',
-            'username.min' => 'Username must be at least :min characters.',
+            'email.required' => 'Please enter your email.',
+            'email.email' => 'Please enter a valid email address.',
             'password.required' => 'Please enter your password.',
             'password.min' => 'Password must be at least :min characters.',
         ]);
-
-        try {
-            // Service will throw ValidationException on failure
-            $this->authService->login($data, $request);
-
-            // redirect to intended or to admin dashboard route (set that route in web.php)
-            return redirect()->intended(route('admin.dashboard', []));
-        } catch (ValidationException $e) {
-            // attach validation errors produced by service (e.g. invalid credentials)
-            return back()
-                ->withInput($request->only('username', 'remember'))
-                ->withErrors($e->errors());
-        } catch (\Throwable $e) {
-            // Generic fallback error (do not expose internal exception)
-            return back()
-                ->withInput($request->only('username', 'remember'))
-                ->withErrors(['username' => 'Login failed. Please try again.']);
+        if (Auth::guard('admin')->attempt(
+            ['email' => $credentials['email'], 'password' => $credentials['password']],
+            $request->filled('remember')
+        )) {
+            $user = Auth::guard('admin')->user();
+            if (! in_array($user->user_type, ['super_admin', 'subadmin', 'executive'])) {
+                Auth::guard('admin')->logout();
+                throw ValidationException::withMessages([
+                    'email' => 'You are not authorized to access the admin panel.',
+                ]);
+            }
+            return redirect()->intended(route('admin.dashboard'));
         }
+        throw ValidationException::withMessages([
+            'email' => 'Invalid email or password.',
+        ]);
     }
 
     public function logout(Request $request)
     {
-        $this->authService->logout($request);
-
-        // After logout redirect to admin login page
+        Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('admin.login.form');
     }
 
