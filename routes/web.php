@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\ShipTypeController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\MobileCountryCodeController;
+use App\Http\Controllers\Admin\DceEndorsementController;
+use App\Http\Controllers\Admin\CourseCertificateController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -128,45 +130,37 @@ Route::controller(PageController::class)->group(function () {
 });
 
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    // Guest-only admin routes (login / password request)
-    Route::middleware('guest')->group(function () {
-        // Show login form
-        Route::get('login', [AdminLoginController::class, 'showLoginForm'])
-            ->name('login.form');
+        // public/guest admin login routes (if you have admin login pages)
+        Route::middleware('guest')->group(function () {
+            Route::get('login', [AdminLoginController::class, 'showLoginForm'])->name('login.form');
+            Route::post('login', [AdminLoginController::class, 'login'])->name('login');
+            Route::get('password/request', [AdminLoginController::class, 'showForgotForm'])->name('password.request');
+            Route::post('password/email', [AdminLoginController::class, 'sendResetLink'])->name('password.email');
+        });
 
-        // Process login
-        Route::post('login', [AdminLoginController::class, 'login'])
-            ->name('login');
+        // protected admin area; change to auth:admin if you use a custom guard
+        Route::middleware('auth')->group(function () {
 
-        // Forgot password (show + send)
-        Route::get('password/request', [AdminLoginController::class, 'showForgotForm'])
-            ->name('password.request');
-        Route::post('password/email', [AdminLoginController::class, 'sendResetLink'])
-            ->name('password.email');
-    });
+            // Dashboard (admin.dashboard)
+            Route::get('dashboard', function () {
+                return view('admin.dashboard');
+            })->name('dashboard');
 
-    // Authenticated admin routes (require auth middleware)
-    // NOTE: use the guard you prefer; if you rely on default 'web' guard keep 'auth'.
-    // If you use a custom guard for admin (e.g. 'auth:admin') replace 'auth' accordingly.
-    Route::middleware('auth')->group(function () {
+            // Resources (URIs keep your hyphens)
+            Route::resource('ranks', RankController::class);                // admin.ranks.*
+            Route::resource('shiptypes', ShipTypeController::class);        // admin.shiptypes.*
+            Route::resource('countries', CountryController::class);         // admin.countries.*
+            Route::resource('states', StateController::class);              // admin.states.*
+            Route::resource('mobile-country-codes', MobileCountryCodeController::class)->names('mobile-country-codes'); // admin.mobile-country-codes.*
+            Route::resource('dce-endorsements', DceEndorsementController::class);    // admin.dce-endorsements.*
+            Route::resource('course-certificates', CourseCertificateController::class); // admin.course-certificates.*
 
-        // Dashboard
-        Route::get('dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
-
-        // Resourceful masters
-        Route::resource('ranks', RankController::class);               // admin.ranks.*
-        Route::resource('shiptypes', ShipTypeController::class);       // admin.shiptypes.*
-        Route::resource('countries', CountryController::class);        // admin.countries.*
-        Route::resource('states', StateController::class);             // admin.states.*
-        Route::resource('mobile-country-codes', MobileCountryCodeController::class)
-            ->names('admin.mobile-country-codes');
-        // Logout
-        Route::post('logout', [AdminLoginController::class, 'logout'])
-            ->name('logout');
-    });
+            // logout
+            Route::post('logout', [AdminLoginController::class, 'logout'])->name('logout');
+        });
 });
 

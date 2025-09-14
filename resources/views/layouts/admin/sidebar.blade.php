@@ -33,6 +33,16 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.dce-endorsements.index') }}">
+                        <div class="menu-title">DCE Endorsements</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.course-certificates.index') }}">
+                        <div class="menu-title">Courses & Certificates</div>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.countries.index') }}">
                         <div class="menu-title">Country</div>
                     </a>
@@ -47,6 +57,7 @@
                         <div class="menu-title">Country Codes</div>
                     </a>
                 </li>
+
             </ul>
         </li>
         <li>
