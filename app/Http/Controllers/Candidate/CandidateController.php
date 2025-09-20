@@ -3,178 +3,183 @@
 namespace App\Http\Controllers\Candidate;
 
 use App\Http\Controllers\Controller;
+use App\Services\Candidate\CandidateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CandidateController extends Controller
 {
+    protected CandidateService $service;
+
+    public function __construct(CandidateService $service)
+    {
+        $this->middleware('auth');
+        $this->service = $service;
+    }
+
     /**
-     * Dashboard view
+     * GET /candidate/dashboard
      */
     public function dashboard()
     {
-        return view('candidate.dashboard');
+        $user = Auth::user();
+
+        return view('candidate.dashboard', compact('user'));
     }
 
     /**
-     * Show change password page (form)
+     * GET /candidate/resume  (route name candidate.resume.edit)
+     * Show edit form.
      */
-    public function showChangePassword()
+    public function editResume ()
     {
-        return view('candidate.profile.change-password');
+        $userId = Auth::id();
+        $data = $this->service->getForEdit($userId);
+
+        // $data keys: user, profile, resume, states, cities, ranks, shiptypes, dces, coursesMaster
+        return view('candidate.resume.edit', $data);
     }
 
     /**
-     * Show resume edit page
+     * POST /candidate/resume  (route name candidate.resume.update)
+     * Persist resume changes.
      */
-    public function resumeEdit()
+    public function update(Request $request)
     {
-        return view('candidate.resume.edit');
-    }
+        $userId = Auth::id();
 
-    /**
-     * Show resume view page
-     */
-    public function resumeView()
-    {
-        return view('candidate.resume.view');
-    }
+        $rules = [
+            // profile
+            'first_name' => 'nullable|string|max:100',
+            'middle_name' => 'nullable|string|max:100',
+            'last_name' => 'nullable|string|max:100',
+            'marital_status' => 'nullable|in:single,married,divorced,widowed',
+            'dob' => 'nullable|date_format:Y-m-d',
+            'mobile_cc' => 'nullable|string|max:6',
+            'mobile_number' => 'nullable|string|max:30',
+            'whatsapp_cc' => 'nullable|string|max:6',
+            'whatsapp_number' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:1000',
+            'state_id' => 'nullable|exists:states,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'gender' => 'nullable|in:male,female,other',
+            'nationality' => 'nullable|string|max:100',
+            'profile_pic' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
 
-    /**
-     * Show resume hide confirmation / form
-     */
-    public function showResumeHide()
-    {
-        return view('candidate.resume.hide');
-    }
+            // resume
+            'present_rank' => 'nullable|string|max:255',
+            'present_rank_exp' => 'nullable|string|max:255',
+            'post_applied_for' => 'nullable|string|max:255',
+            'date_of_availability' => 'nullable|date_format:Y-m-d',
+            'indos_number' => 'nullable|string|max:255',
+            'passport_nationality' => 'nullable|string|max:255',
+            'passport_number' => 'nullable|string|max:255',
+            'passport_expiry' => 'nullable|date_format:Y-m-d',
+            'usa_visa' => 'nullable|boolean',
+            'cdc_nationality' => 'nullable|string|max:255',
+            'cdc_no' => 'nullable|string|max:255',
+            'cdc_expiry' => 'nullable|date_format:Y-m-d',
+            'presea_training_type' => 'nullable|string|max:255',
+            'presea_training_issue_date' => 'nullable|date_format:Y-m-d',
+            'coc_held' => 'nullable|boolean',
+            'coc_type' => 'nullable|string|max:255',
+            'coc_no' => 'nullable|string|max:255',
+            'coc_date_of_expiry' => 'nullable|date_format:Y-m-d',
+            'additional_information' => 'nullable|string|max:2000',
 
-    /**
-     * Handle resume hide action.
-     *
-     * Basic example: marks resume hidden on user model then redirects back.
-     * Replace with actual business logic for your app.
-     */
-    public function resumeHideAction(Request $request)
-    {
-        $user = $request->user();
+            // DCE endorsements
+            'dce_id' => 'nullable|array',
+            'dce_id.*' => 'nullable|exists:dce_endorsements,id',
+            'dce_validity' => 'nullable|array',
+            'dce_validity.*' => 'nullable|date_format:Y-m-d',
 
-        // Example: suppose you have `resume_hidden` boolean on users table
-        if (method_exists($user, 'update')) {
-            // defensive: only attempt update if model exists
-            $user->update(['resume_hidden' => true]);
+            // courses
+            'courses' => 'nullable|array',
+            'courses.*' => 'nullable|exists:courses_and_other_certificate_master,id',
+
+            // sea service
+            'sea_service' => 'nullable|array',
+            'sea_service.*.rank_id' => 'nullable|exists:ranks,id',
+            'sea_service.*.ship_type_id' => 'nullable|exists:ship_types,id',
+            'sea_service.*.company_name' => 'nullable|string|max:255',
+            'sea_service.*.ship_name' => 'nullable|string|max:255',
+            'sea_service.*.sign_on' => 'nullable|date_format:Y-m-d',
+            'sea_service.*.sign_off' => 'nullable|date_format:Y-m-d',
+            'sea_service.*.grt_value' => 'nullable|numeric',
+            'sea_service.*.grt_unit' => 'nullable|in:GRT,DWT',
+            'sea_service.*.bhp' => 'nullable|numeric',
+        ];
+
+        $validated = $request->validate($rules);
+
+        if ($request->hasFile('profile_pic')) {
+            $validated['profile_pic_file'] = $request->file('profile_pic');
         }
 
-        return redirect()->route('candidate.resume')
-            ->with('status', 'Your resume was hidden successfully.');
+        $this->service->updateResume($userId, $validated);
+
+        // redirect back to canonical edit route
+        return redirect()->route('candidate.resume.edit')->with('success', 'Resume saved successfully.');
     }
 
     /**
-     * Jobs search page
+     * GET /candidate/resume/view (route name candidate.resume.view)
+     * Read-only resume view.
      */
-    public function jobsSearch()
+    public function show()
     {
-        return view('candidate.jobs.search-jobs');
+        $userId = Auth::id();
+        $data = $this->service->getForShow($userId);
+
+        // returns: user, profile, resume, seaServices, dceEndorsements, courses, ranks, shiptypes, states, cities
+        return view('candidate.resume.show', $data);
     }
 
     /**
-     * Hot jobs listing page
+     * POST /candidate/resume/hide - toggle visibility (simple example).
      */
-    public function jobsHot()
+
+
+    /* ---------- Small stubs for other routes referenced in web.php ---------- */
+
+    public function searchJobs()
     {
-        return view('candidate.jobs.hot-jobs');
+        return view('candidate.jobs.search');
     }
 
-    /**
-     * Express service listing page
-     */
+    public function hotJobs()
+    {
+        return view('candidate.jobs.hot');
+    }
+
     public function expressService()
     {
-        return view('candidate.express_services.express-service');
+        return view('candidate.express.service');
     }
 
-    /**
-     * Show payment form for a specific express service.
-     * $service is the identifier used in your links (e.g. 'combo-30', 'combo-60')
-     */
-    public function expressPayForm(string $service)
+    public function statisticsApplied()
     {
-        // provide $service to the view if needed
-        return view('candidate.express_services.paybutton', ['service' => $service]);
+        return view('candidate.statistics.applied');
     }
 
-    /**
-     * Process payment for the selected express service.
-     * This is a stub — plug in your payment gateway / logic here.
-     */
-    public function expressPayProcess(Request $request, string $service)
+    public function statisticsViewed()
     {
-        // Validate minimal fields for demonstration
-        $request->validate([
-            // add payment-specific validation here
-        ]);
-
-        // TODO: integrate payment gateway
-        // For now, redirect back with success message
-        return redirect()->route('candidate.express.service')
-            ->with('status', "Payment for service '{$service}' processed (demo).");
+        return view('candidate.statistics.viewed');
     }
 
-    /**
-     * Statistics pages
-     */
-    public function statistics1()
-    {
-        return view('candidate.statistics.statistics1');
-    }
-
-    public function statistics2()
-    {
-        return view('candidate.statistics.statistics2');
-    }
-
-    public function statisticsView()
-    {
-        return view('candidate.statistics.view-statistics');
-    }
-
-    /**
-     * Messages page
-     */
     public function messages()
     {
-        return view('candidate.messages');
+        return view('candidate.messages.index');
     }
 
     /**
-     * Show delete profile confirmation page
-     */
-    public function showDeleteProfile()
-    {
-        return view('candidate.profile.delete');
-    }
-
-    /**
-     * Handle delete profile action (POST).
-     * This is a destructive action: confirm current auth and delete.
+     * DELETE-style action via POST
      */
     public function deleteProfile(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
-        // add authorization checks, password confirmation etc, as required
-        if ($user) {
-            // Soft-delete if using SoftDeletes or permanently delete
-            if (method_exists($user, 'delete')) {
-                $user->delete();
-            }
-
-            // logout after deletion
-            Auth::logout();
-
-            return redirect()->route('home')->with('status', 'Your profile has been deleted.');
-        }
-
-        return redirect()->route('candidate.dashboard')->with('error', 'Unable to delete profile.');
+        $user = Auth::user();
+        // for safety, don't actually delete here — implement as needed
+        // $user->delete();
+        return redirect()->route('home')->with('success', 'Profile delete requested (implement actual deletion).');
     }
 }

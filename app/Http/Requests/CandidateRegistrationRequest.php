@@ -6,100 +6,107 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CandidateRegistrationRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize()
     {
-        // adjust if needed (e.g. only admins allowed)
-        return $this->user() !== null;
+        // restrict by auth if needed
+        return true;
     }
 
-    public function rules(): array
+    public function rules()
     {
         return [
-            // user credentials
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-
-            // profile / personal fields
+            // personal
             'first_name' => 'required|string|max:100',
             'middle_name' => 'nullable|string|max:100',
             'last_name' => 'required|string|max:100',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
             'marital_status' => 'nullable|in:single,married,divorced,widowed',
-            'dob' => 'nullable|date',
-            'mobile_cc' => 'nullable|string|max:6',
-            'mobile_number' => 'required|string|max:30',
-            'whatsapp_cc' => 'nullable|string|max:6',
-            'whatsapp_number' => 'nullable|string|max:30',
-            'address' => 'nullable|string',
-            'profile_pic' => 'nullable|file|image|max:2048',
             'gender' => 'nullable|in:male,female,other',
-            'nationality' => 'nullable|string|max:100',
-            'state_id' => 'nullable|integer|exists:states,id',
-            'city_id' => 'nullable|integer|exists:cities,id',
+            'dob' => 'nullable|date_format:Y-m-d', // we convert dates to ISO before submit (see JS)
+            'mobile_cc' => 'nullable|string|max:10',
+            'mobile_number' => 'required|string|max:30',
+            'whatsapp_cc' => 'nullable|string|max:10',
+            'whatsapp_number' => 'nullable|string|max:30',
+            'address' => 'nullable|string|max:1000',
 
-            // resume fields
-            'present_rank' => 'nullable|integer|exists:ranks,id',
+            // nationality and document-country fields now reference countries.id
+            'nationality' => 'nullable|integer|exists:countries,id',
+            'passport_nationality' => 'nullable|integer|exists:countries,id',
+            'cdc_nationality' => 'nullable|integer|exists:countries,id',
+            'coc_held' => 'nullable|integer|exists:countries,id',
+
+            // profile/resume
+            'present_rank' => 'nullable|exists:ranks,id',
             'present_rank_exp' => 'nullable|string|max:50',
-            'post_applied_for' => 'nullable|integer|exists:ranks,id',
-            'date_of_availability' => 'nullable|date',
+            'post_applied_for' => 'nullable|exists:ranks,id',
+            'date_of_availability' => 'nullable|date_format:Y-m-d',
             'indos_number' => 'nullable|string|max:100',
-            'passport_nationality' => 'nullable|string|max:100',
+
+            // documents
             'passport_number' => 'nullable|string|max:100',
-            'passport_expiry' => 'nullable|date',
-            'usa_visa' => 'nullable|in:yes,no',
-            'cdc_nationality' => 'nullable|string|max:100',
+            'passport_expiry' => 'nullable|date_format:Y-m-d',
             'cdc_no' => 'nullable|string|max:100',
-            'cdc_expiry' => 'nullable|date',
+            'cdc_expiry' => 'nullable|date_format:Y-m-d',
+
+            // presea/coc
             'presea_training_type' => 'nullable|string|max:255',
-            'presea_training_issue_date' => 'nullable|date',
-            'coc_held' => 'nullable|in:yes,no',
+            'presea_training_issue_date' => 'nullable|date_format:Y-m-d',
             'coc_no' => 'nullable|string|max:100',
-            'coc_type' => 'nullable|string|max:100',
-            'coc_date_of_expiry' => 'nullable|date',
-            'additional_information' => 'nullable|string',
+            'coc_grade' => 'nullable|string|max:100',
+            'coc_type' => 'nullable|string|max:255',
+            'coc_date_of_expiry' => 'nullable|date_format:Y-m-d',
 
-            // courses - multi select (master ids)
-            'courses' => 'nullable|array',
-            'courses.*' => 'integer|exists:course_certificates,id',
-
-            // dce endorsements arrays
+            // dce endorsements
             'dce_id' => 'nullable|array',
-            'dce_id.*' => 'integer|exists:dce_endorsements,id',
+            'dce_id.*' => 'nullable|exists:dce_endorsements,id',
             'dce_validity' => 'nullable|array',
-            'dce_validity.*' => 'nullable|date',
+            'dce_validity.*' => 'nullable|date_format:Y-m-d',
 
-            // sea service entries => array of objects
+            // courses (master table: courses_and_other_certificate_master)
+            'courses' => 'nullable|array',
+            'courses.*' => 'nullable|exists:courses_and_other_certificate_master,id',
+
+            // sea service (nested)
             'sea_service' => 'nullable|array',
-            'sea_service.*.rank_id' => 'nullable|integer|exists:ranks,id',
-            'sea_service.*.ship_type_id' => 'nullable|integer|exists:ship_types,id',
-            'sea_service.*.sign_on' => 'nullable|date',
-            'sea_service.*.sign_off' => 'nullable|date',
+            'sea_service.*.rank_id' => 'nullable|exists:ranks,id',
+            'sea_service.*.ship_type_id' => 'nullable|exists:ship_types,id',
+            'sea_service.*.sign_on' => 'nullable|date_format:Y-m-d',
+            'sea_service.*.sign_off' => 'nullable|date_format:Y-m-d',
             'sea_service.*.company_name' => 'nullable|string|max:255',
             'sea_service.*.ship_name' => 'nullable|string|max:255',
-            'sea_service.*.grt' => 'nullable|string|max:50',
-            'sea_service.*.bhp' => 'nullable|string|max:50',
-            'sea_service.*.tonnage' => 'nullable|string|max:50',
+
+            // replaced old grt/tonnage rules with a unit + value pair:
+            'sea_service.*.grt_unit' => 'nullable|in:GRT,DWT',
+            'sea_service.*.grt_value' => 'nullable|numeric',
+            'sea_service.*.bhp' => 'nullable|numeric',
+
+            // file
+            'profile_pic' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+
+            // additional
+            'additional_information' => 'nullable|string|max:2000',
         ];
     }
 
-    public function messages(): array
+    public function messages()
     {
         return [
-            'email.unique' => 'Email address already in use.',
-            'password.confirmed' => 'Password confirmation does not match.',
+            'email.unique' => 'The candidate email is already taken.',
+            'password.confirmed' => 'Passwords do not match.',
+            'courses.*.exists' => 'One of the selected courses is invalid.',
+            'dce_id.*.exists' => 'Invalid DCE selection.',
+            'nationality.exists' => 'Selected nationality is invalid.',
+            'passport_nationality.exists' => 'Selected passport nationality is invalid.',
+            'cdc_nationality.exists' => 'Selected CDC nationality is invalid.',
+            'coc_held.exists' => 'Selected COC country is invalid.',
+            'sea_service.*.rank_id.exists' => 'Selected rank for a sea service entry is invalid.',
+            'sea_service.*.ship_type_id.exists' => 'Selected ship type for a sea service entry is invalid.',
+            'sea_service.*.sign_on.date_format' => 'Invalid sign-on date format for a sea-service entry (expected YYYY-MM-DD).',
+            'sea_service.*.sign_off.date_format' => 'Invalid sign-off date format for a sea-service entry (expected YYYY-MM-DD).',
+            'sea_service.*.grt_unit.in' => 'Tonnage unit must be either GRT or DWT.',
+            'sea_service.*.grt_value.numeric' => 'Tonnage value must be numeric.',
+            'sea_service.*.bhp.numeric' => 'BHP must be numeric.',
         ];
-    }
-
-    /**
-     * Prepare the validated data by normalizing some inputs if necessary.
-     */
-    protected function prepareForValidation(): void
-    {
-        // Example: strip spaces from mobile dial codes
-        if ($this->has('mobile_cc')) {
-            $this->merge(['mobile_cc' => trim($this->input('mobile_cc'))]);
-        }
-        if ($this->has('whatsapp_cc')) {
-            $this->merge(['whatsapp_cc' => trim($this->input('whatsapp_cc'))]);
-        }
     }
 }

@@ -59,7 +59,7 @@
   <script src="{{ asset('theme/assets/js/pace.min.js') }}"></script>
   <script src="{{ asset('theme/assets/plugins/chartjs/js/Chart.min.js') }}"></script>
   <script src="{{ asset('theme/assets/plugins/chartjs/js/Chart.extension.js') }}"></script>
-  <script src="{{ asset('theme/assets/plugins/apexcharts-bundle/js/apexcharts.min.js') }}"></script>
+
   <script src="{{ asset('theme/assets/js/app.js') }}"></script>
   <script src="{{ asset('theme/assets/js/index4.js') }}"></script>
   <script>

@@ -62,7 +62,6 @@
                         <div class="menu-title">Country Codes</div>
                     </a>
                 </li>
-
             </ul>
         </li>
         <li>
@@ -77,13 +76,31 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#">
+                    <a href="{{ route('admin.candidates.index') }}">
                         <div class="menu-title">All Candidates</div>
                     </a>
                 </li>
             </ul>
         </li>
-
+        <li>
+            <a href="javascript:void(0);" class="has-arrow">
+                <div class="parent-icon"><i class="bx bx-building"></i></div>
+                <div class="menu-title">Company</div>
+            </a>
+            <ul>
+                <li>
+                    <a href="{{ route('admin.company.register.step', 1) }}">
+                        <div class="menu-title">Add Company</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.company.index', 1) }}">
+                        <div class="menu-title">List of Companies</div>
+                    </a>
+                </li>
+                {{-- Add more company-related submenus here if needed --}}
+            </ul>
+        </li>
     </ul>
     <!--end navigation-->
 </aside>

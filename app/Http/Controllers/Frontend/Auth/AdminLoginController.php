@@ -17,8 +17,8 @@ class AdminLoginController extends Controller
         $this->authService = $authService;
 
         // guests can see login form & attempt login; logged-in users can logout
-        $this->middleware('guest')->only(['showLoginForm', 'login']);
-        $this->middleware('auth')->only('logout');
+        $this->middleware('guest:admin')->only(['showLoginForm', 'login']);
+        $this->middleware('auth:admin')->only('logout');
     }
 
     public function showLoginForm()
@@ -29,32 +29,53 @@ class AdminLoginController extends Controller
     /**
      * Handle login (no FormRequest; server-side validation inline).
      */
-   public function login(Request $request)
+    public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',   // or use 'username' if you want
+        $data = $request->validate([
+            'username' => 'required|string|min:3|max:100',
             'password' => 'required|string|min:6',
+            'remember' => 'sometimes|boolean',
         ], [
-            'email.required' => 'Please enter your email.',
-            'email.email' => 'Please enter a valid email address.',
+            'username.required' => 'Please enter your username.',
+            'username.min' => 'Username must be at least :min characters.',
             'password.required' => 'Please enter your password.',
             'password.min' => 'Password must be at least :min characters.',
         ]);
-        if (Auth::guard('admin')->attempt(
-            ['email' => $credentials['email'], 'password' => $credentials['password']],
-            $request->filled('remember')
-        )) {
-            $user = Auth::guard('admin')->user();
-            if (! in_array($user->user_type, ['super_admin', 'subadmin', 'executive'])) {
+
+        // Build credential array; include user_type filter so only admin rows match
+        $credentials = [
+            'username'  => $data['username'],
+            'password'  => $data['password'],
+            'user_type' => 'admin',
+        ];
+
+        // Attempt login using admin guard (which uses users provider)
+        if (Auth::guard('admin')->attempt($credentials, $request->filled('remember'))) {
+            // Authentication passed
+            $admin = Auth::guard('admin')->user();
+
+            // Optional additional role check (if you use `role` column to restrict)
+            $allowedRoles = ['super_admin', 'subadmin', 'executive']; // adjust to your values
+            $role = strtolower($admin->role ?? '');
+
+            if (! in_array($role, $allowedRoles, true)) {
                 Auth::guard('admin')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
                 throw ValidationException::withMessages([
-                    'email' => 'You are not authorized to access the admin panel.',
+                    'username' => 'You are not authorized to access the admin panel.',
                 ]);
             }
+
+            // Regenerate session and redirect
+            $request->session()->regenerate();
             return redirect()->intended(route('admin.dashboard'));
         }
+
+        // Authentication failed
         throw ValidationException::withMessages([
-            'email' => 'Invalid email or password.',
+            'username' => 'Invalid username or password.',
         ]);
     }
 

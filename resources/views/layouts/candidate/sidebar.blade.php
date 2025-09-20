@@ -23,7 +23,7 @@
             </a>
             <ul>
                 <li>
-                    <a href="{{ route('candidate.resume') }}">
+                    <a href="{{ route('candidate.resume.edit') }}">
                         <div class="menu-title">Edit Resume</div>
                     </a>
                 </li>

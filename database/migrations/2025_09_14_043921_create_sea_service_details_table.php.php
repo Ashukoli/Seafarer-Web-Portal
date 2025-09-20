@@ -6,48 +6,63 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateSeaServiceDetailsTable extends Migration
 {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
         Schema::create('sea_service_details', function (Blueprint $table) {
             $table->bigIncrements('id');
 
-            //$table->unsignedBigInteger('profile_id')->nullable()->index();
-            $table->unsignedBigInteger('user_id')->nullable()->index();
+            // link to users
+            $table->unsignedBigInteger('user_id')->nullable()->index()->comment('users.id');
 
-            // Sea service-specific fields
-            $table->string('rank')->nullable();
+            // foreign keys to ranks and ship_types
+            $table->unsignedBigInteger('rank_id')->nullable()->index()->comment('ranks.id');
+            $table->unsignedBigInteger('ship_type_id')->nullable()->index()->comment('ship_types.id');
+
+            // ship / company fields
             $table->string('ship_name')->nullable();
             $table->string('company_name')->nullable();
-            $table->string('ship_type')->nullable();
-            $table->string('engine_type')->nullable();
-            $table->string('grt')->nullable();
+
+            // tonnage: store unit (GRT/DWT) and numeric value
+            $table->enum('grt_unit', ['GRT', 'DWT'])->nullable()->comment('unit for tonnage');
+            $table->unsignedBigInteger('grt_value')->nullable()->comment('numeric tonnage value');
+
+            // engine / power
             $table->string('bhp')->nullable();
 
-            $table->date('sign_on_date')->nullable();
-            $table->date('sign_off_date')->nullable();
-
-            // computed duration or raw days stored (optional)
-            //$table->integer('duration_days')->nullable()->comment('optional pre-computed duration in days');
-
-            //$table->text('remarks')->nullable();
+            // sign on / sign off dates
+            $table->date('sign_on')->nullable();
+            $table->date('sign_off')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
 
-            //$table->foreign('profile_id')->references('id')->on('candidate_profiles')->onDelete('cascade');
+            // foreign keys
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            $table->foreign('rank_id')->references('id')->on('ranks')->nullOnDelete();
+            $table->foreign('ship_type_id')->references('id')->on('ship_types')->nullOnDelete();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
-        Schema::table('sea_service_details', function (Blueprint $table) {
-
-            if (Schema::hasColumn('sea_service_details', 'user_id')) {
-                $table->dropForeign(['user_id']);
-            }
-        });
-
-        Schema::dropIfExists('sea_service_details');
+        if (Schema::hasTable('sea_service_details')) {
+            Schema::table('sea_service_details', function (Blueprint $table) {
+                try { $table->dropForeign(['rank_id']); } catch (\Throwable $e) {}
+                try { $table->dropForeign(['ship_type_id']); } catch (\Throwable $e) {}
+                try { $table->dropForeign(['user_id']); } catch (\Throwable $e) {}
+            });
+            Schema::dropIfExists('sea_service_details');
+        }
     }
 }

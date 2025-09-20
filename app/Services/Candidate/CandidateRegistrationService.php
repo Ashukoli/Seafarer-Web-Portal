@@ -12,19 +12,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
-use Carbon\Carbon;
-use Exception;
+use Illuminate\Support\Facades\Log;
 
 class CandidateRegistrationService
 {
-    /**
-     * Register a candidate from admin panel.
-     *
-     * @param array $data
-     * @param int|null $createdBy
-     * @return \App\Models\User
-     * @throws \Throwable
-     */
     public function registerFromAdmin(array $data, ?int $createdBy = null): User
     {
         $data['user_type'] = $data['user_type'] ?? 'candidate';
@@ -33,148 +24,150 @@ class CandidateRegistrationService
         return $this->createCandidate($data);
     }
 
-    /**
-     * Register from frontend (re-usable).
-     */
     public function registerFromFrontend(array $data): User
     {
         $data['user_type'] = $data['user_type'] ?? 'candidate';
         return $this->createCandidate($data);
     }
 
-    /**
-     * Core creation method in a transaction.
-     *
-     * @param array $data
-     * @return User
-     */
     protected function createCandidate(array $data): User
-    {
-        return DB::transaction(function () use ($data) {
+{
+    return DB::transaction(function () use ($data) {
+        $password = $data['password'] ?? Str::random(10);
 
-            // create user
-            $password = $data['password'] ?? Str::random(10);
+        $user = User::create([
+            'name' => trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')),
+            'email' => $data['email'] ?? null,
+            'password' => Hash::make($password),
+            'user_type' => $data['user_type'] ?? 'candidate',
+            'status' => $data['status'] ?? 'active',
+            'remember_token' => Str::random(60),
+            'created_by' => $data['created_by_admin_id'] ?? null,
+        ]);
 
-            $user = User::create([
-                'name' => trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')),
-                'email' => $data['email'],
-                'password' => Hash::make($password),
-                'user_type' => $data['user_type'] ?? 'candidate',
-                'status' => $data['status'] ?? 'active',
-                'remember_token' => Str::random(60),
-            ]);
+        $nationality = $data['nationality'] ?? ($data['passport_nationality'] ?? 'IN');
 
-            // profile
-            $profile = CandidateProfile::create([
-                'user_id' => $user->id,
-                'seafarer_id' => $data['seafarer_id'] ?? null,
-                'first_name' => $data['first_name'] ?? null,
-                'middle_name' => $data['middle_name'] ?? null,
-                'last_name' => $data['last_name'] ?? null,
-                'marital_status' => $data['marital_status'] ?? null,
-                'dob' => $data['dob'] ?? null,
-                'mobile_cc' => $data['mobile_cc'] ?? null,
-                'mobile_number' => $data['mobile_number'] ?? null,
-                'whatsapp_cc' => $data['whatsapp_cc'] ?? null,
-                'whatsapp_number' => $data['whatsapp_number'] ?? null,
-                'address' => $data['address'] ?? null,
-                'gender' => $data['gender'] ?? null,
-                'nationality' => $data['nationality'] ?? null,
-                'state_id' => $data['state_id'] ?? null,
-                'city_id' => $data['city_id'] ?? null,
-            ]);
+        $profile = CandidateProfile::create([
+            'user_id' => $user->id,
+            'seafarer_id' => $data['seafarer_id'] ?? null,
+            'first_name' => $data['first_name'] ?? null,
+            'middle_name' => $data['middle_name'] ?? null,
+            'last_name' => $data['last_name'] ?? null,
+            'marital_status' => $data['marital_status'] ?? null,
+            'dob' => $data['dob'] ?? null,
+            'mobile_cc' => $data['mobile_cc'] ?? null,
+            'mobile_number' => $data['mobile_number'] ?? null,
+            'whatsapp_cc' => $data['whatsapp_cc'] ?? $data['mobile_cc'] ?? null,
+            'whatsapp_number' => $data['whatsapp_number'] ?? null,
+            'address' => $data['address'] ?? null,
+            'gender' => $data['gender'] ?? null,
+            'nationality' => $nationality,
+            'state_id' => $data['state_id'] ?? null,
+            'city_id' => $data['city_id'] ?? null,
+        ]);
 
-            // handle profile pic upload
-            if (!empty($data['profile_pic_file']) && $data['profile_pic_file'] instanceof UploadedFile) {
-                $path = $data['profile_pic_file']->store('profile_pics', 'public');
-                $profile->profile_pic = $path;
+        // -------- profile pic: save to public/theme/assets/profile_pics ----------
+        if (!empty($data['profile_pic_file']) && $data['profile_pic_file'] instanceof \Illuminate\Http\UploadedFile) {
+            try {
+                $uploadDir = public_path('theme/assets/profile_pics');
+                if (!file_exists($uploadDir)) {
+                    // create directory recursively and set permissions
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                // generate unique filename
+                $filename = time() . '_' . \Illuminate\Support\Str::slug(pathinfo($data['profile_pic_file']->getClientOriginalName(), PATHINFO_FILENAME))
+                            . '.' . $data['profile_pic_file']->getClientOriginalExtension();
+
+                // move the uploaded file to public/theme/assets/profile_pics
+                $data['profile_pic_file']->move($uploadDir, $filename);
+
+                // set the profile picture path relative to public/
+                $profile->profile_pic = 'theme/assets/profile_pics/' . $filename;
                 $profile->save();
+            } catch (\Throwable $e) {
+                // log but don't fail the whole transaction — you may want to surface this later
+                Log::error('Profile pic upload failed: ' . $e->getMessage());
             }
+        }
 
-            // resume
-            $resume = CandidateResume::create([
-                'user_id' => $user->id,
-                'present_rank' => $data['present_rank'] ?? null,
-                'present_rank_exp' => $data['present_rank_exp'] ?? null,
-                'post_applied_for' => $data['post_applied_for'] ?? null,
-                'date_of_availability' => $data['date_of_availability'] ?? null,
-                'indos_number' => $data['indos_number'] ?? null,
-                'passport_nationality' => $data['passport_nationality'] ?? null,
-                'passport_number' => $data['passport_number'] ?? null,
-                'passport_expiry' => $data['passport_expiry'] ?? null,
-                'usa_visa' => $data['usa_visa'] ?? null,
-                'cdc_nationality' => $data['cdc_nationality'] ?? null,
-                'cdc_no' => $data['cdc_no'] ?? null,
-                'cdc_expiry' => $data['cdc_expiry'] ?? null,
-                'presea_training_type' => $data['presea_training_type'] ?? null,
-                'presea_training_issue_date' => $data['presea_training_issue_date'] ?? null,
-                'coc_held' => $data['coc_held'] ?? null,
-                'coc_no' => $data['coc_no'] ?? null,
-                'coc_type' => $data['coc_type'] ?? null,
-                'coc_date_of_expiry' => $data['coc_date_of_expiry'] ?? null,
-                'additional_information' => $data['additional_information'] ?? null,
-            ]);
+        // resume
+        $resume = CandidateResume::create([
+            'user_id' => $user->id,
+            'present_rank' => $data['present_rank'] ?? null,
+            'present_rank_exp' => $data['present_rank_exp'] ?? null,
+            'post_applied_for' => $data['post_applied_for'] ?? null,
+            'date_of_availability' => $data['date_of_availability'] ?? null,
+            'indos_number' => $data['indos_number'] ?? null,
+            'passport_nationality' => $data['passport_nationality'] ?? null,
+            'passport_number' => $data['passport_number'] ?? null,
+            'passport_expiry' => $data['passport_expiry'] ?? null,
+            'usa_visa' => $data['usa_visa'] ?? null,
+            'cdc_nationality' => $data['cdc_nationality'] ?? null,
+            'cdc_no' => $data['cdc_no'] ?? null,
+            'cdc_expiry' => $data['cdc_expiry'] ?? null,
+            'presea_training_type' => $data['presea_training_type'] ?? null,
+            'presea_training_issue_date' => $data['presea_training_issue_date'] ?? null,
+            'coc_held' => $data['coc_held'] ?? null,
+            'coc_no' => $data['coc_no'] ?? null,
+            'coc_type' => $data['coc_type'] ?? null,
+            'coc_date_of_expiry' => $data['coc_date_of_expiry'] ?? null,
+            'additional_information' => $data['additional_information'] ?? null,
+        ]);
 
-            // courses (array of master ids)
-            if (!empty($data['courses']) && is_array($data['courses'])) {
-                foreach ($data['courses'] as $courseId) {
-                    if (empty($courseId)) continue;
-                    CandidateCourseCertificate::create([
-                        'user_id' => $user->id,
-                        'course_id' => $courseId,
-                    ]);
-                }
+        // courses
+        if (!empty($data['courses']) && is_array($data['courses'])) {
+            foreach ($data['courses'] as $courseId) {
+                if (empty($courseId)) continue;
+                CandidateCourseCertificate::create([
+                    'user_id' => $user->id,
+                    'course_id' => $courseId,
+                ]);
             }
+        }
 
-            // DCE endorsements
-            if (!empty($data['dce_id']) && is_array($data['dce_id'])) {
-                $validities = $data['dce_validity'] ?? [];
-                foreach ($data['dce_id'] as $idx => $dceId) {
-                    if (empty($dceId)) continue;
-                    CandidateDceEndorsement::create([
-                        'user_id' => $user->id,
-                        'dce_id' => $dceId,
-                        'validity_date' => $validities[$idx] ?? null,
-                    ]);
-                }
+        // dce
+        if (!empty($data['dce_id']) && is_array($data['dce_id'])) {
+            $validities = $data['dce_validity'] ?? [];
+            foreach ($data['dce_id'] as $idx => $dceId) {
+                if (empty($dceId)) continue;
+                CandidateDceEndorsement::create([
+                    'user_id' => $user->id,
+                    'dce_id' => $dceId,
+                    'validity_date' => $validities[$idx] ?? null,
+                ]);
             }
+        }
 
-            // sea service details (array of assoc arrays)
-            if (!empty($data['sea_service']) && is_array($data['sea_service'])) {
-                foreach ($data['sea_service'] as $entry) {
-                    // normalize dates if present
-                    $signOn = $entry['sign_on'] ?? null;
-                    $signOff = $entry['sign_off'] ?? null;
+        // sea service
+        if (!empty($data['sea_service']) && is_array($data['sea_service'])) {
+            foreach ($data['sea_service'] as $entry) {
+                SeaServiceDetail::create([
+                    'user_id'      => $user->id,
+                    'rank_id'      => $entry['rank_id'] ?? null,
+                    'ship_type_id' => $entry['ship_type_id'] ?? null,
+                    'sign_on'      => $entry['sign_on'] ?? null,
+                    'sign_off'     => $entry['sign_off'] ?? null,
+                    'company_name' => $entry['company_name'] ?? null,
+                    'ship_name'    => $entry['ship_name'] ?? null,
 
-                    SeaServiceDetail::create([
-                        'user_id' => $user->id,
-                        'rank_id' => $entry['rank_id'] ?? null,
-                        'ship_type_id' => $entry['ship_type_id'] ?? null,
-                        'sign_on' => $signOn,
-                        'sign_off' => $signOff,
-                        'company_name' => $entry['company_name'] ?? null,
-                        'ship_name' => $entry['ship_name'] ?? null,
-                        'grt' => $entry['grt'] ?? null,
-                        'bhp' => $entry['bhp'] ?? null,
-                        'tonnage' => $entry['tonnage'] ?? null,
-                    ]);
-                }
+                    // save tonnage values properly
+                       // legacy input, plain numeric
+                    'grt_unit'  => $entry['grt_unit'] ?? null,     // "GRT" or "DWT" from dropdown
+                    'grt_value' => $entry['grt_value'] ?? null,    // numeric value if separated
+                    'bhp'       => $entry['bhp'] ?? null,
+                ]);
             }
+        }
 
-            // update profile completion
-            $this->updateProfileCompletion($profile, $resume);
+        // update profile completion
+        $this->updateProfileCompletion($profile, $resume);
 
-            return $user;
-        });
-    }
+        return $user;
+    });
+}
 
-    /**
-     * Compute profile completion and save on CandidateProfile
-     *
-     * @param \App\Models\CandidateProfile $profile
-     * @param \App\Models\CandidateResume $resume
-     * @return void
-     */
+
     protected function updateProfileCompletion(CandidateProfile $profile, CandidateResume $resume): void
     {
         $steps = [

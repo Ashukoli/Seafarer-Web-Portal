@@ -1,7 +1,7 @@
 <?php
+// ... keep the top of your file (imports/other route groups) as-is
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Frontend\Auth\CandidateLoginController;
 use App\Http\Controllers\Candidate\CandidateController;
@@ -17,6 +17,9 @@ use App\Http\Controllers\Admin\DceEndorsementController;
 use App\Http\Controllers\Admin\CourseCertificateController;
 use App\Http\Controllers\Admin\CityController;
 use App\Http\Controllers\Admin\CandidateRegistrationController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Admin\Company\CompanyController;
+use App\Http\Controllers\Admin\company\CompanyRegisterController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -34,10 +37,9 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/reviews', 'reviews')->name('reviews');
 
     // Marketing-only login pages — keep separate names to avoid collisions with auth routes
-    //Route::get('/candidate-login', 'candidateLogin')->name('candidate.login.page');
-    Route::get('/company-login', 'companyLogin')->name('company.login.page');
+
     Route::get('/admin-login', 'adminLogin')->name('admin.login.page');
-    Route::get('/company/register', 'companyRegister')->name('company.register.page');
+    //Route::get('/company/register', 'companyRegister')->name('company.register.page');
 
     // Marketing job/resume pages
     Route::get('/search-jobs', 'searchJobs')->name('jobs.search');
@@ -45,12 +47,24 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/view-resumes', 'viewResumes')->name('resumes.view');
 });
 
+// API helper for cities
+Route::get('api/cities', [LocationController::class, 'getCities']);
+Route::get('/login', function () {
+    return redirect()->route('home');
+})->name('login');
 
-    Route::prefix('candidate')
-    ->name('candidate.')   // ✅ Add this so all routes are prefixed with candidate.*
+// ----------------------------
+// Candidate routes
+// ----------------------------
+// NOTE: Ensure CandidateController exists at App\Http\Controllers\Candidate\CandidateController
+// ----------------------------
+// Candidate routes
+// ----------------------------
+Route::prefix('candidate')
+    ->name('candidate.')
     ->group(function () {
 
-        // Guest-only
+        // Guest-only (login / forgot)
         Route::middleware('guest')->group(function () {
             Route::get('login', [CandidateLoginController::class, 'showLoginForm'])
                 ->name('login.form');
@@ -62,19 +76,45 @@ Route::controller(PageController::class)->group(function () {
                 ->name('password.email');
         });
 
-        // Authenticated candidate
+        // Authenticated candidate routes
         Route::middleware('auth')->group(function () {
-            Route::get('dashboard', [CandidateController::class, 'dashboard'])
-                ->name('dashboard');   // ✅ Now becomes candidate.dashboard
 
-            // ... other candidate routes ...
+            // Dashboard
+            Route::get('dashboard', [CandidateController::class, 'dashboard'])->name('dashboard');
 
-            Route::post('logout', [CandidateLoginController::class, 'logout'])
-                ->name('logout');      // ✅ candidate.logout
+            // Resume routes
+            Route::get('resume', [CandidateController::class, 'editResume'])->name('resume.edit');
+            Route::post('resume', [CandidateController::class, 'updateResume'])->name('resume.update');
+
+            // View resume (read-only)
+            Route::get('resume/view', [CandidateController::class, 'viewResume'])->name('view.resume');
+
+            // Optional alias for backwards compatibility
+            Route::get('resume/show', function () {
+                return redirect()->route('candidate.view.resume');
+            })->name('resume.view');
+
+            Route::post('resume/hide', [CandidateController::class, 'toggleResumeVisibility'])->name('resume.hide');
+
+            // Jobs / extra pages
+            Route::get('jobs/search', [CandidateController::class, 'searchJobs'])->name('jobs.search');
+            Route::get('jobs/hot', [CandidateController::class, 'hotJobs'])->name('jobs.hot');
+            Route::get('express-service', [CandidateController::class, 'expressService'])->name('express.service');
+            Route::get('statistics/applied', [CandidateController::class, 'statisticsApplied'])->name('statistics1');
+            Route::get('statistics/viewed', [CandidateController::class, 'statisticsViewed'])->name('statistics2');
+            Route::get('messages', [CandidateController::class, 'messages'])->name('messages');
+
+            // Profile
+            Route::post('profile/delete', [CandidateController::class, 'deleteProfile'])->name('profile.delete');
+
+            // Logout
+            Route::post('logout', [CandidateLoginController::class, 'logout'])->name('logout');
         });
     });
 
-
+// ----------------------------
+// Admin routes (unchanged) — keep your existing admin group below
+// ----------------------------
 Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -107,14 +147,42 @@ Route::prefix('admin')
             Route::resource('cities', CityController::class);                // admin.cities.*
 
             // Candidate registration
-            Route::get('candidates/create', [CandidateRegistrationController::class, 'create'])->name('candidates.create');
+            Route::resource('candidates', CandidateRegistrationController::class);
+            // Company routes
+            Route::prefix('company')->name('company.')->group(function () {
+                Route::get('register/{step?}', [CompanyRegisterController::class, 'showForm'])->name('register.step');
+                Route::post('register/{step}', [CompanyRegisterController::class, 'handleStep'])->name('register.handle');
+                Route::get('/', [CompanyController::class, 'index'])->name('index');
+                Route::get('/create', [CompanyController::class, 'create'])->name('create');
+                Route::post('/', [CompanyController::class, 'store'])->name('store');
+                Route::get('/{id}', [CompanyController::class, 'show'])->name('show');
+                Route::get('/{id}/edit', [CompanyController::class, 'edit'])->name('edit');
+                Route::put('/{id}', [CompanyController::class, 'update'])->name('update');
+                Route::delete('/{id}', [CompanyController::class, 'destroy'])->name('destroy');
 
-            Route::post('candidates', [CandidateRegistrationController::class, 'store'])->name('candidates.store');
-
-
-
+                // Superadmin and Subadmin management
+                Route::get('/{company}/superadmin/edit', [CompanyController::class, 'editSuperadmin'])->name('superadmin.edit');
+                Route::post('/{company}/superadmin/update', [CompanyController::class, 'updateSuperadmin'])->name('superadmin.update');
+                Route::get('/{company}/subadmins', [CompanyController::class, 'editSubadmins'])->name('subadmins.edit');
+                Route::post('/{company}/subadmins/update', [CompanyController::class, 'updateSubadmins'])->name('subadmins.update');
+            });
             // Logout
             Route::post('logout', [AdminLoginController::class, 'logout'])->name('logout');
         });
     });
 
+
+Route::prefix('company')->name('company.')->group(function () {
+    // Guest-only routes
+    Route::middleware('guest:company')->group(function () {
+        Route::get('login', [CompanyLoginController::class, 'showLoginForm'])->name('login.form');
+        Route::post('login', [CompanyLoginController::class, 'login'])->name('login');
+        Route::post('otp-verify', [CompanyLoginController::class, 'ajaxVerifyOtp'])->name('otp.verify');
+    });
+
+    // Authenticated company routes
+    Route::middleware('auth:company')->group(function () {
+        Route::get('dashboard', [CompanyController::class, 'dashboard'])->name('dashboard');
+        Route::post('logout', [CompanyLoginController::class, 'logout'])->name('logout');
+    });
+});

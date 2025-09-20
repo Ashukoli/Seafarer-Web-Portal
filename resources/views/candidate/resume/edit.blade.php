@@ -1,1104 +1,827 @@
+{{-- resources/views/candidate/resume/edit.blade.php --}}
 @extends('layouts.candidate.app')
+
 @section('content')
 <main class="page-content">
-    <!-- Breadcrumb -->
+    {{-- Breadcrumb & messages --}}
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
-        <div class="breadcrumb-title pe-3">
-            <i class="bx bx-user-circle me-2 text-primary"></i>Candidate
-        </div>
+        <div class="breadcrumb-title pe-3"><i class="bx bx-user-circle me-2 text-primary"></i>Candidate</div>
         <div class="ps-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 p-0 enhanced-breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('candidate.dashboard') }}" class="breadcrumb-link">
-                            <i class="bx bx-home-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <i class="bx bx-file-text me-1"></i>Edit Resume
-                    </li>
+                    <li class="breadcrumb-item"><a href="{{ route('candidate.dashboard') }}"><i class="bx bx-home-alt me-1"></i>Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><i class="bx bx-file-text me-1"></i>Edit Resume</li>
                 </ol>
             </nav>
         </div>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="progress-steps">
-                <div class="step clickable-step" id="step1" onclick="showForm('personalDetailsForm')">
-                    <div class="step-number">1</div>
-                    <div class="step-title">Personal</div>
-                </div>
-                <div class="step clickable-step" id="step2" onclick="showForm('profileForm')">
-                    <div class="step-number">2</div>
-                    <div class="step-title">Profile</div>
-                </div>
-                <div class="step clickable-step" id="step3" onclick="showForm('documentsForm')">
-                    <div class="step-number">3</div>
-                    <div class="step-title">Documents</div>
-                </div>
-                <div class="step clickable-step" id="step4" onclick="showForm('preSeaForm')">
-                    <div class="step-number">4</div>
-                    <div class="step-title">Pre-Sea</div>
-                </div>
-                <div class="step clickable-step" id="step5" onclick="showForm('gmdssForm')">
-                    <div class="step-number">5</div>
-                    <div class="step-title">GMDSS</div>
-                </div>
-                <div class="step clickable-step" id="step6" onclick="showForm('courseDetailsForm')">
-                    <div class="step-number">6</div>
-                    <div class="step-title">Courses</div>
-                </div>
-                <div class="step clickable-step" id="step7" onclick="showForm('seaServiceForm')">
-                    <div class="step-number">7</div>
-                    <div class="step-title">Sea Service</div>
-                </div>
-                <div class="step clickable-step" id="step8" onclick="showForm('additionalDetailsForm')">
-                    <div class="step-number">8</div>
-                    <div class="step-title">Additional</div>
-                </div>
-                <div class="progress">
-                    <div class="progress-bar" id="mainProgressBar" role="progressbar" style="width: 12.5%;" aria-valuenow="12.5" aria-valuemin="0" aria-valuemax="100"></div>
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    <form method="POST" action="{{ route('candidate.resume.update') }}" enctype="multipart/form-data" id="resumeForm">
+        @csrf
+
+        {{-- Progress card (top) --}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="progress-steps" id="progressSteps">
+                    <div class="step clickable-step" id="step1" data-step="personal">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Personal</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step2" data-step="profile">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Profile</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step3" data-step="documents">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Documents</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step4" data-step="presea">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Pre-Sea</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step5" data-step="gmdss">
+                        <div class="step-number">5</div>
+                        <div class="step-title">GMDSS</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step6" data-step="courses">
+                        <div class="step-number">6</div>
+                        <div class="step-title">Courses</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step7" data-step="seaservice">
+                        <div class="step-number">7</div>
+                        <div class="step-title">Sea Service</div>
+                    </div>
+
+                    <div class="step clickable-step" id="step8" data-step="additional">
+                        <div class="step-number">8</div>
+                        <div class="step-title">Additional</div>
+                    </div>
+
+                    <div class="progress-line">
+                        <div class="progress-bar" id="mainProgressBar" style="width:12.5%"></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Step 1: Personal Details Form (Now First) -->
-    <div class="card mb-4" id="personalDetailsForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Personal Details</h5>
-        </div>
-        <div class="card-body">
-            <form>
+        {{-- Step 1: Personal --}}
+        <div class="card mb-4 step-card" id="step-personal">
+            <div class="card-header bg-light"><h5 class="mb-0">Personal Details</h5></div>
+            <div class="card-body">
                 <div class="row g-3">
-                    <!-- Name Section -->
                     <div class="col-md-4">
-                        <label for="firstName" class="form-label">First Name</label>
-                        <input type="text" class="form-control" id="firstName" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="middleName" class="form-label">Middle Name</label>
-                        <input type="text" class="form-control" id="middleName">
+                        <label class="form-label">First Name</label>
+                        <input name="first_name" class="form-control" value="{{ old('first_name', $user->profile->first_name ?? $user->first_name ?? '') }}">
+                        @error('first_name')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label for="lastName" class="form-label">Last Name</label>
-                        <input type="text" class="form-control" id="lastName" required>
+                        <label class="form-label">Middle Name</label>
+                        <input name="middle_name" class="form-control" value="{{ old('middle_name', $user->profile->middle_name ?? '') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Last Name</label>
+                        <input name="last_name" class="form-control" value="{{ old('last_name', $user->profile->last_name ?? $user->last_name ?? '') }}">
+                        @error('last_name')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
 
-                    <!-- Email & Password -->
                     <div class="col-md-6">
-                        <label for="email" class="form-label">Email ID</label>
-                        <input type="email" class="form-control" id="email" required>
+                        <label class="form-label">Mobile (cc)</label>
+                        <input name="mobile_cc" class="form-control" value="{{ old('mobile_cc', $user->profile->mobile_cc ?? '') }}">
                     </div>
-                    <div class="col-md-6">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirmPassword" required>
-                    </div>
-
-                    <!-- Personal Info -->
-                    <div class="col-md-6">
-                        <label for="maritalStatus" class="form-label">Marital Status</label>
-                        <select class="form-select" id="maritalStatus" required>
-                            <option value="" selected disabled>Select...</option>
-                            <option value="single">Single</option>
-                            <option value="married">Married</option>
-                            <option value="divorced">Divorced</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="gender" class="form-label">Gender</label>
-                        <select class="form-select" id="gender" required>
-                            <option value="" selected disabled>Select...</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    <!-- Nationality & Location -->
-                    <div class="col-md-6">
-                        <label for="nationality" class="form-label">Nationality</label>
-                        <select class="form-select" id="nationality" required>
-                            <option value="" selected disabled>Select...</option>
-                            <option value="indian">Indian</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="state" class="form-label">State</label>
-                        <select class="form-select" id="state" required>
-                            <option value="" selected disabled>Select...</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="city" class="form-label">City</label>
-                        <select class="form-select" id="city" required>
-                            <option value="" selected disabled>Select...</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="dob" class="form-label">Date of Birth</label>
-                        <input type="date" class="form-control" id="dob" value="2025-04-02">
-                    </div>
-
-                    <!-- Contact Information -->
                     <div class="col-md-6">
                         <label class="form-label">Mobile Number</label>
-                        <div class="input-group">
-                            <span class="input-group-text">+91</span>
-                            <input type="tel" class="form-control" placeholder="Mobile Number" required>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">WhatsApp Number</label>
-                        <div class="input-group">
-                            <span class="input-group-text">+91</span>
-                            <input type="tel" class="form-control" placeholder="WhatsApp Number">
-                        </div>
+                        <input name="mobile_number" class="form-control" value="{{ old('mobile_number', $user->profile->mobile_number ?? '') }}">
                     </div>
 
-                    <!-- Address -->
-                    <div class="col-12">
-                        <label for="address" class="form-label">Address</label>
-                        <textarea class="form-control" id="address" rows="2" required></textarea>
-                    </div>
-
-                    <!-- Form Actions -->
-                    <div class="col-12 mt-4">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-secondary" disabled>
-                                <i class="bx bx-chevron-left me-1"></i> Previous
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="showForm('profileForm')">
-                                Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Step 2: Profile & Experience Form (Now Second) -->
-    <div class="card mb-4 d-none" id="profileForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Profile & Total Experience</h5>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="row g-3">
-                    <!-- Present Rank -->
-                    <div class="col-md-6">
-                        <label for="presentRank" class="form-label">Select Present Rank</label>
-                        <select class="form-select" id="presentRank" required>
-                            <option value="" selected disabled>Choose rank...</option>
-                            <option value="captain">Captain</option>
-                            <option value="chief_engineer">Chief Engineer</option>
-                            <option value="dpo">DPO</option>
-                            <option value="2nd_off">2nd Officer</option>
+                    <div class="col-md-3">
+                        <label class="form-label">Marital Status</label>
+                        <select name="marital_status" class="form-select">
+                            <option value="">Select</option>
+                            <option value="single" {{ (old('marital_status', $user->profile->marital_status ?? '')=='single') ? 'selected':'' }}>Single</option>
+                            <option value="married" {{ (old('marital_status', $user->profile->marital_status ?? '')=='married') ? 'selected':'' }}>Married</option>
+                            <option value="divorced" {{ (old('marital_status', $user->profile->marital_status ?? '')=='divorced') ? 'selected':'' }}>Divorced</option>
+                            <option value="widowed" {{ (old('marital_status', $user->profile->marital_status ?? '')=='widowed') ? 'selected':'' }}>Widowed</option>
                         </select>
                     </div>
 
-                    <!-- Rank Experience -->
-                    <div class="col-md-6">
-                        <label for="rankExperience" class="form-label">Select Rank Experience</label>
-                        <select class="form-select" id="rankExperience" required>
-                            <option value="" selected disabled>Choose experience...</option>
-                            <option value="fresher">Fresher</option>
-                            <option value="6_months">6 Months</option>
-                            <option value="1_year">1 Year</option>
-                            <option value="2_years">2 Years</option>
+                    <div class="col-md-3">
+                        <label class="form-label">Gender</label>
+                        <select name="gender" class="form-select">
+                            <option value="">Select</option>
+                            <option value="male" {{ (old('gender', $user->profile->gender ?? '')=='male') ? 'selected':'' }}>Male</option>
+                            <option value="female" {{ (old('gender', $user->profile->gender ?? '')=='female') ? 'selected':'' }}>Female</option>
+                            <option value="other" {{ (old('gender', $user->profile->gender ?? '')=='other') ? 'selected':'' }}>Other</option>
                         </select>
                     </div>
 
-                    <!-- Post Rank -->
-                    <div class="col-md-6">
-                        <label for="postRank" class="form-label">Select Post Rank</label>
-                        <select class="form-select" id="postRank">
-                            <option value="" selected disabled>Choose rank...</option>
-                            <option value="captain">Captain</option>
-                            <option value="chief_engineer">Chief Engineer</option>
+                    <div class="col-md-3">
+                        <label class="form-label">DOB</label>
+                        <input type="date" name="dob" class="form-control" value="{{ old('dob', optional($user->profile->dob)->format('Y-m-d') ?? '') }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Nationality</label>
+                        <input name="nationality" class="form-control" value="{{ old('nationality', $user->profile->nationality ?? '') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">State</label>
+                        <select name="state_id" id="state_id" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($states as $st)
+                                <option value="{{ $st->id }}" {{ (string)old('state_id', $user->profile->state_id ?? '') === (string)$st->id ? 'selected' : '' }}>{{ $st->state_name }}</option>
+                            @endforeach
                         </select>
                     </div>
-
-                    <!-- Date -->
-                    <div class="col-md-6">
-                        <label for="date_of_availability" class="form-label">Date of Availability</label>
-                        <input type="date" class="form-control" id="date_of_availability" value="2025-04-02">
-                    </div>
-                    <!-- Form Actions -->
-                    <div class="col-12 mt-4">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-secondary" onclick="showForm('personalDetailsForm')">
-                                <i class="bx bx-chevron-left me-1"></i> Previous
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="showForm('documentsForm')">
-                                Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Step 3: Passport & Seamen Book Form -->
-    <div class="card mb-4 d-none" id="documentsForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Passport & Seamen Book Details</h5>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="row g-3">
-                    <!-- Passport Details -->
-                    <div class="col-md-6">
-                        <label for="passportNationality" class="form-label">Passport Nationality</label>
-                        <select class="form-select" id="passportNationality" required>
-                            <option value="" selected disabled>Select...</option>
-                            <option value="indian">Indian</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="passportNumber" class="form-label">Passport No.</label>
-                        <input type="text" class="form-control" id="passportNumber" required>
-                    </div>
-
-                    <!-- CDC Details -->
-                    <div class="col-md-6">
-                        <label for="cdcType" class="form-label">Select CDC</label>
-                        <select class="form-select" id="cdcType" required>
-                            <option value="" selected disabled>Select...</option>
-                            <option value="indian">Indian CDC</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="cdcNumber" class="form-label">CDC No.</label>
-                        <input type="text" class="form-control" id="cdcNumber" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="passportExpiry" class="form-label">Passport Expiry Date</label>
-                        <input type="date" class="form-control" id="passportExpiry" value="2025-04-02">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="cdcExpiry" class="form-label">CDC Expiry Date</label>
-                        <input type="date" class="form-control" id="cdcExpiry" value="2025-04-02">
-                    </div>
-
-                    <!-- Visa Details -->
-                      <div class="col-md-6">
-                        <label for="indosNumber" class="form-label">INDOS No.</label>
-                        <input type="text" class="form-control" id="indosNumber">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="usVisa" class="form-label">US Visa</label>
-                        <select class="form-select" id="usVisa">
-                            <option value="" selected disabled>Select...</option>
-                            <option value="">Yes</option>
-                            <option value="">No</option>
-                            <option value="none">None</option>
-                        </select>
-                    </div>
-
-
-                    <!-- Dates -->
-
-
-                    <!-- Form Actions -->
-                    <div class="col-12 mt-4">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-secondary" onclick="showForm('profileForm')">
-                                <i class="bx bx-chevron-left me-1"></i> Previous
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="showForm('preSeaForm')">
-                                Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Step 4: Pre-Sea & COC/COP Form -->
-    <div class="card mb-4 d-none" id="preSeaForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Pre-Sea & COC/COP Details</h5>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="preSeaType" class="form-label">Pre Sea Training Type</label>
-                        <input type="text" class="form-control" id="preSeaType" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="preSeaIssueDate" class="form-label">Issue Date</label>
-                        <input type="date" class="form-control" id="preSeaIssueDate" value="2025-04-02">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="cocType" class="form-label">Select COC/COP Details</label>
-                        <select class="form-select" id="cocType" required>
-                            <option value="" selected disabled>Choose...</option>
-                            <option value="coc">Certificate of Competency</option>
-                            <option value="cop">Certificate of Proficiency</option>
+                    <div class="col-md-4">
+                        <label class="form-label">City</label>
+                        <select name="city_id" id="city_id" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($cities as $c)
+                                <option value="{{ $c->id }}" {{ (string)old('city_id', $user->profile->city_id ?? '') === (string)$c->id ? 'selected' : '' }}>{{ $c->city_name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label for="cocGrade" class="form-label">Grade</label>
-                        <input type="text" class="form-control" id="cocGrade" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="cocNumber" class="form-label">COC No.</label>
-                        <input type="text" class="form-control" id="cocNumber" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="cocExpiryDate" class="form-label">Expiry Date</label>
-                        <input type="date" class="form-control" id="cocExpiryDate" value="2025-04-02">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="2">{{ old('address', $user->profile->address ?? '') }}</textarea>
                     </div>
 
-                    <!-- Form Actions -->
-                    <div class="col-12 mt-4">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-secondary" onclick="showForm('documentsForm')">
-                                <i class="bx bx-chevron-left me-1"></i> Previous
-                            </button>
-                            <button type="button" class="btn btn-primary" onclick="showForm('gmdssForm')">
-                                Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                            </button>
-                        </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Profile Picture</label>
+                        <input type="file" name="profile_pic" class="form-control">
+                        @if(!empty($user->profile->profile_pic))
+                            <small class="text-muted">Current: <a href="{{ asset('storage/'.$user->profile->profile_pic) }}" target="_blank">view</a></small>
+                        @endif
                     </div>
-                </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Step 5: GMDSS & DCE Form -->
-    <div class="card mb-4 d-none" id="gmdssForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">GMDSS & DC Endorsement</h5>
-        </div>
-        <div class="card-body">
-            <form>
-               <div id="dceEntriesContainer">
-                <div class="dce-entry">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="dceName" class="form-label">Select DCE & GMDSS</label>
-                            <select class="form-select dce-type-select" name="dceName[]" required>
-                                <option value="" selected disabled>Choose...</option>
-                                <option value="oil_dce">Oil DCE Level-II</option>
-                                <option value="chemical_dce">Chemical DCE Level-II</option>
-                                <option value="gmdss">GMDSS Endorsement</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="dceValidity" class="form-label">Date</label>
-                            <input type="date" class="form-control dce-date-input" name="dceValidity[]" value="2025-04-02">
-                        </div>
+                    <div class="col-12 mt-3 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary" disabled>Previous</button>
+                        <button type="button" class="btn btn-primary next-btn" data-target="profile">Save & Continue</button>
                     </div>
                 </div>
             </div>
-            <div class="col-12 mt-3">
-                <button type="button" class="btn btn-outline-primary" id="addMoreDceBtn">
-                    <i class="bx bx-plus"></i> Add More
-                </button>
+        </div>
+
+        {{-- Step 2: Profile & Experience --}}
+        <div class="card mb-4 step-card d-none" id="step-profile">
+            <div class="card-header bg-light"><h5 class="mb-0">Profile & Total Experience</h5></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Present Rank</label>
+                        <select name="present_rank" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($ranks as $r)
+                                <option value="{{ $r->id }}" {{ (string)old('present_rank', $user->resume->present_rank ?? '') === (string)$r->id ? 'selected':'' }}>{{ $r->rank }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Present Rank Experience</label>
+                        <input name="present_rank_exp" class="form-control" value="{{ old('present_rank_exp', $user->resume->present_rank_exp ?? '') }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Post Applied For</label>
+                        <select name="post_applied_for" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($ranks as $r)
+                                <option value="{{ $r->id }}" {{ (string)old('post_applied_for', $user->resume->post_applied_for ?? '') === (string)$r->id ? 'selected':'' }}>{{ $r->rank }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Date of Availability</label>
+                        <input type="date" name="date_of_availability" class="form-control" value="{{ old('date_of_availability', optional($user->resume->date_of_availability)->format('Y-m-d') ?? '') }}">
+                    </div>
+
+                    <div class="col-12 mt-3 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary prev-btn" data-target="personal">Previous</button>
+                        <button type="button" class="btn btn-primary next-btn" data-target="documents">Save & Continue</button>
+                    </div>
+                </div>
             </div>
+        </div>
 
-                <!-- Endorsements Table -->
-                <div class="mt-4">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0 d-none d-md-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Endorsement</th>
-                                    <th>Validity</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Oil DCE Level -II (Management)</td>
-                                    <td>2016-04-10</td>
-                                    <td><button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i></button></td>
-                                </tr>
-                            </tbody>
-                        </table>
+        {{-- Step 3: Documents --}}
+        <div class="card mb-4 step-card d-none" id="step-documents">
+            <div class="card-header bg-light"><h5 class="mb-0">Passport & Seamen Book</h5></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Passport Nationality</label>
+                        <input name="passport_nationality" class="form-control" value="{{ old('passport_nationality', $user->resume->passport_nationality ?? '') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Passport Number</label>
+                        <input name="passport_number" class="form-control" value="{{ old('passport_number', $user->resume->passport_number ?? '') }}">
+                    </div>
 
-                        <!-- Mobile View for Endorsements -->
-                        <div class="d-md-none">
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <strong>Oil DCE Level -II (Management)</strong>
-                                        <button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i></button>
-                                    </div>
-                                    <div><small class="text-muted">Validity:</small> 2016-04-10</div>
+                    <div class="col-md-6">
+                        <label class="form-label">Passport Expiry</label>
+                        <input type="date" name="passport_expiry" class="form-control" value="{{ old('passport_expiry', optional($user->resume->passport_expiry)->format('Y-m-d') ?? '') }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">CDC No</label>
+                        <input name="cdc_no" class="form-control" value="{{ old('cdc_no', $user->resume->cdc_no ?? '') }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">CDC Expiry</label>
+                        <input type="date" name="cdc_expiry" class="form-control" value="{{ old('cdc_expiry', optional($user->resume->cdc_expiry)->format('Y-m-d') ?? '') }}">
+                    </div>
+
+                    <div class="col-12 mt-3 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary prev-btn" data-target="profile">Previous</button>
+                        <button type="button" class="btn btn-primary next-btn" data-target="presea">Save & Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Step 4: PreSea --}}
+        <div class="card mb-4 step-card d-none" id="step-presea">
+            <div class="card-header bg-light"><h5 class="mb-0">Pre-Sea & COC/COP</h5></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Pre-Sea Training Type</label>
+                        <input name="presea_training_type" class="form-control" value="{{ old('presea_training_type', $user->resume->presea_training_type ?? '') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Issue Date</label>
+                        <input type="date" name="presea_training_issue_date" class="form-control" value="{{ old('presea_training_issue_date', optional($user->resume->presea_training_issue_date)->format('Y-m-d') ?? '') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">COC Held</label>
+                        <select name="coc_held" class="form-select">
+                            <option value="0" {{ (old('coc_held', $user->resume->coc_held ?? 0) ? '':'selected') }}>No</option>
+                            <option value="1" {{ (old('coc_held', $user->resume->coc_held ?? 0) ? 'selected':'') }}>Yes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">COC No</label>
+                        <input name="coc_no" class="form-control" value="{{ old('coc_no', $user->resume->coc_no ?? '') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">COC Expiry</label>
+                        <input type="date" name="coc_date_of_expiry" class="form-control" value="{{ old('coc_date_of_expiry', optional($user->resume->coc_date_of_expiry)->format('Y-m-d') ?? '') }}">
+                    </div>
+
+                    <div class="col-12 mt-3 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary prev-btn" data-target="documents">Previous</button>
+                        <button type="button" class="btn btn-primary next-btn" data-target="gmdss">Save & Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Step 5: GMDSS / DCE --}}
+        <div class="card mb-4 step-card d-none" id="step-gmdss">
+            <div class="card-header bg-light"><h5 class="mb-0">GMDSS / DCE</h5></div>
+            <div class="card-body">
+                <div id="dceContainer">
+                    {{-- existing endorsements --}}
+                    @php
+                        $dcesExisting = old('dce_id') ?? $user->dceEndorsements->pluck('dce_id')->toArray();
+                        $dcesValidity = old('dce_validity') ?? $user->dceEndorsements->map(function($d){ return optional($d->validity_date)->format('Y-m-d'); })->toArray();
+                    @endphp
+
+                    @if(empty($dcesExisting))
+                        <div class="dce-entry row g-3 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label">DCE / GMDSS</label>
+                                <select class="form-select" name="dce_id[]">
+                                    <option value="">Choose...</option>
+                                    @foreach($dces as $d)
+                                        <option value="{{ $d->id }}">{{ $d->dce_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Validity</label>
+                                <input type="date" class="form-control" name="dce_validity[]" value="">
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end"><button type="button" class="btn btn-outline-danger remove-dce d-none">&times;</button></div>
+                        </div>
+                    @else
+                        @foreach($dcesExisting as $i => $val)
+                            <div class="dce-entry row g-3 mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">DCE / GMDSS</label>
+                                    <select class="form-select" name="dce_id[]">
+                                        <option value="">Choose...</option>
+                                        @foreach($dces as $d)
+                                            <option value="{{ $d->id }}" {{ (string)$d->id === (string)$val ? 'selected' : '' }}>{{ $d->dce_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Validity</label>
+                                    <input type="date" class="form-control" name="dce_validity[]" value="{{ $dcesValidity[$i] ?? '' }}">
+                                </div>
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-danger remove-dce {{ $i===0 ? 'd-none':'' }}">&times;</button>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
+                    @endif
+                </div>
+
+                <div class="mb-3">
+                    <button type="button" id="addDceBtn" class="btn btn-outline-primary">Add More</button>
+                </div>
+
+                <div class="d-flex justify-content-between mt-3">
+                    <button type="button" class="btn btn-outline-secondary prev-btn" data-target="presea">Previous</button>
+                    <button type="button" class="btn btn-primary next-btn" data-target="courses">Save & Continue</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Step 6: Courses --}}
+        <div class="card mb-4 step-card d-none" id="step-courses">
+            <div class="card-header bg-light"><h5 class="mb-0">Courses</h5></div>
+            <div class="card-body">
+                <label class="form-label">Select Courses</label>
+                <div class="multiselect-dropdown">
+                    <div class="dropdown-toggle" id="courseToggle" tabindex="0" role="button">
+                        <span class="selected-text">Select courses...</span>
+                        <i class="bx bx-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu" id="courseMenu">
+                        @php $selectedCourses = old('courses', $user->courseCertificates->pluck('course_id')->toArray()); @endphp
+                        @foreach($coursesMaster as $course)
+                            <label class="dropdown-item">
+                                <input type="checkbox" name="courses[]" value="{{ $course->id }}" {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
+                                {{ $course->name }}
+                            </label>
+                        @endforeach
                     </div>
                 </div>
 
-                <!-- Form Actions -->
-                <div class="col-12 mt-4">
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary" onclick="showForm('preSeaForm')">
-                            <i class="bx bx-chevron-left me-1"></i> Previous
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="showForm('courseDetailsForm')">
-                            Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Step 6: Course Details Form -->
-    <div class="card mb-4 d-none" id="courseDetailsForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Valid Course Details</h5>
-        </div>
-        <div class="card-body">
-            <form>
-              <div class="mb-3">
-        <label for="courseSelection" class="form-label">Select Course(s)</label>
-        <div class="multiselect-dropdown" id="courseSelection">
-            <div class="dropdown-toggle" id="courseToggle">
-                <span class="selected-text">Select courses...</span>
-                <i class="bx bx-chevron-down"></i>
-            </div>
-            <div class="dropdown-menu" id="courseMenu">
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Basic Safety Training"> Basic Safety Training
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Advanced Fire Fighting"> Advanced Fire Fighting
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Medical First Aid"> Medical First Aid
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Proficiency in Survival Craft"> Proficiency in Survival Craft
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Ship Security Officer"> Ship Security Officer
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="ECDIS"> ECDIS
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="GMDSS"> GMDSS
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Oil Tanker Familiarization"> Oil Tanker Familiarization
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="Chemical Tanker Familiarization"> Chemical Tanker Familiarization
-                </label>
-                <label class="dropdown-item">
-                    <input type="checkbox" value="LNG Tanker Familiarization"> LNG Tanker Familiarization
-                </label>
-            </div>
-        </div>
-    </div>
-
-                <!-- Course form content would go here -->
                 <div class="d-flex justify-content-between mt-4">
-                    <button type="button" class="btn btn-outline-secondary" onclick="showForm('gmdssForm')">
-                        <i class="bx bx-chevron-left me-1"></i> Previous
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="showForm('seaServiceForm')">
-                        Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                    </button>
+                    <button type="button" class="btn btn-outline-secondary prev-btn" data-target="gmdss">Previous</button>
+                    <button type="button" class="btn btn-primary next-btn" data-target="seaservice">Save & Continue</button>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
 
-    <!-- Step 7: Sea Service Details Form -->
-    <div class="card mb-4 d-none" id="seaServiceForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Sea Service Details</h5>
-        </div>
-        <div class="card-body">
-            <form>
-                <div class="row g-3">
-                    <!-- Service Entry Form -->
-                    <div class="col-md-4">
-                        <label for="serviceRank" class="form-label">Select Rank</label>
-                        <select class="form-select" id="serviceRank" required>
-                            <option value="" selected disabled>Choose rank...</option>
-                            <option value="3rd_engr">3rd Engineer</option>
-                            <option value="2nd_engr">2nd Engineer</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="shipType" class="form-label">Select Ship Type</label>
-                        <select class="form-select" id="shipType" required>
-                            <option value="" selected disabled>Choose type...</option>
-                            <option value="oil_tanker">Oil Tanker</option>
-                            <option value="bulk_carrier">Bulk Carrier</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="signOnDate" class="form-label">Sign On Date</label>
-                        <input type="date" class="form-control" id="signOnDate" value="2025-04-02">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="companyName" class="form-label">Company Name</label>
-                        <input type="text" class="form-control" id="companyName" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="shipName" class="form-label">Ship Name</label>
-                        <input type="text" class="form-control" id="shipName" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="engineType" class="form-label">Engine Type</label>
-                        <input type="text" class="form-control" id="engineType" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="signOffDate" class="form-label">Sign Off Date</label>
-                        <input type="date" class="form-control" id="signOffDate" value="2025-04-02">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="grt" class="form-label">GRT</label>
-                        <input type="text" class="form-control" id="grt" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="bhp" class="form-label">BHP</label>
-                        <input type="text" class="form-control" id="bhp" required>
-                    </div>
-                    <div class="col-12">
-                        <button type="button" class="btn btn-outline-primary">
-                            <i class="bx bx-plus"></i> Add Service Record
-                        </button>
-                    </div>
-                </div>
+        {{-- Step 7: Sea Service --}}
+        <div class="card mb-4 step-card d-none" id="step-seaservice">
+            <div class="card-header bg-light"><h5 class="mb-0">Sea Service</h5></div>
+            <div class="card-body">
+                <div id="seaServiceContainer">
+                    @php
+                        $seaExisting = old('sea_service', $user->seaServiceDetails->map(function($s){
+                            return [
+                                'rank_id'=>$s->rank_id,
+                                'ship_type_id'=>$s->ship_type_id,
+                                'company_name'=>$s->company_name,
+                                'ship_name'=>$s->ship_name,
+                                'sign_on'=>optional($s->sign_on)->format('Y-m-d'),
+                                'sign_off'=>optional($s->sign_off)->format('Y-m-d'),
+                                'grt_value'=>$s->grt_value,
+                                'grt_unit'=>$s->grt_unit,
+                                'bhp'=>$s->bhp,
+                            ];
+                        })->toArray());
+                        if (empty($seaExisting)) $seaExisting = [['rank_id'=>null,'ship_type_id'=>null,'company_name'=>null,'ship_name'=>null,'sign_on'=>null,'sign_off'=>null,'grt_value'=>null,'grt_unit'=>null,'bhp'=>null]];
+                    @endphp
 
-                <!-- Service Records Table -->
-                <div class="mt-4">
-                    <div class="table-responsive">
-                        <table class="table table-bordered mb-0 d-none d-md-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Rank</th>
-                                    <th>Ship/Company</th>
-                                    <th>Ship Type</th>
-                                    <th>Engine Type</th>
-                                    <th>Tonnage</th>
-                                    <th>BHP</th>
-                                    <th>Sign On</th>
-                                    <th>Sign Off</th>
-                                    <th>Duration</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>3rd Engr.</td>
-                                    <td>M.T BLUEBIND</td>
-                                    <td>Oil Tanker</td>
-                                    <td>MAN B</td>
-                                    <td>AFRAMAX-GRT</td>
-                                    <td>12350</td>
-                                    <td>2011-12-04</td>
-                                    <td>2012-08-01</td>
-                                    <td>7m 26d</td>
-                                    <td><button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i></button></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    @foreach($seaExisting as $i => $entry)
+                        <div class="sea-service-entry border rounded p-3 mb-3" data-index="{{ $i }}">
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <label class="form-label">Rank</label>
+                                    <select name="sea_service[{{ $i }}][rank_id]" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($ranks as $r)
+                                            <option value="{{ $r->id }}" {{ (string)($entry['rank_id'] ?? '') === (string)$r->id ? 'selected' : '' }}>{{ $r->rank }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-                        <!-- Mobile View for Service Records -->
-                        <div class="d-md-none">
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <strong>3rd Engr.</strong>
-                                        <button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i></button>
-                                    </div>
-                                    <div class="mb-1"><small class="text-muted">Ship:</small> M.T BLUEBIND</div>
-                                    <div class="mb-1"><small class="text-muted">Type:</small> Oil Tanker</div>
-                                    <div class="mb-1"><small class="text-muted">Engine:</small> MAN B</div>
-                                    <div class="mb-1"><small class="text-muted">Tonnage:</small> AFRAMAX-GRT</div>
-                                    <div class="mb-1"><small class="text-muted">BHP:</small> 12350</div>
-                                    <div class="row">
-                                        <div class="col-6"><small class="text-muted">Sign On:</small> 2011-12-04</div>
-                                        <div class="col-6"><small class="text-muted">Sign Off:</small> 2012-08-01</div>
-                                    </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Ship Type</label>
+                                    <select name="sea_service[{{ $i }}][ship_type_id]" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($shiptypes as $s)
+                                            <option value="{{ $s->id }}" {{ (string)($entry['ship_type_id'] ?? '') === (string)$s->id ? 'selected' : '' }}>{{ $s->ship_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label">Sign On</label>
+                                    <input type="date" name="sea_service[{{ $i }}][sign_on]" class="form-control" value="{{ $entry['sign_on'] ?? '' }}">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label">Sign Off</label>
+                                    <input type="date" name="sea_service[{{ $i }}][sign_off]" class="form-control" value="{{ $entry['sign_off'] ?? '' }}">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label class="form-label">GRT Value</label>
+                                    <input type="text" name="sea_service[{{ $i }}][grt_value]" class="form-control" value="{{ $entry['grt_value'] ?? '' }}">
+                                </div>
+
+                                <div class="col-md-4 mt-2">
+                                    <label class="form-label">Company Name</label>
+                                    <input type="text" name="sea_service[{{ $i }}][company_name]" class="form-control" value="{{ $entry['company_name'] ?? '' }}">
+                                </div>
+
+                                <div class="col-md-4 mt-2">
+                                    <label class="form-label">Ship Name</label>
+                                    <input type="text" name="sea_service[{{ $i }}][ship_name]" class="form-control" value="{{ $entry['ship_name'] ?? '' }}">
+                                </div>
+
+                                <div class="col-md-2 mt-2">
+                                    <label class="form-label">GRT Unit</label>
+                                    <select name="sea_service[{{ $i }}][grt_unit]" class="form-select">
+                                        <option value="">Unit</option>
+                                        <option value="GRT" {{ ($entry['grt_unit'] ?? '') === 'GRT' ? 'selected':'' }}>GRT</option>
+                                        <option value="DWT" {{ ($entry['grt_unit'] ?? '') === 'DWT' ? 'selected':'' }}>DWT</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-2 mt-2">
+                                    <label class="form-label">BHP</label>
+                                    <input type="text" name="sea_service[{{ $i }}][bhp]" class="form-control" value="{{ $entry['bhp'] ?? '' }}">
                                 </div>
                             </div>
+
+                            <div class="mt-2 text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger removeSeaService {{ $i===0 ? 'd-none':'' }}">Remove</button>
+                            </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
 
-                <!-- Form Actions -->
-                <div class="col-12 mt-4">
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-outline-secondary" onclick="showForm('courseDetailsForm')">
-                            <i class="bx bx-chevron-left me-1"></i> Previous
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="showForm('additionalDetailsForm')">
-                            Save & Continue <i class="bx bx-chevron-right ms-1"></i>
-                        </button>
-                    </div>
+                <div class="mb-3">
+                    <button type="button" id="addSeaService" class="btn btn-outline-primary">Add More Sea Service</button>
                 </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Step 8: Additional Details Form (NEW) -->
-    <div class="card mb-4 d-none" id="additionalDetailsForm">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Additional Details</h5>
+                <div class="d-flex justify-content-between mt-3">
+                    <button type="button" class="btn btn-outline-secondary prev-btn" data-target="courses">Previous</button>
+                    <button type="button" class="btn btn-primary next-btn" data-target="additional">Save & Continue</button>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form>
+
+        {{-- Step 8: Additional --}}
+        <div class="card mb-4 step-card d-none" id="step-additional">
+            <div class="card-header bg-light"><h5 class="mb-0">Additional Details</h5></div>
+            <div class="card-body">
                 <div class="row g-3">
                     <div class="col-12">
-                        <label for="additionalInfo" class="form-label">Additional Information</label>
-                        <textarea class="form-control" id="additionalInfo" rows="3" placeholder="Rig: last/repeated salary per year/month/day, additional qualifications, etc."></textarea>
-                        <div class="form-text">
-                            <small class="text-muted">
-                                You can include any additional information that you think would be valuable for your application.
-                            </small>
-                        </div>
+                        <label class="form-label">Additional Information</label>
+                        <textarea name="additional_information" class="form-control" rows="4">{{ old('additional_information', $user->resume->additional_information ?? '') }}</textarea>
                     </div>
 
-                    <!-- Form Actions -->
-                    <div class="col-12 mt-4">
-                        <div class="d-flex justify-content-between">
-                            <button type="button" class="btn btn-outline-secondary" onclick="showForm('seaServiceForm')">
-                                <i class="bx bx-chevron-left me-1"></i> Previous
-                            </button>
-                            <button type="submit" class="btn btn-success">
-                                <i class="bx bx-save me-1"></i> Save Resume
-                            </button>
-                        </div>
+                    <div class="col-12 mt-3 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary prev-btn" data-target="seaservice">Previous</button>
+                        <button type="submit" class="btn btn-success">Save Resume</button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 </main>
 
+{{-- Inline styles so they load even if layout doesn't yield pushed stacks --}}
 <style>
-    /* Progress Steps - Updated for 8 steps and clickable */
+/* Progress / Step bar wrapper */
+.progress-steps {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 1rem 0 1.2rem;
+    min-height: 72px;
+    overflow: visible;
+}
+
+/* Make it horizontally scrollable on very small screens */
+@media (max-width: 767.98px) {
     .progress-steps {
-        position: relative;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 1.6rem;
     }
-    .step {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-        z-index: 2;
-        flex: 1;
-        min-width: 50px;
-    }
+}
 
-    /* Clickable step styling */
-    .clickable-step {
-        cursor: pointer;
-        transition: transform 0.2s ease;
-    }
+/* Each step occupies equal space; prevents vertical stacking */
+.progress-steps .step {
+    flex: 1 0 0;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 6px;
+    min-width: 88px;
+    box-sizing: border-box;
+}
 
-    .clickable-step:hover {
-        transform: translateY(-2px);
-    }
+/* circle number */
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9ecef;
+    color: #495057;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: 2px solid transparent;
+    z-index: 3;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
 
-    .clickable-step:hover .step-number {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+/* text under the number */
+.step-title {
+    font-size: 0.78rem;
+    color: #6c757d;
+    line-height: 1.05;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
 
-    .step-number {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background-color: #e9ecef;
-        color: #6c757d;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
+/* active/completed states */
+.step.active .step-number {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+    transform: scale(1.05);
+    transition: transform .18s ease;
+}
 
-    .step.active .step-number {
-        background-color: #0d6efd;
-        color: white;
-        transform: scale(1.1);
-        border-color: #0d6efd;
-    }
+.step.completed .step-number {
+    background: #198754;
+    color: #fff;
+    border-color: #198754;
+}
 
-    .step.completed .step-number {
-        background-color: #198754;
-        color: white;
-        border-color: #198754;
-    }
+/* Titles for active/completed */
+.step.active .step-title,
+.step.completed .step-title {
+    color: #212529;
+    font-weight: 600;
+}
 
-    .step-title {
-        font-size: 0.65rem;
-        text-align: center;
-        color: #6c757d;
-        white-space: nowrap;
-        transition: all 0.3s ease;
-        font-weight: 500;
-    }
+/* Progress track (light background) and progress bar on top */
+.progress-line {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 22px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 6px;
+    z-index: 1;
+}
 
-    .step.active .step-title,
-    .step.completed .step-title {
-        color: #212529;
-        font-weight: 600;
-    }
+/* inner bar (actual progress) */
+.progress-line .progress-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    background: #0d6efd;
+    transition: width .35s ease;
+    z-index: 2;
+}
 
-    .progress {
-        position: absolute;
-        top: 16px;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background-color: #e9ecef;
-        z-index: 1;
-        border-radius: 2px;
-    }
+/* Make sure the number sits above the line */
+.progress-steps .step-number { position: relative; }
 
-    .progress-bar {
-        background-color: #0d6efd;
-        transition: width 0.5s ease;
-        border-radius: 2px;
-    }
+/* small screens: reduce size */
+@media (max-width: 575.98px) {
+    .step-number { width: 34px; height: 34px; font-size: .85rem; }
+    .progress-line { top: 20px; height: 6px; }
+    .progress-steps .step { min-width: 72px; padding: 0 4px; }
+    .step-title { font-size: 0.67rem; }
+}
 
-    /* Mobile Responsive Adjustments */
-    @media (max-width: 767.98px) {
-        .progress-steps {
-            overflow-x: auto;
-            padding-bottom: 1rem;
-        }
-        .step {
-            min-width: 45px;
-        }
-        .step-title {
-            font-size: 0.55rem;
-        }
-        .step-number {
-            width: 28px;
-            height: 28px;
-            font-size: 0.75rem;
-        }
-    }
+/* Optional: subtle hover */
+.progress-steps .step:hover .step-number { transform: translateY(-3px); transition: transform .15s ease; }
 
-    /* Multiselect Dropdown Styles */
-    .multiselect-dropdown {
-        position: relative;
-        display: inline-block;
-        width: 100%;
-    }
-
-    .multiselect-dropdown .dropdown-toggle {
-        background: #ffffff;
-        border: 2px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-    }
-
-    .multiselect-dropdown .dropdown-toggle:hover {
-        border-color: #cbd5e1;
-    }
-
-    .multiselect-dropdown .dropdown-toggle.active {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .multiselect-dropdown .dropdown-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: #ffffff;
-        border: 2px solid #e5e7eb;
-        border-top: none;
-        border-radius: 0 0 8px 8px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 1000;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .multiselect-dropdown .dropdown-menu.show {
-        display: block;
-    }
-
-    .multiselect-dropdown .dropdown-item {
-        display: flex;
-        align-items: center;
-        padding: 8px 16px;
-        cursor: pointer;
-        margin: 0;
-        font-weight: normal;
-        transition: background-color 0.2s ease;
-    }
-
-    .multiselect-dropdown .dropdown-item:hover {
-        background-color: #f8fafc;
-    }
-
-    .multiselect-dropdown .dropdown-item input[type="checkbox"] {
-        margin-right: 8px;
-        margin-top: 0;
-    }
-
-    .selected-text {
-        color: #374151;
-    }
-
-    /* DCE Entry Styles */
-    .dce-entry {
-        margin-bottom: 16px;
-        padding: 16px;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #f9fafb;
-        position: relative;
-    }
-
-    .dce-entry:first-child {
-        background: #ffffff;
-        border: none;
-        padding: 0;
-    }
-
-    .dce-entry .btn-remove {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-    }
-
-    /* Mobile responsive */
-    @media (max-width: 768px) {
-        .multiselect-dropdown .dropdown-menu {
-            max-height: 150px;
-        }
-
-        .dce-entry .btn-remove {
-            position: static;
-            margin-top: 12px;
-            width: 100%;
-        }
-    }
+/* Multiselect menu */
+.multiselect-dropdown { position: relative; }
+.multiselect-dropdown .dropdown-menu {
+    display: none; position: absolute; left: 0; right: 0; background:#fff; max-height:240px; overflow:auto; border:1px solid #e5e7eb; padding:6px; z-index: 50;
+}
+.multiselect-dropdown .dropdown-menu.show { display:block; }
+.dropdown-item { display:flex; align-items:center; padding:6px 8px; }
 </style>
 
+{{-- Inline scripts so they load reliably --}}
 <script>
-    function showForm(formId) {
-        // Hide all forms
-        document.querySelectorAll('.card.mb-4').forEach(form => {
-            if (form.id !== '' && form.id !== 'progressCard') { // Only hide form cards, not the progress bar card
-                form.classList.add('d-none');
-            }
+document.addEventListener('DOMContentLoaded', function () {
+    // Step navigation mapping
+    const stepMap = {
+        personal: 'step-personal',
+        profile: 'step-profile',
+        documents: 'step-documents',
+        presea: 'step-presea',
+        gmdss: 'step-gmdss',
+        courses: 'step-courses',
+        seaservice: 'step-seaservice',
+        additional: 'step-additional'
+    };
+    const steps = document.querySelectorAll('.progress-steps .step');
+
+    function showStep(key) {
+        // hide all cards
+        document.querySelectorAll('.step-card').forEach(s => s.classList.add('d-none'));
+        const id = stepMap[key];
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('d-none');
+
+        // progress width
+        const keys = Object.keys(stepMap);
+        const idx = keys.indexOf(key);
+        const percent = ((idx+1)/keys.length)*100;
+        document.getElementById('mainProgressBar').style.width = percent + '%';
+
+        // update visuals
+        steps.forEach((elStep, i) => {
+            elStep.classList.remove('active','completed');
+            if (i < idx) elStep.classList.add('completed');
+            if (i === idx) elStep.classList.add('active');
         });
 
-        // Show the requested form
-        document.getElementById(formId).classList.remove('d-none');
-
-        // Update progress bar and steps
-        updateProgressBar(formId);
-    }
-
-    function updateProgressBar(currentFormId) {
-        // Updated form order with Personal Details first
-        const formOrder = [
-            'personalDetailsForm', 'profileForm', 'documentsForm',
-            'preSeaForm', 'gmdssForm', 'courseDetailsForm', 'seaServiceForm', 'additionalDetailsForm'
-        ];
-
-        const currentStep = formOrder.indexOf(currentFormId) + 1;
-        const progressPercent = (currentStep / formOrder.length) * 100;
-
-        // Update progress bar width
-        document.getElementById('mainProgressBar').style.width = `${progressPercent}%`;
-        document.getElementById('mainProgressBar').setAttribute('aria-valuenow', progressPercent);
-
-        // Update all steps
-        for (let i = 1; i <= 8; i++) { // Updated to 8 steps
-            const stepElement = document.getElementById(`step${i}`);
-
-            if (i < currentStep) {
-                // Completed steps
-                stepElement.classList.add('completed');
-                stepElement.classList.remove('active');
-            } else if (i === currentStep) {
-                // Current step
-                stepElement.classList.add('active');
-                stepElement.classList.remove('completed');
-            } else {
-                // Future steps
-                stepElement.classList.remove('active', 'completed');
-            }
+        // On small screens, scroll the active step into view
+        const activeStep = document.querySelector('.progress-steps .step.active');
+        if (activeStep && activeStep.scrollIntoView) {
+            const container = document.querySelector('.progress-steps');
+            // prefer smooth, but keep it non-blocking
+            activeStep.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
     }
 
-    // Initialize with first form visible (now Personal Details)
-    document.addEventListener('DOMContentLoaded', function() {
-        showForm('personalDetailsForm');
+    // initial step
+    showStep('personal');
 
-        // Set first step as active
-        document.getElementById('step1').classList.add('active');
-
-        // Initialize other functionality
-        initializeMultiselect();
-        initializeDceAddMore();
+    // make top steps clickable
+    document.querySelectorAll('.progress-steps .step').forEach(el => {
+        el.addEventListener('click', function(){
+            const key = this.dataset.step;
+            if (key) showStep(key);
+        });
     });
 
-    // Multiselect Dropdown Functionality
-    function initializeMultiselect() {
-        const multiselectDropdown = document.getElementById('courseSelection');
-        if (!multiselectDropdown) {
-            return;
-        }
+    // next/previous buttons
+    document.querySelectorAll('.next-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+            const target = this.dataset.target;
+            if (target) showStep(target);
+        });
+    });
+    document.querySelectorAll('.prev-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+            const target = this.dataset.target;
+            if (target) showStep(target);
+        });
+    });
 
-        const toggle = multiselectDropdown.querySelector('.dropdown-toggle');
-        const menu = multiselectDropdown.querySelector('.dropdown-menu');
-        const selectedText = multiselectDropdown.querySelector('.selected-text');
-        const checkboxes = multiselectDropdown.querySelectorAll('input[type="checkbox"]');
+    // === DCE add/remove ===
+    document.getElementById('addDceBtn')?.addEventListener('click', function(){
+        const container = document.getElementById('dceContainer');
+        if (!container) return;
+        const node = document.createElement('div');
+        node.className = 'dce-entry row g-3 mb-2';
+        node.innerHTML = `
+            <div class="col-md-6">
+                <label class="form-label">DCE / GMDSS</label>
+                <select class="form-select" name="dce_id[]">
+                    <option value="">Choose...</option>
+                    @foreach($dces as $d)
+                        <option value="{{ $d->id }}">{{ addslashes($d->dce_name) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Validity</label>
+                <input type="date" class="form-control" name="dce_validity[]" value="">
+            </div>
+            <div class="col-md-1 d-flex align-items-end"><button type="button" class="btn btn-outline-danger remove-dce">&times;</button></div>
+        `;
+        container.appendChild(node);
+        node.querySelector('.remove-dce').addEventListener('click', function(){ node.remove(); });
+    });
+    document.querySelectorAll('.remove-dce').forEach(btn => btn.addEventListener('click', function(){ this.closest('.dce-entry').remove(); }));
 
-        if (!toggle || !menu || !selectedText) {
-            return;
-        }
-
-        // Toggle dropdown on click
-        toggle.addEventListener('click', function(e) {
-            e.preventDefault();
+    // === Courses multiselect ===
+    const courseToggle = document.getElementById('courseToggle');
+    const courseMenu = document.getElementById('courseMenu');
+    const selectedText = document.querySelector('.selected-text');
+    if (courseToggle && courseMenu && selectedText) {
+        courseToggle.addEventListener('click', function(e){
             e.stopPropagation();
-
-            const isOpen = menu.classList.contains('show');
-
-            // Close all other dropdowns first
-            closeAllDropdowns();
-
-            if (!isOpen) {
-                menu.classList.add('show');
-                toggle.classList.add('active');
-            }
+            courseMenu.classList.toggle('show');
         });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!multiselectDropdown.contains(e.target)) {
-                menu.classList.remove('show');
-                toggle.classList.remove('active');
-            }
-        });
-
-        // Prevent dropdown from closing when clicking inside
-        menu.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-
-        // Update selected text when checkboxes change
-        function updateSelectedText() {
-            const selected = Array.from(checkboxes)
-                .filter(cb => cb.checked)
-                .map(cb => cb.value);
-
-            if (selected.length === 0) {
-                selectedText.textContent = 'Select courses...';
-                selectedText.style.color = '#9ca3af';
-            } else if (selected.length === 1) {
-                selectedText.textContent = selected[0];
-                selectedText.style.color = '#374151';
-            } else {
-                selectedText.textContent = `${selected.length} courses selected`;
-                selectedText.style.color = '#374151';
-            }
+        document.addEventListener('click', function(){ courseMenu.classList.remove('show'); });
+        courseMenu.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', updateCourseText));
+        function updateCourseText(){
+            const checks = Array.from(courseMenu.querySelectorAll('input[type=checkbox]'));
+            const selected = checks.filter(c=>c.checked).map(c=>c.parentNode.textContent.trim());
+            if (selected.length===0) selectedText.textContent = 'Select courses...';
+            else if (selected.length===1) selectedText.textContent = selected[0];
+            else selectedText.textContent = selected.length + ' courses selected';
         }
-
-        // Add change listeners to all checkboxes
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                updateSelectedText();
-            });
-        });
-
-        // Initialize the display
-        updateSelectedText();
+        updateCourseText();
     }
 
-    function closeAllDropdowns() {
-        document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
-            menu.classList.remove('show');
-        });
-        document.querySelectorAll('.dropdown-toggle.active').forEach(toggle => {
-            toggle.classList.remove('active');
-        });
-    }
+    // === Sea Service add/remove ===
+    let seaIndex = document.querySelectorAll('.sea-service-entry').length || 0;
+    document.getElementById('addSeaService')?.addEventListener('click', function(){
+        const container = document.getElementById('seaServiceContainer');
+        if (!container) return;
+        const div = document.createElement('div');
+        div.className = 'sea-service-entry border rounded p-3 mb-3';
+        div.dataset.index = seaIndex;
+        div.innerHTML = `
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Rank</label>
+                    <select name="sea_service[${seaIndex}][rank_id]" class="form-select">
+                        <option value="">Select</option>
+                        @foreach($ranks as $r)
+                            <option value="{{ $r->id }}">{{ addslashes($r->rank) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ship Type</label>
+                    <select name="sea_service[${seaIndex}][ship_type_id]" class="form-select">
+                        <option value="">Select</option>
+                        @foreach($shiptypes as $s)
+                            <option value="{{ $s->id }}">{{ addslashes($s->ship_name) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2"><label class="form-label">Sign On</label><input type="date" name="sea_service[${seaIndex}][sign_on]" class="form-control"></div>
+                <div class="col-md-2"><label class="form-label">Sign Off</label><input type="date" name="sea_service[${seaIndex}][sign_off]" class="form-control"></div>
+                <div class="col-md-2"><label class="form-label">GRT Value</label><input type="text" name="sea_service[${seaIndex}][grt_value]" class="form-control"></div>
+                <div class="col-md-4 mt-2"><label class="form-label">Company</label><input type="text" name="sea_service[${seaIndex}][company_name]" class="form-control"></div>
+                <div class="col-md-4 mt-2"><label class="form-label">Ship Name</label><input type="text" name="sea_service[${seaIndex}][ship_name]" class="form-control"></div>
+                <div class="col-md-2 mt-2"><label class="form-label">GRT Unit</label>
+                    <select name="sea_service[${seaIndex}][grt_unit]" class="form-select"><option value="">Unit</option><option value="GRT">GRT</option><option value="DWT">DWT</option></select>
+                </div>
+                <div class="col-md-2 mt-2"><label class="form-label">BHP</label><input type="text" name="sea_service[${seaIndex}][bhp]" class="form-control"></div>
+            </div>
+            <div class="mt-2 text-end"><button type="button" class="btn btn-sm btn-outline-danger removeSeaService">Remove</button></div>
+        `;
+        container.appendChild(div);
+        seaIndex++;
+    });
 
-    function initializeDceAddMore() {
-        const addMoreBtn = document.getElementById('addMoreDceBtn');
-        const dceContainer = document.getElementById('dceEntriesContainer');
-        let dceCounter = 1;
+    document.getElementById('seaServiceContainer')?.addEventListener('click', function(e){
+        const btn = e.target.closest('.removeSeaService');
+        if (btn) btn.closest('.sea-service-entry').remove();
+    });
 
-        if (addMoreBtn && dceContainer) {
-            addMoreBtn.addEventListener('click', function() {
-                dceCounter++;
-
-                const newDceEntry = document.createElement('div');
-                newDceEntry.className = 'dce-entry';
-                newDceEntry.innerHTML = `
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Select DCE & GMDSS</label>
-                            <select class="form-select dce-type-select" required>
-                                <option value="" selected disabled>Choose...</option>
-                                <option value="oil_dce">Oil DCE Level-II</option>
-                                <option value="chemical_dce">Chemical DCE Level-II</option>
-                                <option value="gmdss">GMDSS Endorsement</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Date</label>
-                            <input type="date" class="form-control dce-date-input" value="">
-                        </div>
-                        <div class="col-12">
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-remove">
-                                <i class="bx bx-trash me-1"></i>Remove
-                            </button>
-                        </div>
-                    </div>
-                `;
-
-                // Add remove functionality
-                const removeBtn = newDceEntry.querySelector('.btn-remove');
-                removeBtn.addEventListener('click', function() {
-                    dceContainer.removeChild(newDceEntry);
+    // === AJAX state -> cities (optional) ===
+    document.getElementById('state_id')?.addEventListener('change', function(){
+        const stateId = this.value;
+        const city = document.getElementById('city_id');
+        if (!city) return;
+        city.innerHTML = '<option>Loading...</option>';
+        if (!stateId) { city.innerHTML = '<option value="">Select</option>'; return; }
+        fetch('/api/cities?state_id=' + encodeURIComponent(stateId), { headers: {'X-Requested-With':'XMLHttpRequest'} })
+            .then(r=>r.json())
+            .then(json=>{
+                const data = Array.isArray(json) ? json : (json.data || []);
+                city.innerHTML = '<option value="">Select</option>';
+                data.forEach(it => {
+                    const opt = document.createElement('option');
+                    opt.value = it.id; opt.textContent = it.city_name;
+                    city.appendChild(opt);
                 });
-
-                dceContainer.appendChild(newDceEntry);
-            });
-        }
-    }
+            }).catch(()=>{ city.innerHTML = '<option value="">Select</option>'; });
+    });
+});
 </script>
-@endsection

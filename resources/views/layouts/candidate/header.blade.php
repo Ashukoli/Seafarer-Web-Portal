@@ -29,7 +29,7 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
                <li>
-                  <a class="dropdown-item" href="{{ route('candidate.password.change') }}">
+                  <a class="dropdown-item" href="#">
                      <div class="d-flex align-items-center">
                        <div class=""><i class="bi bi-person-fill"></i></div>
                        <div class="ms-3"><span>Profile</span></div>

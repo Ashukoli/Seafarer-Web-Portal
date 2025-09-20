@@ -38,7 +38,9 @@ class CreateUsersTable extends Migration
                   ->nullable()
                   ->unique()
                   ->comment('Candidate: required. Admin/company subadmins: optional.');
-
+            $table->string('country_code', 8)->nullable();
+            $table->string('mobile', 20)->nullable();
+            $table->string('designation', 255)->nullable();
             // Password (hashed). Required for all account types that login with password.
             $table->string('password', 255)->comment('hashed password');
 
