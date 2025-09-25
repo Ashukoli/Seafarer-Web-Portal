@@ -32,6 +32,11 @@ use App\Models\Rank;
  * @property string|null $user_type
  * @property string|null $role
  * @property-read string $name
+ * @property string|null $designation
+ * @property string $country_code
+ * @property string $mobile
+ * @property string $password
+ * @property int|null $company_id
  *
  * Relations (for IDEs / Intelephense)
  * @property-read \App\Models\CandidateProfile|null $profile

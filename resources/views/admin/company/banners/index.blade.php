@@ -1,7 +1,5 @@
-{{-- resources/views/admin/shiptypes/index.blade.php --}}
+{{-- filepath: resources/views/admin/company/banners/index.blade.php --}}
 @extends('layouts.admin.app')
-
-@section('title', 'Ship Types Management')
 
 @section('content')
 <main class="page-content professional-bg">
@@ -23,11 +21,11 @@
                             <i class="bx bx-chevron-right"></i>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link">
+                            <a href="{{ route('admin.company.index') }}" class="breadcrumb-link">
                                 <div class="breadcrumb-icon">
-                                    <i class="bx bx-cog"></i>
+                                    <i class="bx bx-buildings"></i>
                                 </div>
-                                <span class="breadcrumb-text">Masters</span>
+                                <span class="breadcrumb-text">Companies</span>
                             </a>
                         </li>
                         <li class="breadcrumb-separator">
@@ -35,69 +33,60 @@
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             <div class="breadcrumb-icon">
-                                <i class="bx bx-ship"></i>
+                                <i class="bx bx-image"></i>
                             </div>
-                            <span class="breadcrumb-text">Ship Types</span>
+                            <span class="breadcrumb-text">Company Banners</span>
                         </li>
                     </ol>
                 </nav>
             </div>
         </div>
 
-        <!-- Professional Page Header -->
-        <div class="compact-header-section mb-4">
-            <div class="compact-header-card">
-                <div class="compact-header-content">
-                    <div class="compact-header-icon">
-                        <i class="bx bx-ship"></i>
-                    </div>
-                    <div class="compact-header-text">
-                        <h1 class="compact-page-title">Ship Types Management</h1>
-                        <p class="compact-page-subtitle">Manage vessel categories and ship type classifications for maritime operations</p>
-                    </div>
-                </div>
-                <div class="compact-header-actions">
-                    <a href="{{ route('admin.shiptypes.create') }}" class="enterprise-btn btn-success">
-                        <i class="bx bx-plus"></i>
-                        <span>Add New Ship Type</span>
-                    </a>
-                </div>
+        <!-- Filter/Search Form -->
+        <form method="GET" class="row g-3 align-items-end mb-4">
+            <div class="col-md-4">
+                <label for="company" class="form-label">Search by Company</label>
+                <input type="text" name="company" id="company" class="form-control"
+                       value="{{ request('company') }}" placeholder="Enter company name">
             </div>
-        </div>
-
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <div class="modern-alert modern-alert-success mb-4">
-                <div class="alert-icon">
-                    <i class="bx bx-check-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>Success!</strong>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="bx bx-x"></i>
+            <div class="col-md-4">
+                <label for="section" class="form-label">Filter by Banner Section</label>
+                <select name="section" id="section" class="form-select">
+                    <option value="">All Sections</option>
+                    <option value="FEATURED" {{ request('section') == 'FEATURED' ? 'selected' : '' }}>FEATURED</option>
+                    <option value="TOP LISTED" {{ request('section') == 'TOP LISTED' ? 'selected' : '' }}>TOP LISTED</option>
+                    <option value="LISTED" {{ request('section') == 'LISTED' ? 'selected' : '' }}>LISTED</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bx bx-search"></i> Search
                 </button>
+                <a href="{{ route('admin.company.banners.index') }}" class="btn btn-secondary">
+                    <i class="bx bx-reset"></i> Reset
+                </a>
             </div>
-        @endif
+        </form>
 
-        @if(session('error'))
-            <div class="modern-alert modern-alert-error mb-4">
-                <div class="alert-icon">
-                    <i class="bx bx-error-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>Error!</strong>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="bx bx-x"></i>
-                </button>
-            </div>
-        @endif
-
-        <!-- Ship Types Data Section -->
+        <!-- Banners Section -->
         <div class="enterprise-section">
+            <div class="section-header-wrapper">
+                <div class="section-header-content">
+                    <div class="section-icon-badge banners-badge">
+                        <i class="bx bx-image-alt"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-primary-title">Company Advertisement Banners</h2>
+                        <p class="section-description">Overview of all company promotional banners and their status</p>
+                    </div>
+                </div>
+                <div class="banners-summary">
+                    <div class="summary-stat">
+                        <span class="stat-number">{{ $banners->count() }}</span>
+                        <span class="stat-label">Total Banners</span>
+                    </div>
+                </div>
+            </div>
 
             <div class="professional-table-wrapper">
                 <div class="table-container">
@@ -107,19 +96,37 @@
                                 <th class="table-header-cell no-column">
                                     <div class="header-cell-content">
                                         <i class="bx bx-hash header-icon"></i>
-                                        <span>#</span>
+                                        <span>No.</span>
                                     </div>
                                 </th>
-                                <th class="table-header-cell ship-column">
+                                <th class="table-header-cell order-column">
                                     <div class="header-cell-content">
-                                        <i class="bx bx-ship header-icon"></i>
-                                        <span>Ship Type Name</span>
+                                        <i class="bx bx-sort header-icon"></i>
+                                        <span>Banner Order</span>
                                     </div>
                                 </th>
-                                <th class="table-header-cell sort-column">
+                                <th class="table-header-cell section-column">
                                     <div class="header-cell-content">
-                                        <i class="bx bx-sort-alt-2 header-icon"></i>
-                                        <span>Sort Order</span>
+                                        <i class="bx bx-layout header-icon"></i>
+                                        <span>Banner Section</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell company-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-buildings header-icon"></i>
+                                        <span>Company</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell image-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-image header-icon"></i>
+                                        <span>Banner Image</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell status-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-check-shield header-icon"></i>
+                                        <span>Status</span>
                                     </div>
                                 </th>
                                 <th class="table-header-cell actions-column">
@@ -131,47 +138,102 @@
                             </tr>
                         </thead>
                         <tbody class="table-body-section">
-                            @forelse($shipTypes as $ship)
-                                <tr class="table-data-row ship-type-row" data-ship-id="{{ $ship->id }}">
+                            @forelse($banners as $i => $banner)
+                                <tr class="table-data-row">
                                     <td class="table-data-cell no-cell">
                                         <div class="number-display">
-                                            <span class="row-number">{{ $loop->iteration + (($shipTypes->currentPage()-1) * $shipTypes->perPage()) }}</span>
+                                            <span class="row-number">{{ $i + 1 }}</span>
                                         </div>
                                     </td>
-                                    <td class="table-data-cell ship-cell">
-                                        <div class="ship-display">
-                                            <div class="ship-info">
-                                                <div class="ship-name">{{ $ship->ship_name }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="table-data-cell sort-cell">
-                                        <div class="sort-display">
-                                            <div class="sort-badge {{ $ship->sort <= 10 ? 'high-priority' : 'standard-priority' }}">
+                                    <td class="table-data-cell order-cell">
+                                        <div class="order-display">
+                                            <div class="order-badge">
                                                 <i class="bx bx-sort-alt-2"></i>
-                                                <span class="sort-number">{{ $ship->sort }}</span>
+                                                <span class="order-number">{{ $banner->order }}</span>
                                             </div>
-                                            <div class="sort-label">
-                                                {{ $ship->sort <= 5 ? 'High Priority' : ($ship->sort <= 10 ? 'Standard' : 'General') }}
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell section-cell">
+                                        <div class="section-display">
+                                            <div class="section-tag">
+                                                <i class="bx bx-layout"></i>
+                                                <span class="section-name">{{ $banner->section }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell company-cell">
+                                        <div class="company-display">
+                                            <div class="company-avatar">
+                                                <i class="bx bx-buildings"></i>
+                                            </div>
+                                            <div class="company-info">
+                                                <div class="company-name">{{ $banner->company->company_name ?? 'N/A' }}</div>
+                                                <div class="company-type">Client</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell image-cell">
+                                        <div class="banner-image-display">
+                                            @if($banner->image)
+                                                <div class="image-container">
+                                                    <img src="{{ asset('theme/assets/images/company_banner/' . $banner->image) }}"
+                                                         alt="Banner Image"
+                                                         class="banner-thumbnail"
+                                                         onclick="openImageModal('{{ asset('theme/assets/images/company_banner/' . $banner->image) }}', '{{ $banner->company->company_name ?? 'Banner' }}')"
+                                                         title="Click to view full image">
+                                                    <div class="image-overlay">
+                                                        <i class="bx bx-expand"></i>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="no-image-placeholder">
+                                                    <i class="bx bx-image-add"></i>
+                                                    <span>No Image</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell status-cell">
+                                        <div class="status-display">
+                                            @php
+                                                $statusClass = match(strtolower($banner->status)) {
+                                                    'active' => 'status-active',
+                                                    'inactive' => 'status-inactive',
+                                                    'pending' => 'status-pending',
+                                                    default => 'status-default'
+                                                };
+                                                $statusIcon = match(strtolower($banner->status)) {
+                                                    'active' => 'bx-check-circle',
+                                                    'inactive' => 'bx-x-circle',
+                                                    'pending' => 'bx-time-five',
+                                                    default => 'bx-help-circle'
+                                                };
+                                            @endphp
+                                            <div class="status-badge {{ $statusClass }}">
+                                                <i class="bx {{ $statusIcon }}"></i>
+                                                <span>{{ ucfirst($banner->status) }}</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="table-data-cell actions-cell">
                                         <div class="action-buttons-group">
-                                            <a href="{{ route('admin.shiptypes.edit', $ship->id) }}"
+                                            <a href="{{ route('admin.company.edit', $banner->company_id) }}"
                                                class="action-button edit-button"
-                                               data-tooltip="Edit Ship Type">
+                                               data-tooltip="Edit Company">
                                                 <i class="bx bx-edit"></i>
                                             </a>
-                                            <form action="{{ route('admin.shiptypes.destroy', $ship->id) }}"
-                                                  method="POST"
-                                                  style="display:inline;"
-                                                  onsubmit="return confirmDelete('{{ $ship->ship_name }}')">
+                                            <button class="action-button view-button"
+                                                    data-tooltip="View Details"
+                                                    onclick="viewBannerDetails({{ json_encode($banner) }})">
+                                                <i class="bx bx-show"></i>
+                                            </button>
+                                            <form action="#" method="POST" style="display:inline;" class="delete-form">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit"
-                                                        class="action-button delete-button"
-                                                        data-tooltip="Delete Ship Type">
+                                                <button type="button"
+                                                        class="action-button delete-button disabled"
+                                                        data-tooltip="Delete Banner (Disabled)"
+                                                        disabled>
                                                     <i class="bx bx-trash"></i>
                                                 </button>
                                             </form>
@@ -180,17 +242,14 @@
                                 </tr>
                             @empty
                                 <tr class="empty-state-row">
-                                    <td colspan="6" class="empty-state-cell">
+                                    <td colspan="7" class="empty-state-cell">
                                         <div class="professional-empty-state">
-                                            <div class="empty-state-icon shiptypes-empty-icon">
-                                                <i class="bx bx-ship"></i>
+                                            <div class="empty-state-icon banners-empty-icon">
+                                                <i class="bx bx-image"></i>
                                             </div>
-                                            <h3 class="empty-state-title">No Ship Types Found</h3>
-                                            <p class="empty-state-message">Start building your maritime vessel catalog by adding the first ship type classification.</p>
-                                            <a href="{{ route('admin.shiptypes.create') }}" class="enterprise-btn btn-success">
-                                                <i class="bx bx-plus"></i>
-                                                <span>Add First Ship Type</span>
-                                            </a>
+                                            <h3 class="empty-state-title">No Banners Found</h3>
+                                            <p class="empty-state-message">Start promoting companies by adding advertisement banners.</p>
+
                                         </div>
                                     </td>
                                 </tr>
@@ -199,21 +258,21 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Modern Pagination -->
-            @if($shipTypes->hasPages())
-                <div class="modern-pagination-wrapper">
-                    <div class="pagination-info">
-                        <span class="pagination-text">
-                            Showing {{ $shipTypes->firstItem() ?? 0 }} to {{ $shipTypes->lastItem() ?? 0 }}
-                            of {{ $shipTypes->total() }} ship types
-                        </span>
-                    </div>
-                    <div class="pagination-controls">
-                         {{ $shipTypes->links('pagination::bootstrap-4') }}
-                    </div>
-                </div>
-            @endif
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Banner Image</h5>
+                <button class="modal-close" onclick="closeImageModal()">
+                    <i class="bx bx-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Banner Image" class="modal-image">
+            </div>
         </div>
     </div>
 </main>
@@ -370,7 +429,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--info-color) 0%, var(--primary-color) 100%);
+    background: linear-gradient(90deg, #7c3aed 0%, var(--primary-color) 100%);
 }
 
 .compact-header-content {
@@ -383,7 +442,7 @@
 .compact-header-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, var(--info-color) 0%, var(--info-hover) 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -410,94 +469,6 @@
 
 .compact-header-actions {
     flex-shrink: 0;
-}
-
-/* Modern Alert Styling */
-.modern-alert {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid;
-    position: relative;
-    box-shadow: var(--shadow-subtle);
-    animation: slideInDown 0.3s ease-out;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.modern-alert-success {
-    background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%);
-    border-color: rgba(5, 150, 105, 0.2);
-    color: #065f46;
-}
-
-.modern-alert-error {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%);
-    border-color: rgba(220, 38, 38, 0.2);
-    color: #7f1d1d;
-}
-
-.alert-icon {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 1rem;
-}
-
-.modern-alert-success .alert-icon {
-    background: var(--success-color);
-    color: white;
-}
-
-.modern-alert-error .alert-icon {
-    background: var(--danger-color);
-    color: white;
-}
-
-.alert-content {
-    flex: 1;
-    line-height: 1.5;
-}
-
-.alert-content strong {
-    font-weight: 600;
-    display: inline;
-    margin-right: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.alert-close {
-    position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-md);
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: var(--transition-fast);
-    opacity: 0.7;
-}
-
-.alert-close:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.1);
 }
 
 /* Enterprise Section */
@@ -540,10 +511,10 @@
     border: 2px solid;
 }
 
-.shiptypes-badge {
-    background: var(--info-light);
-    color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.2);
+.banners-badge {
+    background: rgba(124, 58, 237, 0.1);
+    color: #7c3aed;
+    border-color: rgba(124, 58, 237, 0.2);
 }
 
 .section-title-group {
@@ -565,7 +536,8 @@
     line-height: 1.4;
 }
 
-.shiptypes-summary {
+/* Banners Summary */
+.banners-summary {
     display: flex;
     gap: var(--spacing-lg);
 }
@@ -578,7 +550,7 @@
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--info-color);
+    color: #7c3aed;
     line-height: 1.2;
 }
 
@@ -608,15 +580,15 @@
     white-space: nowrap;
 }
 
-.btn-success {
-    background: var(--success-color);
+.btn-primary {
+    background: var(--primary-color);
     color: white;
-    border-color: var(--success-color);
+    border-color: var(--primary-color);
 }
 
-.btn-success:hover {
-    background: var(--success-hover);
-    border-color: var(--success-hover);
+.btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
     color: white;
     transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
@@ -660,17 +632,18 @@
 }
 
 .header-icon {
-    color: var(--info-color);
+    color: #7c3aed;
     font-size: 1rem;
 }
 
 /* Column Sizing */
 .no-column { width: 8%; }
-.ship-column { width: 28%; }
-.sort-column { width: 15%; }
-.category-column { width: 22%; }
-.usage-column { width: 15%; }
-.actions-column { width: 12%; }
+.order-column { width: 12%; }
+.section-column { width: 15%; }
+.company-column { width: 20%; }
+.image-column { width: 20%; }
+.status-column { width: 12%; }
+.actions-column { width: 13%; }
 
 .table-body-section {
     background: var(--surface-elevated);
@@ -683,8 +656,6 @@
 
 .table-data-row:hover {
     background: rgba(248, 250, 252, 0.8);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-subtle);
 }
 
 .table-data-cell {
@@ -702,8 +673,8 @@
 .row-number {
     width: 32px;
     height: 32px;
-    background: var(--info-light);
-    color: var(--info-color);
+    background: var(--primary-light);
+    color: var(--primary-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -712,232 +683,202 @@
     font-size: 0.875rem;
 }
 
-/* Ship Display */
-.ship-display {
+/* Order Display */
+.order-display {
+    display: flex;
+    justify-content: center;
+}
+
+.order-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: rgba(8, 145, 178, 0.1);
+    color: var(--info-color);
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    border: 1px solid rgba(8, 145, 178, 0.2);
+}
+
+.order-number {
+    font-size: 0.875rem;
+}
+
+/* Section Display */
+.section-display {
+    display: flex;
+    justify-content: center;
+}
+
+.section-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: rgba(124, 58, 237, 0.1);
+    color: #7c3aed;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.section-name {
+    font-size: 0.875rem;
+}
+
+/* Company Display */
+.company-display {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
 }
 
-.ship-icon-wrapper {
-    flex-shrink: 0;
-}
-
-.ship-icon {
-    width: 40px;
-    height: 40px;
+.company-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--info-light);
+    color: var(--info-color);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    border: 2px solid;
+    font-size: 1rem;
+    border: 2px solid rgba(8, 145, 178, 0.2);
+    flex-shrink: 0;
 }
 
-.ship-icon.tanker {
-    background: var(--info-light);
-    color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.3);
-}
-
-.ship-icon.container {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border-color: rgba(79, 70, 229, 0.3);
-}
-
-.ship-icon.bulk {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.3);
-}
-
-.ship-icon.passenger {
-    background: var(--success-light);
-    color: var(--success-color);
-    border-color: rgba(5, 150, 105, 0.3);
-}
-
-.ship-icon.cargo {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.3);
-}
-
-.ship-icon.offshore {
-    background: var(--danger-light);
-    color: var(--danger-color);
-    border-color: rgba(220, 38, 38, 0.3);
-}
-
-.ship-icon.lng {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    color: #0891b2;
-    border-color: rgba(8, 145, 178, 0.3);
-}
-
-.ship-icon.general {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.3);
-}
-
-.ship-info {
+.company-info {
     flex: 1;
 }
 
-.ship-name {
-    font-size: 0.9375rem;
+.company-name {
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.3;
     margin-bottom: 0.125rem;
 }
 
-.ship-description {
+.company-type {
     font-size: 0.75rem;
     color: var(--text-muted);
     line-height: 1.2;
 }
 
-/* Sort Display */
-.sort-display {
+/* Banner Image Display */
+.banner-image-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-container {
+    position: relative;
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    transition: var(--transition-fast);
+}
+
+.image-container:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-medium);
+}
+
+.banner-thumbnail {
+    width: 120px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--border-radius-sm);
+    border: 2px solid var(--border-primary);
+    transition: var(--transition-fast);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: var(--transition-fast);
+    color: white;
+    font-size: 1.25rem;
+}
+
+.image-container:hover .image-overlay {
+    opacity: 1;
+}
+
+.no-image-placeholder {
+    width: 120px;
+    height: 60px;
+    background: var(--secondary-light);
+    border: 2px dashed var(--border-primary);
+    border-radius: var(--border-radius-sm);
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 0.25rem;
-}
-
-.sort-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--border-radius-sm);
-    font-weight: 600;
-    border: 1px solid;
-}
-
-.sort-badge.high-priority {
-    background: var(--danger-light);
-    color: var(--danger-color);
-    border-color: rgba(220, 38, 38, 0.2);
-}
-
-.sort-badge.standard-priority {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.2);
-}
-
-.sort-number {
-    font-size: 0.875rem;
-    font-weight: 700;
-}
-
-.sort-label {
-    font-size: 0.75rem;
     color: var(--text-muted);
-    text-align: center;
 }
 
-/* Category Display */
-.category-display {
+.no-image-placeholder i {
+    font-size: 1.25rem;
+}
+
+.no-image-placeholder span {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Status Display */
+.status-display {
     display: flex;
     justify-content: center;
 }
 
-.category-badge {
-    display: flex;
+.status-badge {
+    display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     padding: 0.375rem 0.75rem;
     border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     border: 1px solid;
-    font-size: 0.8125rem;
 }
 
-.category-badge.tanker {
-    background: var(--info-light);
-    color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.2);
-}
-
-.category-badge.container {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border-color: rgba(79, 70, 229, 0.2);
-}
-
-.category-badge.bulk {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.2);
-}
-
-.category-badge.passenger {
+.status-active {
     background: var(--success-light);
     color: var(--success-color);
     border-color: rgba(5, 150, 105, 0.2);
 }
 
-.category-badge.cargo {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.2);
-}
-
-.category-badge.offshore {
+.status-inactive {
     background: var(--danger-light);
     color: var(--danger-color);
     border-color: rgba(220, 38, 38, 0.2);
 }
 
-.category-badge.lng {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    color: #0891b2;
-    border-color: rgba(8, 145, 178, 0.2);
+.status-pending {
+    background: var(--warning-light);
+    color: var(--warning-color);
+    border-color: rgba(217, 119, 6, 0.2);
 }
 
-.category-badge.general {
+.status-default {
     background: var(--secondary-light);
     color: var(--secondary-color);
     border-color: rgba(100, 116, 139, 0.2);
-}
-
-/* Usage Display */
-.usage-display {
-    display: flex;
-    justify-content: center;
-}
-
-.usage-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.usage-item {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-}
-
-.usage-item i {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-}
-
-.usage-count {
-    font-weight: 600;
-    color: var(--text-primary);
-    min-width: 20px;
-}
-
-.usage-label {
-    color: var(--text-muted);
 }
 
 /* Action Buttons */
@@ -991,17 +932,24 @@
     border-color: rgba(220, 38, 38, 0.3);
 }
 
-.delete-button:hover {
+.delete-button:hover:not(.disabled) {
     background: var(--danger-light);
     border-color: var(--danger-color);
     transform: translateY(-1px);
     box-shadow: var(--shadow-medium);
 }
 
+.delete-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--text-muted);
+    border-color: var(--border-primary);
+}
+
 /* Professional Empty State */
 .professional-empty-state {
     text-align: center;
-    padding: var(--spacing-xl) var(--spacing-md);
+    padding: var(--spacing-2xl) var(--spacing-md);
     max-width: 480px;
     margin: 0 auto;
 }
@@ -1017,9 +965,9 @@
     font-size: 2.5rem;
 }
 
-.shiptypes-empty-icon {
-    background: var(--info-light);
-    color: var(--info-color);
+.banners-empty-icon {
+    background: rgba(124, 58, 237, 0.1);
+    color: #7c3aed;
 }
 
 .empty-state-title {
@@ -1036,28 +984,73 @@
     font-size: 0.9375rem;
 }
 
-/* Modern Pagination */
-.modern-pagination-wrapper {
+/* Image Modal */
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--surface-elevated);
+    border-radius: var(--border-radius-md);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-floating);
+}
+
+.modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-lg) var(--spacing-xl);
-    border-top: 1px solid var(--border-primary);
-    background: linear-gradient(135deg, #f1f5f9 0%, #f8fafc 100%);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-primary);
 }
 
-.pagination-info {
-    flex: 1;
+.modal-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-.pagination-text {
-    font-size: 0.875rem;
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-fast);
     color: var(--text-secondary);
-    font-weight: 500;
 }
 
-.pagination-controls {
-    flex-shrink: 0;
+.modal-close:hover {
+    background: var(--secondary-light);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: var(--spacing-lg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-image {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: var(--border-radius-sm);
 }
 
 /* Tooltips */
@@ -1116,11 +1109,6 @@
         width: 100%;
         justify-content: center;
     }
-
-    .shiptypes-summary {
-        justify-content: space-around;
-        width: 100%;
-    }
 }
 
 @media (max-width: 768px) {
@@ -1152,7 +1140,7 @@
         font-size: 0.8125rem;
     }
 
-    .ship-display {
+    .company-display {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--spacing-xs);
@@ -1184,18 +1172,14 @@
         padding: var(--spacing-xs);
     }
 
-    .modern-pagination-wrapper {
-        flex-direction: column;
-        gap: var(--spacing-md);
-        text-align: center;
+    .banner-thumbnail {
+        width: 80px;
+        height: 40px;
     }
 
-    .usage-stats {
-        display: none;
-    }
-
-    .sort-label {
-        display: none;
+    .no-image-placeholder {
+        width: 80px;
+        height: 40px;
     }
 }
 
@@ -1206,141 +1190,48 @@
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
-
-/* Table row animation on load */
-.table-data-row {
-    animation: fadeInUp 0.3s ease-out;
-    animation-fill-mode: both;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.table-data-row:nth-child(odd) {
-    animation-delay: 0.05s;
-}
-
-.table-data-row:nth-child(even) {
-    animation-delay: 0.1s;
-}
 </style>
 @endpush
 
 @push('scripts')
 <script>
-function viewShipTypeDetails(shipName, sortOrder, category) {
-    let details = `Ship Type Details:\n\n`;
-    details += `Ship Name: ${shipName}\n`;
-    details += `Sort Order: ${sortOrder}\n`;
-    details += `Category: ${category}\n`;
-    details += `Priority Level: ${sortOrder <= 5 ? 'High Priority' : (sortOrder <= 10 ? 'Standard Priority' : 'General Priority')}\n`;
+function openImageModal(imageSrc, title) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
 
-    alert(details);
+    modalImage.src = imageSrc;
+    modalTitle.textContent = title + ' - Banner Image';
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-function confirmDelete(shipName) {
-    return confirm(`Are you sure you want to delete the ship type "${shipName}"?\n\nThis action will:\n- Remove the ship type from the system\n- Affect job postings using this ship type\n- Impact candidate profiles referencing this vessel type\n\nThis action cannot be undone.`);
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
+
+function viewBannerDetails(banner) {
+    alert('Banner Details:\n\n' +
+          'Order: ' + banner.order + '\n' +
+          'Section: ' + banner.section + '\n' +
+          'Company: ' + (banner.company ? banner.company.company_name : 'N/A') + '\n' +
+          'Status: ' + banner.status);
+}
+
+// Close modal on escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
 
 $(document).ready(function() {
-    // Auto-hide success/error alerts after 5 seconds
-    $('.modern-alert').each(function() {
-        const $alert = $(this);
-        setTimeout(() => {
-            $alert.fadeOut(300, () => $alert.remove());
-        }, 5000);
+    // Smooth scroll animations
+    $('.table-data-row').each(function(index) {
+        $(this).css('animation-delay', (index * 0.05) + 's');
     });
-
-    // Enhanced table row interactions
-    $('.table-data-row').hover(
-        function() {
-            $(this).addClass('hovered');
-            $(this).find('.ship-icon').addClass('hovered');
-        },
-        function() {
-            $(this).removeClass('hovered');
-            $(this).find('.ship-icon').removeClass('hovered');
-        }
-    );
-
-    // Smooth scrolling for pagination
-    $('.pagination a').on('click', function() {
-        $('html, body').animate({
-            scrollTop: $('.enterprise-section').offset().top - 100
-        }, 500);
-    });
-
-    // Enhanced responsive table handling
-    function adjustTableForMobile() {
-        const isMobile = window.innerWidth < 768;
-
-        if (isMobile) {
-            $('.table-container').addClass('mobile-optimized');
-            $('.usage-stats, .sort-label').hide();
-        } else {
-            $('.table-container').removeClass('mobile-optimized');
-            $('.usage-stats, .sort-label').show();
-        }
-    }
-
-    // Initial check and resize listener
-    adjustTableForMobile();
-    $(window).resize(adjustTableForMobile);
-
-    // Add ship type category visual indicators
-    $('.ship-type-row').each(function() {
-        const sortOrder = parseInt($(this).find('.sort-number').text());
-
-        if (sortOrder <= 5) {
-            $(this).addClass('high-priority-row');
-        } else if (sortOrder <= 10) {
-            $(this).addClass('standard-priority-row');
-        } else {
-            $(this).addClass('general-priority-row');
-        }
-    });
-
-    // Enhanced action button interactions
-    $('.action-button').on('mouseenter', function() {
-        $(this).find('i').addClass('animated pulse');
-    }).on('mouseleave', function() {
-        $(this).find('i').removeClass('animated pulse');
-    });
-
-    // Ship type categorization visual feedback
-    $('.ship-icon').each(function() {
-        const $icon = $(this);
-        const shipName = $icon.closest('.ship-display').find('.ship-name').text().toLowerCase();
-
-        // Add subtle animation for ship type recognition
-        if (shipName.includes('tanker')) {
-            $icon.css('animation', 'float 3s ease-in-out infinite');
-        } else if (shipName.includes('container')) {
-            $icon.css('animation', 'bounce 2s ease-in-out infinite');
-        }
-    });
-
-    // Add CSS for animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-    `;
-    document.head.appendChild(style);
 });
 </script>
 @endpush

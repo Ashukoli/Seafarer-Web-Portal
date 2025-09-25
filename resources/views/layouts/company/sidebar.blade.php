@@ -16,6 +16,30 @@
                 <div class="menu-title">Dashboard</div>
             </a>
         </li>
+        <li>
+            <a href="javascript:void(0);" class="has-arrow">
+                <div class="parent-icon"><i class="bx bx-home-alt"></i></div>
+                <div class="menu-title">Hotjobs</div>
+            </a>
+            <ul>
+                <li>
+                    <a href="{{ route('company.hotjobs.create') }}">
+                        <div class="menu-title">Add Hotjob</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('company.hotjobs.index') }}">
+                        <div class="menu-title">List of Hotjobs</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="{{ route('company.subadmin.list') }}">
+                <div class="parent-icon"><i class="bx bx-home-alt"></i></div>
+                <div class="menu-title">Subadmin List</div>
+            </a>
+        </li>
     </ul>
     <!--end navigation-->
 </aside>

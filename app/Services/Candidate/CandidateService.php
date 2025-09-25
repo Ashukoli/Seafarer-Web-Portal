@@ -281,4 +281,55 @@ class CandidateService
             'cities' => $cities,
         ];
     }
+
+
+    public function paginateCandidates(int $perPage = 20, array $filters = [], array $with = [])
+    {
+        $query = User::query()->where('user_type', 'candidate');
+
+        // Apply filters if provided
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        // Eager load relations if provided
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        return $query->orderByDesc('id')->paginate($perPage);
+    }
+
+    /**
+     * Find a candidate by user ID with all related profile/resume data.
+     *
+     * @param int $userId
+     * @param array $with
+     * @return User|null
+     */
+    public function findCandidateWithRelations(int $userId, array $with = [])
+    {
+        $query = User::where('id', $userId)->where('user_type', 'candidate');
+
+        if (!empty($with)) {
+            $query->with($with);
+        } else {
+            // Default relations
+            $query->with([
+                'candidateProfile',
+                'candidateResume',
+                'candidateProfile.state',
+                'candidateProfile.city',
+            ]);
+        }
+
+        return $query->first();
+    }
 }

@@ -31,6 +31,17 @@
                         <li class="breadcrumb-separator">
                             <i class="bx bx-chevron-right"></i>
                         </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('admin.company.adminlogins', $company->id) }}" class="breadcrumb-link">
+                                <div class="breadcrumb-icon">
+                                    <i class="bx bx-group"></i>
+                                </div>
+                                <span class="breadcrumb-text">Admin Logins</span>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-separator">
+                            <i class="bx bx-chevron-right"></i>
+                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             <div class="breadcrumb-icon">
                                 <i class="bx bx-user-circle"></i>
@@ -57,6 +68,56 @@
             </div>
 
             <div class="card-body modern-body">
+                     
+                @if(session('success'))
+                    <div class="modern-alert modern-alert-success mb-4">
+                        <div class="alert-icon">
+                            <i class="bx bx-check-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Success!</strong>
+                            {{ session('success') }}
+                        </div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="modern-alert modern-alert-error mb-4">
+                        <div class="alert-icon">
+                            <i class="bx bx-error-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Error!</strong>
+                            {{ session('error') }}
+                        </div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="modern-alert modern-alert-error mb-4">
+                        <div class="alert-icon">
+                            <i class="bx bx-error-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Validation Errors:</strong>
+                            <ul class="error-list">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                @endif
+
                 <div class="modern-form-container">
                     <div class="row g-4">
                         <div class="col-md-4">
@@ -95,12 +156,12 @@
                                     <span class="label-text">Designation</span>
                                     <span class="required-indicator">*</span>
                                 </label>
-                                <input type="text"
-                                       name="superadmin_designation"
-                                       class="modern-form-control"
-                                       value="{{ old('superadmin_designation', $company->superadmin_designation ?? '') }}"
-                                       placeholder="Enter designation"
-                                       required>
+                               <input type="text"
+                                    name="superadmin_designation"
+                                    class="modern-form-control"
+                                    value="{{ old('superadmin_designation', $superadmin->designation ?? '') }}"
+                                    placeholder="Enter designation"
+                                    required>
                             </div>
                         </div>
 
@@ -230,6 +291,110 @@
     background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%);
     min-height: 100vh;
     padding: 2rem 0;
+}
+
+/* Modern Alert Styling */
+.modern-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modern-alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #065f46;
+}
+
+.modern-alert-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.05) 100%);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #7f1d1d;
+}
+
+.alert-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1rem;
+}
+
+.modern-alert-success .alert-icon {
+    background: var(--success-color);
+    color: white;
+}
+
+.modern-alert-error .alert-icon {
+    background: var(--danger-color);
+    color: white;
+}
+
+.alert-content {
+    flex: 1;
+    line-height: 1.5;
+}
+
+.alert-content strong {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.error-list {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.25rem;
+    list-style-type: disc;
+}
+
+.error-list li {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.alert-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    opacity: 0.7;
+}
+
+.alert-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.alert-close i {
+    font-size: 1rem;
 }
 
 /* Modern Breadcrumb Styling */
@@ -669,6 +834,17 @@
         width: 100%;
         justify-content: flex-start;
     }
+
+    .modern-alert {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .alert-close {
+        position: static;
+        align-self: flex-end;
+        margin-top: -0.5rem;
+    }
 }
 
 /* Loading Animation */
@@ -703,7 +879,6 @@
 }
 </style>
 @endpush
-
 
 @push('scripts')
 <script>
@@ -742,6 +917,14 @@ $(function(){
             scrollTop: $('.is-invalid:first').offset().top - 100
         }, 500);
     }
+
+    // Auto-hide alerts after 5 seconds
+    $('.modern-alert').each(function() {
+        const $alert = $(this);
+        setTimeout(() => {
+            $alert.fadeOut(300, () => $alert.remove());
+        }, 5000);
+    });
 });
 </script>
 @endpush

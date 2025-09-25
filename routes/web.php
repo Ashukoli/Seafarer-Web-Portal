@@ -1,5 +1,4 @@
 <?php
-// ... keep the top of your file (imports/other route groups) as-is
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\PageController;
@@ -16,10 +15,11 @@ use App\Http\Controllers\Admin\MobileCountryCodeController;
 use App\Http\Controllers\Admin\DceEndorsementController;
 use App\Http\Controllers\Admin\CourseCertificateController;
 use App\Http\Controllers\Admin\CityController;
-use App\Http\Controllers\Admin\CandidateRegistrationController;
+use App\Http\Controllers\Admin\Candidate\CandidateRegistrationController;
 use App\Http\Controllers\Api\LocationController;
-use App\Http\Controllers\Admin\Company\CompanyController;
+use App\Http\Controllers\Company\CompanyController;
 use App\Http\Controllers\Admin\company\CompanyRegisterController;
+use App\Http\Controllers\Admin\Hotjobs\HotjobsController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -35,13 +35,7 @@ Route::controller(PageController::class)->group(function () {
     Route::get('/disclaimer', 'disclaimer')->name('disclaimer');
     Route::get('/hot-jobs', 'hotJobs')->name('hotjobs.index');
     Route::get('/reviews', 'reviews')->name('reviews');
-
-    // Marketing-only login pages — keep separate names to avoid collisions with auth routes
-
     Route::get('/admin-login', 'adminLogin')->name('admin.login.page');
-    //Route::get('/company/register', 'companyRegister')->name('company.register.page');
-
-    // Marketing job/resume pages
     Route::get('/search-jobs', 'searchJobs')->name('jobs.search');
     Route::get('/post-resume', 'postResume')->name('resume.post');
     Route::get('/view-resumes', 'viewResumes')->name('resumes.view');
@@ -56,70 +50,42 @@ Route::get('/login', function () {
 // ----------------------------
 // Candidate routes
 // ----------------------------
-// NOTE: Ensure CandidateController exists at App\Http\Controllers\Candidate\CandidateController
-// ----------------------------
-// Candidate routes
-// ----------------------------
 Route::prefix('candidate')
     ->name('candidate.')
     ->group(function () {
-
-        // Guest-only (login / forgot)
         Route::middleware('guest')->group(function () {
-            Route::get('login', [CandidateLoginController::class, 'showLoginForm'])
-                ->name('login.form');
-            Route::post('login', [CandidateLoginController::class, 'login'])
-                ->name('login');
-            Route::get('password/request', [CandidateLoginController::class, 'showForgotForm'])
-                ->name('password.request');
-            Route::post('password/email', [CandidateLoginController::class, 'sendResetLink'])
-                ->name('password.email');
+            Route::get('login', [CandidateLoginController::class, 'showLoginForm'])->name('login.form');
+            Route::post('login', [CandidateLoginController::class, 'login'])->name('login');
+            Route::get('password/request', [CandidateLoginController::class, 'showForgotForm'])->name('password.request');
+            Route::post('password/email', [CandidateLoginController::class, 'sendResetLink'])->name('password.email');
         });
 
-        // Authenticated candidate routes
         Route::middleware('auth')->group(function () {
-
-            // Dashboard
             Route::get('dashboard', [CandidateController::class, 'dashboard'])->name('dashboard');
-
-            // Resume routes
             Route::get('resume', [CandidateController::class, 'editResume'])->name('resume.edit');
             Route::post('resume', [CandidateController::class, 'updateResume'])->name('resume.update');
-
-            // View resume (read-only)
             Route::get('resume/view', [CandidateController::class, 'viewResume'])->name('view.resume');
-
-            // Optional alias for backwards compatibility
             Route::get('resume/show', function () {
                 return redirect()->route('candidate.view.resume');
             })->name('resume.view');
-
             Route::post('resume/hide', [CandidateController::class, 'toggleResumeVisibility'])->name('resume.hide');
-
-            // Jobs / extra pages
             Route::get('jobs/search', [CandidateController::class, 'searchJobs'])->name('jobs.search');
             Route::get('jobs/hot', [CandidateController::class, 'hotJobs'])->name('jobs.hot');
             Route::get('express-service', [CandidateController::class, 'expressService'])->name('express.service');
             Route::get('statistics/applied', [CandidateController::class, 'statisticsApplied'])->name('statistics1');
             Route::get('statistics/viewed', [CandidateController::class, 'statisticsViewed'])->name('statistics2');
             Route::get('messages', [CandidateController::class, 'messages'])->name('messages');
-
-            // Profile
             Route::post('profile/delete', [CandidateController::class, 'deleteProfile'])->name('profile.delete');
-
-            // Logout
             Route::post('logout', [CandidateLoginController::class, 'logout'])->name('logout');
         });
     });
 
 // ----------------------------
-// Admin routes (unchanged) — keep your existing admin group below
+// Admin routes
 // ----------------------------
 Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
-
-        // Admin login routes (guest only)
         Route::middleware('guest')->group(function () {
             Route::get('login', [AdminLoginController::class, 'showLoginForm'])->name('login.form');
             Route::post('login', [AdminLoginController::class, 'login'])->name('login');
@@ -127,51 +93,58 @@ Route::prefix('admin')
             Route::post('password/email', [AdminLoginController::class, 'sendResetLink'])->name('password.email');
         });
 
-        // Protected admin area
         Route::middleware('auth:admin')->group(function () {
-
-            // Dashboard
             Route::get('dashboard', function () {
                 return view('admin.dashboard');
             })->name('dashboard');
-
-            // Master resources
-            Route::resource('ranks', RankController::class);                 // admin.ranks.*
-            Route::resource('shiptypes', ShipTypeController::class);         // admin.shiptypes.*
-            Route::resource('countries', CountryController::class);          // admin.countries.*
-            Route::resource('states', StateController::class);               // admin.states.*
-            Route::resource('mobile-country-codes', MobileCountryCodeController::class)
-                ->names('mobile-country-codes');                             // admin.mobile-country-codes.*
-            Route::resource('dce-endorsements', DceEndorsementController::class);    // admin.dce-endorsements.*
-            Route::resource('course-certificates', CourseCertificateController::class); // admin.course-certificates.*
-            Route::resource('cities', CityController::class);                // admin.cities.*
-
-            // Candidate registration
+            Route::resource('ranks', RankController::class);
+            Route::resource('shiptypes', ShipTypeController::class);
+            Route::resource('countries', CountryController::class);
+            Route::resource('states', StateController::class);
+            Route::resource('mobile-country-codes', MobileCountryCodeController::class)->names('mobile-country-codes');
+            Route::resource('dce-endorsements', DceEndorsementController::class);
+            Route::resource('course-certificates', CourseCertificateController::class);
+            Route::resource('cities', CityController::class);
             Route::resource('candidates', CandidateRegistrationController::class);
-            // Company routes
+
             Route::prefix('company')->name('company.')->group(function () {
                 Route::get('register/{step?}', [CompanyRegisterController::class, 'showForm'])->name('register.step');
                 Route::post('register/{step}', [CompanyRegisterController::class, 'handleStep'])->name('register.handle');
-                Route::get('/', [CompanyController::class, 'index'])->name('index');
-                Route::get('/create', [CompanyController::class, 'create'])->name('create');
-                Route::post('/', [CompanyController::class, 'store'])->name('store');
-                Route::get('/{id}', [CompanyController::class, 'show'])->name('show');
-                Route::get('/{id}/edit', [CompanyController::class, 'edit'])->name('edit');
-                Route::put('/{id}', [CompanyController::class, 'update'])->name('update');
-                Route::delete('/{id}', [CompanyController::class, 'destroy'])->name('destroy');
-
-                // Superadmin and Subadmin management
-                Route::get('/{company}/superadmin/edit', [CompanyController::class, 'editSuperadmin'])->name('superadmin.edit');
-                Route::post('/{company}/superadmin/update', [CompanyController::class, 'updateSuperadmin'])->name('superadmin.update');
-                Route::get('/{company}/subadmins', [CompanyController::class, 'editSubadmins'])->name('subadmins.edit');
-                Route::post('/{company}/subadmins/update', [CompanyController::class, 'updateSubadmins'])->name('subadmins.update');
+                Route::get('followups', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'followupsIndex'])->name('followups.index');
+                Route::get('followups/create', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'followupsCreate'])->name('followups.create');
+                Route::post('followups', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'followupsStore'])->name('followups.store');
+                Route::get('{company}/adminlogins', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'adminLogins'])->name('adminlogins');
+                Route::get('company/{company}/adminlogins/{user}/logs', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'showLoginLogs'])->name('adminlogins.logs');
+                Route::get('/create', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'create'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'store'])->name('store');
+                Route::get('/{company}/superadmin/edit', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'editSuperadmin'])->name('superadmin.edit');
+                Route::post('/{company}/superadmin/update', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'updateSuperadmin'])->name('superadmin.update');
+                Route::get('/{company}/subadmins', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'editSubadmins'])->name('subadmins.edit');
+                Route::post('/{company}/subadmins/update', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'updateSubadmins'])->name('subadmins.update');
+                Route::get('banners', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'bannersIndex'])->name('banners.index');
+                Route::get('/', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'index'])->name('index');
+                Route::get('/{id}', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'show'])->name('show');
+                Route::get('/{id}/edit', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'edit'])->name('edit');
+                Route::put('/{id}', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'update'])->name('update');
+                Route::delete('/{id}', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'destroy'])->name('destroy');
             });
-            // Logout
+
+            Route::prefix('hotjobs')->name('hotjobs.')->group(function () {
+                Route::get('/', [HotjobsController::class, 'index'])->name('index');
+                Route::get('/create', [HotjobsController::class, 'create'])->name('create');
+                Route::post('/store', [HotjobsController::class, 'store'])->name('store');
+                Route::get('/{hotjob}/edit', [HotjobsController::class, 'edit'])->name('edit');
+                Route::put('/{hotjob}', [HotjobsController::class, 'update'])->name('update');
+                Route::post('/{hotjob}/validate', [HotjobsController::class, 'validateHotjob'])->name('validate');
+            });
+
             Route::post('logout', [AdminLoginController::class, 'logout'])->name('logout');
         });
     });
 
-
+// ----------------------------
+// Company routes
+// ----------------------------
 Route::prefix('company')->name('company.')->group(function () {
     // Guest-only routes
     Route::middleware('guest:company')->group(function () {
@@ -184,5 +157,20 @@ Route::prefix('company')->name('company.')->group(function () {
     Route::middleware('auth:company')->group(function () {
         Route::get('dashboard', [CompanyController::class, 'dashboard'])->name('dashboard');
         Route::post('logout', [CompanyLoginController::class, 'logout'])->name('logout');
+
+        Route::prefix('hotjobs')->name('hotjobs.')->group(function () {
+            Route::get('/', [CompanyController::class, 'hotjobsIndex'])->name('index');
+            Route::get('/create', [CompanyController::class, 'hotjobsCreate'])->name('create');
+            Route::post('/store', [CompanyController::class, 'hotjobsStore'])->name('store');
+            Route::delete('/{hotjob}', [CompanyController::class, 'hotjobsDestroy'])->name('destroy');
+        });
+
+        // Subadmin management routes
+        Route::get('subadmins', [CompanyController::class, 'subadminList'])->name('subadmin.list');
+        Route::get('subadmins/{subadmin}/edit', [CompanyController::class, 'editSubadmin'])->name('subadmin.edit');
+        Route::put('subadmins/{subadmin}', [CompanyController::class, 'updateSubadmin'])->name('subadmin.update');
+        Route::get('subadmins/{subadmin}/login-history', [CompanyController::class, 'subadminLoginHistory'])->name('subadmin.login-history');
     });
 });
+
+

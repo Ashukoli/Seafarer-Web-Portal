@@ -98,7 +98,40 @@
                         <div class="menu-title">List of Companies</div>
                     </a>
                 </li>
-                {{-- Add more company-related submenus here if needed --}}
+                <li>
+                    <a href="{{ route('admin.company.followups.index') }}">
+
+                        <div class="menu-title">Company Follow-Ups</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.company.banners.index') }}">
+                        <div class="menu-title">Company Banners</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="javascript:void(0);" class="has-arrow">
+                <div class="parent-icon"><i class="bx bx-building"></i></div>
+                <div class="menu-title">Hotjobs</div>
+            </a>
+            <ul>
+                <li>
+                    <a href="{{ route('admin.hotjobs.create') }}">
+                        <div class="menu-title">Add Hotjob</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.hotjobs.index') }}">
+                        <div class="menu-title">List of Hotjobs</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.hotjobs.index', ['status' => 'pending']) }}">
+                        <div class="menu-title">Validate Hotjobs</div>
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

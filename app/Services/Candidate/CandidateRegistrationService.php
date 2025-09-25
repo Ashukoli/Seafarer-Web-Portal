@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CandidateRegistrationService
 {
@@ -210,4 +211,5 @@ class CandidateRegistrationService
         $profile->profile_completion = $percent;
         $profile->save();
     }
+
 }

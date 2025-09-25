@@ -1,7 +1,5 @@
-{{-- resources/views/admin/ranks/index.blade.php --}}
+{{-- filepath: resources/views/admin/company/followups/index.blade.php --}}
 @extends('layouts.admin.app')
-
-@section('title', 'Maritime Ranks Management')
 
 @section('content')
 <main class="page-content professional-bg">
@@ -23,11 +21,11 @@
                             <i class="bx bx-chevron-right"></i>
                         </li>
                         <li class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link">
+                            <a href="{{ route('admin.company.index') }}" class="breadcrumb-link">
                                 <div class="breadcrumb-icon">
-                                    <i class="bx bx-cog"></i>
+                                    <i class="bx bx-buildings"></i>
                                 </div>
-                                <span class="breadcrumb-text">Masters</span>
+                                <span class="breadcrumb-text">Companies</span>
                             </a>
                         </li>
                         <li class="breadcrumb-separator">
@@ -35,158 +33,163 @@
                         </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             <div class="breadcrumb-icon">
-                                <i class="bx bx-crown"></i>
+                                <i class="bx bx-phone-call"></i>
                             </div>
-                            <span class="breadcrumb-text">Maritime Ranks</span>
+                            <span class="breadcrumb-text">Follow-Ups</span>
                         </li>
                     </ol>
                 </nav>
             </div>
         </div>
 
-        <!-- Professional Page Header -->
-        <div class="compact-header-section mb-4">
-            <div class="compact-header-card">
-                <div class="compact-header-content">
-                    <div class="compact-header-icon">
-                        <i class="bx bx-crown"></i>
-                    </div>
-                    <div class="compact-header-text">
-                        <h1 class="compact-page-title">Ranks Management</h1>
-                        <p class="compact-page-subtitle">Manage seafarer ranks hierarchy and sorting order for maritime positions</p>
-                    </div>
-                </div>
-                <div class="compact-header-actions">
-                    <a href="{{ route('admin.ranks.create') }}" class="enterprise-btn btn-success">
-                        <i class="bx bx-plus"></i>
-                        <span>Add New Rank</span>
-                    </a>
-                </div>
-            </div>
-        </div>
 
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <div class="modern-alert modern-alert-success mb-4">
-                <div class="alert-icon">
-                    <i class="bx bx-check-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>Success!</strong>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="bx bx-x"></i>
-                </button>
-            </div>
-        @endif
 
-        @if(session('error'))
-            <div class="modern-alert modern-alert-error mb-4">
-                <div class="alert-icon">
-                    <i class="bx bx-error-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>Error!</strong>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="bx bx-x"></i>
-                </button>
-            </div>
-        @endif
-
-        <!-- Ranks Data Section -->
+        <!-- Follow-Ups Section -->
         <div class="enterprise-section">
+            <div class="section-header-wrapper">
+                <div class="section-header-content">
+                    <div class="section-icon-badge followup-badge">
+                        <i class="bx bx-list-ul"></i>
+                    </div>
+                    <div class="section-title-group">
+                        <h2 class="section-primary-title">Company Follow-Ups</h2>
+                        <p class="section-description">Comprehensive list of all follow-up activities</p>
+                    </div>
+                </div>
+                <div class="followup-summary">
+                    <div class="summary-stat">
+                        <span class="stat-number">{{ $followups->total() }}</span>
+                        <span class="stat-label">Total Follow-Ups</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="professional-table-wrapper">
                 <div class="table-container">
                     <table class="enterprise-data-table">
                         <thead class="table-header-section">
                             <tr>
-                                <th class="table-header-cell no-column">
+                                <th class="table-header-cell sr-column">
                                     <div class="header-cell-content">
                                         <i class="bx bx-hash header-icon"></i>
-                                        <span>#</span>
+                                        <span>Sr.No</span>
                                     </div>
                                 </th>
-                                <th class="table-header-cell rank-column">
+                                <th class="table-header-cell company-column">
                                     <div class="header-cell-content">
-                                        <i class="bx bx-crown header-icon"></i>
-                                        <span>Rank Name</span>
+                                        <i class="bx bx-buildings header-icon"></i>
+                                        <span>Company Name</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell executive-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-user header-icon"></i>
+                                        <span>Executive</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell date-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-calendar header-icon"></i>
+                                        <span>Follow Up Date</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell message-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-message-dots header-icon"></i>
+                                        <span>Message</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell next-followup-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-calendar-event header-icon"></i>
+                                        <span>Next Follow Up Date</span>
                                     </div>
                                 </th>
                                 <th class="table-header-cell actions-column">
                                     <div class="header-cell-content">
                                         <i class="bx bx-cog header-icon"></i>
-                                        <span>Actions</span>
+                                        <span>Action</span>
                                     </div>
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="table-body-section">
-                            @forelse($ranks as $rank)
-                                <tr class="table-data-row rank-row" data-rank-id="{{ $rank->id }}">
-                                    <td class="table-data-cell no-cell">
-                                        <div class="number-display">
-                                            <span class="row-number">{{ $loop->iteration + ($ranks->currentPage()-1) * $ranks->perPage() }}</span>
+                            @forelse($followups as $i => $followup)
+                                <tr class="table-data-row">
+                                    <td class="table-data-cell sr-cell">
+                                        <div class="sr-display">
+                                            <span class="sr-number">{{ $followups->firstItem() + $i }}</span>
                                         </div>
                                     </td>
-                                    <td class="table-data-cell rank-cell">
-                                        <div class="rank-display">
-                                            <div class="rank-icon-wrapper">
-                                                @php
-                                                    $rankCategory = $rank->sort <= 5 ? 'senior-officer' :
-                                                                   ($rank->sort <= 10 ? 'junior-officer' : 'crew');
-                                                    $rankIcon = match($rankCategory) {
-                                                        'senior-officer' => 'bx-medal',
-                                                        'junior-officer' => 'bx-crown',
-                                                        'crew' => 'bx-group',
-                                                        default => 'bx-user'
-                                                    };
-                                                @endphp
-                                                <div class="rank-icon {{ $rankCategory }}">
-                                                    <i class="bx {{ $rankIcon }}"></i>
+                                    <td class="table-data-cell company-cell">
+                                        <div class="company-display">
+                                            <div class="company-avatar">
+                                                <i class="bx bx-buildings"></i>
+                                            </div>
+                                            <div class="company-info">
+                                                <div class="company-name">{{ $followup->company->company_name ?? '-' }}</div>
+                                                <div class="company-type">Company</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell executive-cell">
+                                        <div class="executive-display">
+                                            <span class="executive-name">{{ $followup->executive }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell date-cell">
+                                        <div class="date-display">
+                                            @if($followup->follow_up_date)
+                                                <div class="date-primary">
+                                                    {{ \Carbon\Carbon::parse($followup->follow_up_date)->format('M d, Y') }}
                                                 </div>
+                                                <div class="date-secondary">
+                                                    {{ \Carbon\Carbon::parse($followup->follow_up_date)->format('D') }}
+                                                </div>
+                                            @else
+                                                <span class="no-data-text">Not Set</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell message-cell">
+                                        <div class="message-display">
+                                            <div class="message-text" title="{{ $followup->message }}">
+                                                {{ Str::limit($followup->message, 60) }}
                                             </div>
-                                            <div class="rank-info">
-                                                <div class="rank-name">{{ $rank->rank }}</div>
-                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell next-followup-cell">
+                                        <div class="next-followup-display">
+                                            @if($followup->next_follow_up_date)
+                                                {{ \Carbon\Carbon::parse($followup->next_follow_up_date)->format('M d, Y') }}
+                                            @else
+                                                <span class="no-data-text">-</span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td class="table-data-cell actions-cell">
                                         <div class="action-buttons-group">
-                                            <a href="{{ route('admin.ranks.edit', $rank->id) }}"
-                                               class="action-button edit-button"
-                                               data-tooltip="Edit Rank">
-                                                <i class="bx bx-edit"></i>
+                                            <a href="{{ route('admin.company.followups.create', ['company_id' => $followup->company_id]) }}" class="action-button view-button" data-tooltip="Add Follow-up">
+                                                <i class="bx bx-phone-call"></i>
                                             </a>
-                                            <form action="{{ route('admin.ranks.destroy', $rank->id) }}"
-                                                  method="POST"
-                                                  style="display:inline;"
-                                                  onsubmit="return confirmDelete('{{ $rank->rank }}')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="action-button delete-button"
-                                                        data-tooltip="Delete Rank">
-                                                    <i class="bx bx-trash"></i>
-                                                </button>
-                                            </form>
+                                            <button class="action-button edit-button" data-tooltip="Edit Follow-up">
+                                                <i class="bx bx-edit"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr class="empty-state-row">
-                                    <td colspan="6" class="empty-state-cell">
+                                    <td colspan="7" class="empty-state-cell">
                                         <div class="professional-empty-state">
-                                            <div class="empty-state-icon ranks-empty-icon">
-                                                <i class="bx bx-crown"></i>
+                                            <div class="empty-state-icon followup-empty-icon">
+                                                <i class="bx bx-phone-call"></i>
                                             </div>
-                                            <h3 class="empty-state-title">No Maritime Ranks Found</h3>
-                                            <p class="empty-state-message">Start building your maritime hierarchy by adding the first rank position.</p>
-                                            <a href="{{ route('admin.ranks.create') }}" class="enterprise-btn btn-success">
+                                            <h3 class="empty-state-title">No Follow-Ups Found</h3>
+                                            <p class="empty-state-message">Start managing your company relationships by adding your first follow-up.</p>
+                                            <a href="{{ route('admin.company.followups.create') }}" class="enterprise-btn btn-success">
                                                 <i class="bx bx-plus"></i>
-                                                <span>Add First Rank</span>
+                                                <span>Add First Follow-Up</span>
                                             </a>
                                         </div>
                                     </td>
@@ -198,16 +201,16 @@
             </div>
 
             <!-- Modern Pagination -->
-            @if($ranks->hasPages())
+            @if($followups->hasPages())
                 <div class="modern-pagination-wrapper">
                     <div class="pagination-info">
                         <span class="pagination-text">
-                            Showing {{ $ranks->firstItem() ?? 0 }} to {{ $ranks->lastItem() ?? 0 }}
-                            of {{ $ranks->total() }} maritime ranks
+                            Showing {{ $followups->firstItem() ?? 0 }} to {{ $followups->lastItem() ?? 0 }}
+                            of {{ $followups->total() }} entries
                         </span>
                     </div>
                     <div class="pagination-controls">
-                        {{ $ranks->links('pagination::bootstrap-4') }}
+                        {{ $followups->links() }}
                     </div>
                 </div>
             @endif
@@ -278,7 +281,6 @@
     margin: 0;
     list-style: none;
     gap: var(--spacing-sm);
-    flex-wrap: wrap;
 }
 
 .breadcrumb-item {
@@ -367,7 +369,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--warning-color) 0%, var(--success-color) 100%);
+    background: linear-gradient(90deg, #d97706 0%, var(--success-color) 100%);
 }
 
 .compact-header-content {
@@ -380,7 +382,7 @@
 .compact-header-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, var(--warning-color) 0%, var(--warning-hover) 100%);
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -407,94 +409,6 @@
 
 .compact-header-actions {
     flex-shrink: 0;
-}
-
-/* Modern Alert Styling */
-.modern-alert {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid;
-    position: relative;
-    box-shadow: var(--shadow-subtle);
-    animation: slideInDown 0.3s ease-out;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.modern-alert-success {
-    background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%);
-    border-color: rgba(5, 150, 105, 0.2);
-    color: #065f46;
-}
-
-.modern-alert-error {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%);
-    border-color: rgba(220, 38, 38, 0.2);
-    color: #7f1d1d;
-}
-
-.alert-icon {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 1rem;
-}
-
-.modern-alert-success .alert-icon {
-    background: var(--success-color);
-    color: white;
-}
-
-.modern-alert-error .alert-icon {
-    background: var(--danger-color);
-    color: white;
-}
-
-.alert-content {
-    flex: 1;
-    line-height: 1.5;
-}
-
-.alert-content strong {
-    font-weight: 600;
-    display: inline;
-    margin-right: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.alert-close {
-    position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-md);
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: var(--transition-fast);
-    opacity: 0.7;
-}
-
-.alert-close:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.1);
 }
 
 /* Enterprise Section */
@@ -537,7 +451,7 @@
     border: 2px solid;
 }
 
-.ranks-badge {
+.followup-badge {
     background: var(--warning-light);
     color: var(--warning-color);
     border-color: rgba(217, 119, 6, 0.2);
@@ -562,7 +476,8 @@
     line-height: 1.4;
 }
 
-.ranks-summary {
+/* Follow-up Summary */
+.followup-summary {
     display: flex;
     gap: var(--spacing-lg);
 }
@@ -662,12 +577,13 @@
 }
 
 /* Column Sizing */
-.no-column { width: 8%; }
-.rank-column { width: 25%; }
-.sort-column { width: 15%; }
-.category-column { width: 18%; }
-.usage-column { width: 18%; }
-.actions-column { width: 16%; }
+.sr-column { width: 8%; }
+.company-column { width: 20%; }
+.executive-column { width: 12%; }
+.date-column { width: 12%; }
+.message-column { width: 25%; }
+.next-followup-column { width: 12%; }
+.actions-column { width: 10%; }
 
 .table-body-section {
     background: var(--surface-elevated);
@@ -680,8 +596,6 @@
 
 .table-data-row:hover {
     background: rgba(248, 250, 252, 0.8);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-subtle);
 }
 
 .table-data-cell {
@@ -690,16 +604,18 @@
     color: var(--text-primary);
 }
 
-/* Number Display */
-.number-display {
+/* Serial Number Display */
+.sr-display {
     display: flex;
+    align-items: center;
     justify-content: center;
 }
 
-.row-number {
+.sr-number {
     width: 32px;
     height: 32px;
-    background: var(--warning-light);
+    background: var(--primary-light);
+    color: var(--primary-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -708,172 +624,139 @@
     font-size: 0.875rem;
 }
 
-/* Rank Display */
-.rank-display {
+/* Company Display */
+.company-display {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
 }
 
-.rank-icon-wrapper {
-    flex-shrink: 0;
-}
-
-.rank-icon {
-    width: 40px;
-    height: 40px;
+.company-avatar {
+    width: 44px;
+    height: 44px;
+    background: var(--info-light);
+    color: var(--info-color);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.25rem;
-    border: 2px solid;
+    border: 2px solid rgba(8, 145, 178, 0.2);
 }
 
-.rank-icon.senior-officer {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.3);
-}
-
-.rank-icon.junior-officer {
-    background: var(--info-light);
-    color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.3);
-}
-
-.rank-icon.crew {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.3);
-}
-
-.rank-info {
+.company-info {
     flex: 1;
 }
 
-.rank-name {
+.company-name {
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.3;
-    margin-bottom: 0.125rem;
+    margin-bottom: 0.25rem;
 }
 
-.rank-description {
+.company-type {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Executive Display */
+.executive-display {
+    display: flex;
+    align-items: center;
+}
+
+.executive-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* Date Display */
+.date-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.date-primary {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.date-secondary {
     font-size: 0.75rem;
     color: var(--text-muted);
     line-height: 1.2;
 }
 
-/* Sort Display */
-.sort-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
+/* Message Display */
+.message-display {
+    max-width: 250px;
 }
 
-.sort-badge {
+.message-text {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+    cursor: help;
+}
+
+/* Expiry Badge */
+.expiry-display {
     display: flex;
+    align-items: center;
+}
+
+.expiry-badge {
+    display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     padding: 0.375rem 0.75rem;
     border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
     font-weight: 600;
     border: 1px solid;
 }
 
-.sort-badge.high-priority {
+.expiry-badge.active {
+    background: var(--success-light);
+    color: var(--success-color);
+    border-color: rgba(5, 150, 105, 0.2);
+}
+
+.expiry-badge.expiring-soon {
+    background: var(--warning-light);
+    color: var(--warning-color);
+    border-color: rgba(217, 119, 6, 0.2);
+}
+
+.expiry-badge.expired {
     background: var(--danger-light);
     color: var(--danger-color);
     border-color: rgba(220, 38, 38, 0.2);
 }
 
-.sort-badge.standard-priority {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.2);
-}
-
-.sort-number {
-    font-size: 0.875rem;
-    font-weight: 700;
-}
-
-.sort-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-}
-
-/* Category Display */
-.category-display {
-    display: flex;
-    justify-content: center;
-}
-
-.category-badge {
+/* Location Display */
+.location-display {
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--border-radius-sm);
-    font-weight: 600;
-    border: 1px solid;
-    font-size: 0.8125rem;
 }
 
-.category-badge.senior-officer {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.2);
-}
-
-.category-badge.junior-officer {
-    background: var(--info-light);
+.location-icon {
     color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.2);
+    font-size: 1rem;
 }
 
-.category-badge.crew {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.2);
-}
-
-/* Usage Display */
-.usage-display {
-    display: flex;
-    justify-content: center;
-}
-
-.usage-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.usage-item {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-}
-
-.usage-item i {
-    color: var(--text-muted);
+.location-text {
     font-size: 0.875rem;
-}
-
-.usage-count {
-    font-weight: 600;
     color: var(--text-primary);
-    min-width: 20px;
-}
-
-.usage-label {
-    color: var(--text-muted);
 }
 
 /* Action Buttons */
@@ -881,7 +764,6 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    justify-content: center;
 }
 
 .action-button {
@@ -895,19 +777,6 @@
     justify-content: center;
     cursor: pointer;
     transition: var(--transition-fast);
-    text-decoration: none;
-}
-
-.edit-button {
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.3);
-}
-
-.edit-button:hover {
-    background: var(--warning-light);
-    border-color: var(--warning-color);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
 }
 
 .view-button {
@@ -918,20 +787,22 @@
 .view-button:hover {
     background: var(--info-light);
     border-color: var(--info-color);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
 }
 
-.delete-button {
-    color: var(--danger-color);
-    border-color: rgba(220, 38, 38, 0.3);
+.edit-button {
+    color: var(--warning-color);
+    border-color: rgba(217, 119, 6, 0.3);
 }
 
-.delete-button:hover {
-    background: var(--danger-light);
-    border-color: var(--danger-color);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
+.edit-button:hover {
+    background: var(--warning-light);
+    border-color: var(--warning-color);
+}
+
+.no-data-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 /* Professional Empty State */
@@ -953,7 +824,7 @@
     font-size: 2.5rem;
 }
 
-.ranks-empty-icon {
+.followup-empty-icon {
     background: var(--warning-light);
     color: var(--warning-color);
 }
@@ -1052,11 +923,6 @@
         width: 100%;
         justify-content: center;
     }
-
-    .ranks-summary {
-        justify-content: space-around;
-        width: 100%;
-    }
 }
 
 @media (max-width: 768px) {
@@ -1088,15 +954,10 @@
         font-size: 0.8125rem;
     }
 
-    .rank-display {
+    .company-display {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--spacing-xs);
-    }
-
-    .action-buttons-group {
-        flex-direction: column;
-        gap: 0.25rem;
+        gap: var(--spacing-sm);
     }
 
     .modern-breadcrumb {
@@ -1125,14 +986,6 @@
         gap: var(--spacing-md);
         text-align: center;
     }
-
-    .usage-stats {
-        display: none;
-    }
-
-    .sort-label {
-        display: none;
-    }
 }
 
 /* Focus States for Accessibility */
@@ -1142,114 +995,5 @@
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
-
-/* Table row animation on load */
-.table-data-row {
-    animation: fadeInUp 0.3s ease-out;
-    animation-fill-mode: both;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.table-data-row:nth-child(odd) {
-    animation-delay: 0.05s;
-}
-
-.table-data-row:nth-child(even) {
-    animation-delay: 0.1s;
-}
 </style>
-@endpush
-
-@push('scripts')
-<script>
-function viewRankDetails(rankName, sortOrder, category) {
-    let details = `Rank Details:\n\n`;
-    details += `Rank Name: ${rankName}\n`;
-    details += `Sort Order: ${sortOrder}\n`;
-    details += `Category: ${category}\n`;
-    details += `Hierarchy Level: ${sortOrder <= 5 ? 'Senior Officer' : (sortOrder <= 10 ? 'Junior Officer' : 'Crew Member')}\n`;
-
-    alert(details);
-}
-
-function confirmDelete(rankName) {
-    return confirm(`Are you sure you want to delete the rank "${rankName}"?\n\nThis action will:\n- Remove the rank from the system\n- Affect candidates assigned to this rank\n- Impact job postings using this rank\n\nThis action cannot be undone.`);
-}
-
-$(document).ready(function() {
-    // Auto-hide success/error alerts after 5 seconds
-    $('.modern-alert').each(function() {
-        const $alert = $(this);
-        setTimeout(() => {
-            $alert.fadeOut(300, () => $alert.remove());
-        }, 5000);
-    });
-
-    // Enhanced table row interactions
-    $('.table-data-row').hover(
-        function() {
-            $(this).addClass('hovered');
-            $(this).find('.rank-icon').addClass('hovered');
-        },
-        function() {
-            $(this).removeClass('hovered');
-            $(this).find('.rank-icon').removeClass('hovered');
-        }
-    );
-
-    // Smooth scrolling for pagination
-    $('.pagination a').on('click', function() {
-        $('html, body').animate({
-            scrollTop: $('.enterprise-section').offset().top - 100
-        }, 500);
-    });
-
-    // Enhanced responsive table handling
-    function adjustTableForMobile() {
-        const isMobile = window.innerWidth < 768;
-
-        if (isMobile) {
-            $('.table-container').addClass('mobile-optimized');
-            $('.usage-stats, .sort-label').hide();
-        } else {
-            $('.table-container').removeClass('mobile-optimized');
-            $('.usage-stats, .sort-label').show();
-        }
-    }
-
-    // Initial check and resize listener
-    adjustTableForMobile();
-    $(window).resize(adjustTableForMobile);
-
-    // Add rank hierarchy visual indicators
-    $('.rank-row').each(function() {
-        const sortOrder = parseInt($(this).find('.sort-number').text());
-
-        if (sortOrder <= 5) {
-            $(this).addClass('senior-officer-row');
-        } else if (sortOrder <= 10) {
-            $(this).addClass('junior-officer-row');
-        } else {
-            $(this).addClass('crew-row');
-        }
-    });
-
-    // Enhanced action button interactions
-    $('.action-button').on('mouseenter', function() {
-        $(this).find('i').addClass('animated pulse');
-    }).on('mouseleave', function() {
-        $(this).find('i').removeClass('animated pulse');
-    });
-});
-</script>
 @endpush

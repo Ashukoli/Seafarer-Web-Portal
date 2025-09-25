@@ -1,7 +1,5 @@
-{{-- resources/views/admin/shiptypes/index.blade.php --}}
+{{-- resources/views/admin/hotjobs/index.blade.php --}}
 @extends('layouts.admin.app')
-
-@section('title', 'Ship Types Management')
 
 @section('content')
 <main class="page-content professional-bg">
@@ -22,82 +20,57 @@
                         <li class="breadcrumb-separator">
                             <i class="bx bx-chevron-right"></i>
                         </li>
-                        <li class="breadcrumb-item">
-                            <a href="#" class="breadcrumb-link">
-                                <div class="breadcrumb-icon">
-                                    <i class="bx bx-cog"></i>
-                                </div>
-                                <span class="breadcrumb-text">Masters</span>
-                            </a>
-                        </li>
-                        <li class="breadcrumb-separator">
-                            <i class="bx bx-chevron-right"></i>
-                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             <div class="breadcrumb-icon">
-                                <i class="bx bx-ship"></i>
+                                <i class="bx bx-briefcase"></i>
                             </div>
-                            <span class="breadcrumb-text">Ship Types</span>
+                            <span class="breadcrumb-text">Hot Jobs</span>
                         </li>
                     </ol>
                 </nav>
             </div>
         </div>
 
-        <!-- Professional Page Header -->
+        <!-- Compact Professional Page Header -->
         <div class="compact-header-section mb-4">
             <div class="compact-header-card">
                 <div class="compact-header-content">
                     <div class="compact-header-icon">
-                        <i class="bx bx-ship"></i>
+                        <i class="bx bx-briefcase"></i>
                     </div>
                     <div class="compact-header-text">
-                        <h1 class="compact-page-title">Ship Types Management</h1>
-                        <p class="compact-page-subtitle">Manage vessel categories and ship type classifications for maritime operations</p>
+                        <h1 class="compact-page-title">Hot Jobs Management</h1>
+                        <p class="compact-page-subtitle">Manage urgent job postings and track seafarer applications</p>
                     </div>
                 </div>
                 <div class="compact-header-actions">
-                    <a href="{{ route('admin.shiptypes.create') }}" class="enterprise-btn btn-success">
+                    <a href="{{ route('admin.hotjobs.create') }}" class="enterprise-btn btn-success">
                         <i class="bx bx-plus"></i>
-                        <span>Add New Ship Type</span>
+                        <span>Add Hot Job</span>
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Success/Error Messages -->
-        @if(session('success'))
-            <div class="modern-alert modern-alert-success mb-4">
-                <div class="alert-icon">
-                    <i class="bx bx-check-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>Success!</strong>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="bx bx-x"></i>
-                </button>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="modern-alert modern-alert-error mb-4">
-                <div class="alert-icon">
-                    <i class="bx bx-error-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>Error!</strong>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="bx bx-x"></i>
-                </button>
-            </div>
-        @endif
-
-        <!-- Ship Types Data Section -->
+        <!-- Hot Jobs Section -->
         <div class="enterprise-section">
+            <div class="section-header-wrapper">
+
+                <div class="hotjobs-summary">
+                    <div class="summary-stat">
+                        <span class="stat-number">{{ $hotjobs->total() }}</span>
+                        <span class="stat-label">Total Jobs</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-number">{{ $hotjobs->where('status', 'active')->count() }}</span>
+                        <span class="stat-label">Active Jobs</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-number">{{ $hotjobs->where('status', 'pending')->count() }}</span>
+                        <span class="stat-label">Pending Jobs</span>
+                    </div>
+                </div>
+            </div>
 
             <div class="professional-table-wrapper">
                 <div class="table-container">
@@ -110,16 +83,46 @@
                                         <span>#</span>
                                     </div>
                                 </th>
+                                <th class="table-header-cell company-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-buildings header-icon"></i>
+                                        <span>Company</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell rank-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-crown header-icon"></i>
+                                        <span>Rank</span>
+                                    </div>
+                                </th>
                                 <th class="table-header-cell ship-column">
                                     <div class="header-cell-content">
                                         <i class="bx bx-ship header-icon"></i>
-                                        <span>Ship Type Name</span>
+                                        <span>Ship Type</span>
                                     </div>
                                 </th>
-                                <th class="table-header-cell sort-column">
+                                <th class="table-header-cell date-column">
                                     <div class="header-cell-content">
-                                        <i class="bx bx-sort-alt-2 header-icon"></i>
-                                        <span>Sort Order</span>
+                                        <i class="bx bx-calendar header-icon"></i>
+                                        <span>Joining Date</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell status-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-check-shield header-icon"></i>
+                                        <span>Status</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell sms-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-message-dots header-icon"></i>
+                                        <span>SMS</span>
+                                    </div>
+                                </th>
+                                <th class="table-header-cell posted-column">
+                                    <div class="header-cell-content">
+                                        <i class="bx bx-user-check header-icon"></i>
+                                        <span>Posted By</span>
                                     </div>
                                 </th>
                                 <th class="table-header-cell actions-column">
@@ -131,65 +134,136 @@
                             </tr>
                         </thead>
                         <tbody class="table-body-section">
-                            @forelse($shipTypes as $ship)
-                                <tr class="table-data-row ship-type-row" data-ship-id="{{ $ship->id }}">
+                            @forelse($hotjobs as $i => $hotjob)
+                                <tr class="table-data-row">
                                     <td class="table-data-cell no-cell">
                                         <div class="number-display">
-                                            <span class="row-number">{{ $loop->iteration + (($shipTypes->currentPage()-1) * $shipTypes->perPage()) }}</span>
+                                            <span class="row-number">{{ $hotjobs->firstItem() + $i }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell company-cell">
+                                        <div class="company-display">
+                                            <div class="company-avatar">
+                                                <i class="bx bx-buildings"></i>
+                                            </div>
+                                            <div class="company-info">
+                                                <div class="company-name">{{ $hotjob->company->company_name ?? 'N/A' }}</div>
+                                                <div class="company-type">Maritime Company</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell rank-cell">
+                                        <div class="rank-display">
+                                            <div class="rank-badge">
+                                                <i class="bx bx-crown"></i>
+                                                <span class="rank-name">{{ $hotjob->rank->rank ?? 'N/A' }}</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="table-data-cell ship-cell">
                                         <div class="ship-display">
-                                            <div class="ship-info">
-                                                <div class="ship-name">{{ $ship->ship_name }}</div>
+                                            <div class="ship-badge">
+                                                <i class="bx bx-ship"></i>
+                                                <span class="ship-name">{{ $hotjob->ship->ship_name ?? 'N/A' }}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="table-data-cell sort-cell">
-                                        <div class="sort-display">
-                                            <div class="sort-badge {{ $ship->sort <= 10 ? 'high-priority' : 'standard-priority' }}">
-                                                <i class="bx bx-sort-alt-2"></i>
-                                                <span class="sort-number">{{ $ship->sort }}</span>
+                                    <td class="table-data-cell date-cell">
+                                        <div class="date-display">
+                                            @if($hotjob->joiningdate)
+                                                <div class="date-primary">
+                                                    {{ \Carbon\Carbon::parse($hotjob->joiningdate)->format('M d, Y') }}
+                                                </div>
+                                                <div class="date-secondary">
+                                                    {{ \Carbon\Carbon::parse($hotjob->joiningdate)->format('D') }}
+                                                </div>
+                                            @else
+                                                <span class="no-data-text">Not Set</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell status-cell">
+                                        <div class="status-display">
+                                            @php
+                                                $statusClass = match(strtolower($hotjob->status)) {
+                                                    'active' => 'status-active',
+                                                    'pending' => 'status-pending',
+                                                    'expired' => 'status-expired',
+                                                    default => 'status-default'
+                                                };
+                                                $statusIcon = match(strtolower($hotjob->status)) {
+                                                    'active' => 'bx-check-circle',
+                                                    'pending' => 'bx-time-five',
+                                                    'expired' => 'bx-x-circle',
+                                                    default => 'bx-help-circle'
+                                                };
+                                            @endphp
+                                            <div class="status-badge {{ $statusClass }}">
+                                                <i class="bx {{ $statusIcon }}"></i>
+                                                <span>{{ ucfirst($hotjob->status) }}</span>
                                             </div>
-                                            <div class="sort-label">
-                                                {{ $ship->sort <= 5 ? 'High Priority' : ($ship->sort <= 10 ? 'Standard' : 'General') }}
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell sms-cell">
+                                        <div class="sms-display">
+                                            @php
+                                                $smsClass = $hotjob->withsms === 'yes' ? 'sms-enabled' : 'sms-disabled';
+                                                $smsIcon = $hotjob->withsms === 'yes' ? 'bx-check-circle' : 'bx-x-circle';
+                                            @endphp
+                                            <div class="sms-badge {{ $smsClass }}">
+                                                <i class="bx {{ $smsIcon }}"></i>
+                                                <span>{{ ucfirst($hotjob->withsms) }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="table-data-cell posted-cell">
+                                        <div class="posted-display">
+                                            <div class="posted-info">
+                                                <div class="posted-name">{{ $hotjob->posted_by_name ?: 'N/A' }}</div>
+                                                <div class="posted-email">{{ $hotjob->posted_by_email ?: 'N/A' }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="table-data-cell actions-cell">
                                         <div class="action-buttons-group">
-                                            <a href="{{ route('admin.shiptypes.edit', $ship->id) }}"
+                                            <a href="{{ route('admin.hotjobs.edit', $hotjob->id) }}"
                                                class="action-button edit-button"
-                                               data-tooltip="Edit Ship Type">
+                                               data-tooltip="Edit Job">
                                                 <i class="bx bx-edit"></i>
                                             </a>
-                                            <form action="{{ route('admin.shiptypes.destroy', $ship->id) }}"
-                                                  method="POST"
-                                                  style="display:inline;"
-                                                  onsubmit="return confirmDelete('{{ $ship->ship_name }}')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="action-button delete-button"
-                                                        data-tooltip="Delete Ship Type">
-                                                    <i class="bx bx-trash"></i>
-                                                </button>
-                                            </form>
+                                            @if($hotjob->status == 'pending')
+                                                <form action="{{ route('admin.hotjobs.validate', $hotjob->id) }}"
+                                                      method="POST"
+                                                      style="display:inline;"
+                                                      onsubmit="return confirm('Are you sure you want to validate this job?')">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="action-button validate-button"
+                                                            data-tooltip="Validate Job">
+                                                        <i class="bx bx-check-double"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <button class="action-button view-button"
+                                                    data-tooltip="View Details"
+                                                    onclick="viewJobDetails({{ json_encode($hotjob) }})">
+                                                <i class="bx bx-show"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr class="empty-state-row">
-                                    <td colspan="6" class="empty-state-cell">
+                                    <td colspan="9" class="empty-state-cell">
                                         <div class="professional-empty-state">
-                                            <div class="empty-state-icon shiptypes-empty-icon">
-                                                <i class="bx bx-ship"></i>
+                                            <div class="empty-state-icon hotjobs-empty-icon">
+                                                <i class="bx bx-briefcase"></i>
                                             </div>
-                                            <h3 class="empty-state-title">No Ship Types Found</h3>
-                                            <p class="empty-state-message">Start building your maritime vessel catalog by adding the first ship type classification.</p>
-                                            <a href="{{ route('admin.shiptypes.create') }}" class="enterprise-btn btn-success">
+                                            <h3 class="empty-state-title">No Hot Jobs Found</h3>
+                                            <p class="empty-state-message">Start attracting qualified seafarers by posting your first hot job.</p>
+                                            <a href="{{ route('admin.hotjobs.create') }}" class="enterprise-btn btn-success">
                                                 <i class="bx bx-plus"></i>
-                                                <span>Add First Ship Type</span>
+                                                <span>Post First Hot Job</span>
                                             </a>
                                         </div>
                                     </td>
@@ -201,16 +275,16 @@
             </div>
 
             <!-- Modern Pagination -->
-            @if($shipTypes->hasPages())
+            @if($hotjobs->hasPages())
                 <div class="modern-pagination-wrapper">
                     <div class="pagination-info">
                         <span class="pagination-text">
-                            Showing {{ $shipTypes->firstItem() ?? 0 }} to {{ $shipTypes->lastItem() ?? 0 }}
-                            of {{ $shipTypes->total() }} ship types
+                            Showing {{ $hotjobs->firstItem() ?? 0 }} to {{ $hotjobs->lastItem() ?? 0 }}
+                            of {{ $hotjobs->total() }} jobs
                         </span>
                     </div>
                     <div class="pagination-controls">
-                         {{ $shipTypes->links('pagination::bootstrap-4') }}
+                        {{ $hotjobs->links() }}
                     </div>
                 </div>
             @endif
@@ -370,7 +444,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--info-color) 0%, var(--primary-color) 100%);
+    background: linear-gradient(90deg, var(--info-color) 0%, var(--success-color) 100%);
 }
 
 .compact-header-content {
@@ -410,94 +484,6 @@
 
 .compact-header-actions {
     flex-shrink: 0;
-}
-
-/* Modern Alert Styling */
-.modern-alert {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--border-radius-sm);
-    border: 1px solid;
-    position: relative;
-    box-shadow: var(--shadow-subtle);
-    animation: slideInDown 0.3s ease-out;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.modern-alert-success {
-    background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%);
-    border-color: rgba(5, 150, 105, 0.2);
-    color: #065f46;
-}
-
-.modern-alert-error {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%);
-    border-color: rgba(220, 38, 38, 0.2);
-    color: #7f1d1d;
-}
-
-.alert-icon {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 1rem;
-}
-
-.modern-alert-success .alert-icon {
-    background: var(--success-color);
-    color: white;
-}
-
-.modern-alert-error .alert-icon {
-    background: var(--danger-color);
-    color: white;
-}
-
-.alert-content {
-    flex: 1;
-    line-height: 1.5;
-}
-
-.alert-content strong {
-    font-weight: 600;
-    display: inline;
-    margin-right: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.alert-close {
-    position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-md);
-    background: none;
-    border: none;
-    color: inherit;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 4px;
-    transition: var(--transition-fast);
-    opacity: 0.7;
-}
-
-.alert-close:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.1);
 }
 
 /* Enterprise Section */
@@ -540,7 +526,7 @@
     border: 2px solid;
 }
 
-.shiptypes-badge {
+.hotjobs-badge {
     background: var(--info-light);
     color: var(--info-color);
     border-color: rgba(8, 145, 178, 0.2);
@@ -565,7 +551,8 @@
     line-height: 1.4;
 }
 
-.shiptypes-summary {
+/* Hot Jobs Summary */
+.hotjobs-summary {
     display: flex;
     gap: var(--spacing-lg);
 }
@@ -665,12 +652,15 @@
 }
 
 /* Column Sizing */
-.no-column { width: 8%; }
-.ship-column { width: 28%; }
-.sort-column { width: 15%; }
-.category-column { width: 22%; }
-.usage-column { width: 15%; }
-.actions-column { width: 12%; }
+.no-column { width: 6%; }
+.company-column { width: 18%; }
+.rank-column { width: 12%; }
+.ship-column { width: 12%; }
+.date-column { width: 10%; }
+.status-column { width: 10%; }
+.sms-column { width: 8%; }
+.posted-column { width: 16%; }
+.actions-column { width: 8%; }
 
 .table-body-section {
     background: var(--surface-elevated);
@@ -683,8 +673,6 @@
 
 .table-data-row:hover {
     background: rgba(248, 250, 252, 0.8);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-subtle);
 }
 
 .table-data-cell {
@@ -702,8 +690,8 @@
 .row-number {
     width: 32px;
     height: 32px;
-    background: var(--info-light);
-    color: var(--info-color);
+    background: var(--primary-light);
+    color: var(--primary-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -712,232 +700,204 @@
     font-size: 0.875rem;
 }
 
-/* Ship Display */
-.ship-display {
+/* Company Display */
+.company-display {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
 }
 
-.ship-icon-wrapper {
-    flex-shrink: 0;
-}
-
-.ship-icon {
-    width: 40px;
-    height: 40px;
+.company-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--info-light);
+    color: var(--info-color);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    border: 2px solid;
+    font-size: 1rem;
+    border: 2px solid rgba(8, 145, 178, 0.2);
+    flex-shrink: 0;
 }
 
-.ship-icon.tanker {
-    background: var(--info-light);
-    color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.3);
-}
-
-.ship-icon.container {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border-color: rgba(79, 70, 229, 0.3);
-}
-
-.ship-icon.bulk {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.3);
-}
-
-.ship-icon.passenger {
-    background: var(--success-light);
-    color: var(--success-color);
-    border-color: rgba(5, 150, 105, 0.3);
-}
-
-.ship-icon.cargo {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.3);
-}
-
-.ship-icon.offshore {
-    background: var(--danger-light);
-    color: var(--danger-color);
-    border-color: rgba(220, 38, 38, 0.3);
-}
-
-.ship-icon.lng {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    color: #0891b2;
-    border-color: rgba(8, 145, 178, 0.3);
-}
-
-.ship-icon.general {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.3);
-}
-
-.ship-info {
+.company-info {
     flex: 1;
 }
 
-.ship-name {
-    font-size: 0.9375rem;
+.company-name {
+    font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
     line-height: 1.3;
     margin-bottom: 0.125rem;
 }
 
-.ship-description {
+.company-type {
     font-size: 0.75rem;
     color: var(--text-muted);
     line-height: 1.2;
 }
 
-/* Sort Display */
-.sort-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.sort-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--border-radius-sm);
-    font-weight: 600;
-    border: 1px solid;
-}
-
-.sort-badge.high-priority {
-    background: var(--danger-light);
-    color: var(--danger-color);
-    border-color: rgba(220, 38, 38, 0.2);
-}
-
-.sort-badge.standard-priority {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.2);
-}
-
-.sort-number {
-    font-size: 0.875rem;
-    font-weight: 700;
-}
-
-.sort-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-}
-
-/* Category Display */
-.category-display {
+/* Rank Display */
+.rank-display {
     display: flex;
     justify-content: center;
 }
 
-.category-badge {
+.rank-badge {
     display: flex;
     align-items: center;
     gap: 0.375rem;
     padding: 0.375rem 0.75rem;
+    background: var(--warning-light);
+    color: var(--warning-color);
     border-radius: var(--border-radius-sm);
     font-weight: 600;
-    border: 1px solid;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.rank-name {
     font-size: 0.8125rem;
 }
 
-.category-badge.tanker {
-    background: var(--info-light);
-    color: var(--info-color);
-    border-color: rgba(8, 145, 178, 0.2);
+/* Ship Display */
+.ship-display {
+    display: flex;
+    justify-content: center;
 }
 
-.category-badge.container {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border-color: rgba(79, 70, 229, 0.2);
+.ship-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--secondary-light);
+    color: var(--secondary-color);
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    border: 1px solid var(--border-primary);
 }
 
-.category-badge.bulk {
-    background: var(--warning-light);
-    color: var(--warning-color);
-    border-color: rgba(217, 119, 6, 0.2);
+.ship-name {
+    font-size: 0.8125rem;
 }
 
-.category-badge.passenger {
+/* Date Display */
+.date-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.date-primary {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.date-secondary {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.2;
+}
+
+/* Status Display */
+.status-display {
+    display: flex;
+    justify-content: center;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid;
+}
+
+.status-active {
     background: var(--success-light);
     color: var(--success-color);
     border-color: rgba(5, 150, 105, 0.2);
 }
 
-.category-badge.cargo {
-    background: var(--secondary-light);
-    color: var(--secondary-color);
-    border-color: rgba(100, 116, 139, 0.2);
+.status-pending {
+    background: var(--warning-light);
+    color: var(--warning-color);
+    border-color: rgba(217, 119, 6, 0.2);
 }
 
-.category-badge.offshore {
+.status-expired {
     background: var(--danger-light);
     color: var(--danger-color);
     border-color: rgba(220, 38, 38, 0.2);
 }
 
-.category-badge.lng {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    color: #0891b2;
-    border-color: rgba(8, 145, 178, 0.2);
-}
-
-.category-badge.general {
+.status-default {
     background: var(--secondary-light);
     color: var(--secondary-color);
     border-color: rgba(100, 116, 139, 0.2);
 }
 
-/* Usage Display */
-.usage-display {
+/* SMS Display */
+.sms-display {
     display: flex;
     justify-content: center;
 }
 
-.usage-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+.sms-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
 }
 
-.usage-item {
+.sms-enabled {
+    background: var(--success-light);
+    color: var(--success-color);
+    border-color: rgba(5, 150, 105, 0.2);
+}
+
+.sms-disabled {
+    background: var(--danger-light);
+    color: var(--danger-color);
+    border-color: rgba(220, 38, 38, 0.2);
+}
+
+/* Posted By Display */
+.posted-display {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
 }
 
-.usage-item i {
-    color: var(--text-muted);
+.posted-info {
+    flex: 1;
+}
+
+.posted-name {
     font-size: 0.875rem;
-}
-
-.usage-count {
     font-weight: 600;
     color: var(--text-primary);
-    min-width: 20px;
+    line-height: 1.3;
+    margin-bottom: 0.125rem;
 }
 
-.usage-label {
+.posted-email {
+    font-size: 0.75rem;
     color: var(--text-muted);
+    line-height: 1.2;
+    word-break: break-all;
 }
 
 /* Action Buttons */
@@ -974,6 +934,18 @@
     box-shadow: var(--shadow-medium);
 }
 
+.validate-button {
+    color: var(--success-color);
+    border-color: rgba(5, 150, 105, 0.3);
+}
+
+.validate-button:hover {
+    background: var(--success-light);
+    border-color: var(--success-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
 .view-button {
     color: var(--info-color);
     border-color: rgba(8, 145, 178, 0.3);
@@ -986,16 +958,10 @@
     box-shadow: var(--shadow-medium);
 }
 
-.delete-button {
-    color: var(--danger-color);
-    border-color: rgba(220, 38, 38, 0.3);
-}
-
-.delete-button:hover {
-    background: var(--danger-light);
-    border-color: var(--danger-color);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
+.no-data-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-style: italic;
 }
 
 /* Professional Empty State */
@@ -1017,7 +983,7 @@
     font-size: 2.5rem;
 }
 
-.shiptypes-empty-icon {
+.hotjobs-empty-icon {
     background: var(--info-light);
     color: var(--info-color);
 }
@@ -1117,7 +1083,7 @@
         justify-content: center;
     }
 
-    .shiptypes-summary {
+    .hotjobs-summary {
         justify-content: space-around;
         width: 100%;
     }
@@ -1152,7 +1118,7 @@
         font-size: 0.8125rem;
     }
 
-    .ship-display {
+    .company-display {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--spacing-xs);
@@ -1190,11 +1156,7 @@
         text-align: center;
     }
 
-    .usage-stats {
-        display: none;
-    }
-
-    .sort-label {
+    .posted-email {
         display: none;
     }
 }
@@ -1206,141 +1168,43 @@
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
-
-/* Table row animation on load */
-.table-data-row {
-    animation: fadeInUp 0.3s ease-out;
-    animation-fill-mode: both;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.table-data-row:nth-child(odd) {
-    animation-delay: 0.05s;
-}
-
-.table-data-row:nth-child(even) {
-    animation-delay: 0.1s;
-}
 </style>
 @endpush
 
 @push('scripts')
 <script>
-function viewShipTypeDetails(shipName, sortOrder, category) {
-    let details = `Ship Type Details:\n\n`;
-    details += `Ship Name: ${shipName}\n`;
-    details += `Sort Order: ${sortOrder}\n`;
-    details += `Category: ${category}\n`;
-    details += `Priority Level: ${sortOrder <= 5 ? 'High Priority' : (sortOrder <= 10 ? 'Standard Priority' : 'General Priority')}\n`;
+function viewJobDetails(job) {
+    let details = 'Job Details:\n\n';
+    details += 'Company: ' + (job.company ? job.company.company_name : 'N/A') + '\n';
+    details += 'Rank: ' + (job.rank ? job.rank.rank : 'N/A') + '\n';
+    details += 'Ship: ' + (job.ship ? job.ship.ship_name : 'N/A') + '\n';
+    details += 'Joining Date: ' + (job.joiningdate || 'N/A') + '\n';
+    details += 'Nationality: ' + (job.nationality || 'N/A') + '\n';
+    details += 'Experience: ' + (job.experience || 'N/A') + '\n';
+    details += 'Status: ' + job.status + '\n';
+    details += 'SMS: ' + job.withsms + '\n';
+    details += 'Posted By: ' + (job.posted_by_name || 'N/A') + '\n';
+    details += 'Email: ' + (job.posted_by_email || 'N/A') + '\n';
+    if (job.description) {
+        details += 'Description: ' + job.description;
+    }
 
     alert(details);
 }
 
-function confirmDelete(shipName) {
-    return confirm(`Are you sure you want to delete the ship type "${shipName}"?\n\nThis action will:\n- Remove the ship type from the system\n- Affect job postings using this ship type\n- Impact candidate profiles referencing this vessel type\n\nThis action cannot be undone.`);
-}
-
 $(document).ready(function() {
-    // Auto-hide success/error alerts after 5 seconds
-    $('.modern-alert').each(function() {
-        const $alert = $(this);
-        setTimeout(() => {
-            $alert.fadeOut(300, () => $alert.remove());
-        }, 5000);
+    // Smooth scroll animations
+    $('.table-data-row').each(function(index) {
+        $(this).css('animation-delay', (index * 0.05) + 's');
     });
 
-    // Enhanced table row interactions
-    $('.table-data-row').hover(
-        function() {
-            $(this).addClass('hovered');
-            $(this).find('.ship-icon').addClass('hovered');
-        },
-        function() {
-            $(this).removeClass('hovered');
-            $(this).find('.ship-icon').removeClass('hovered');
-        }
-    );
-
-    // Smooth scrolling for pagination
-    $('.pagination a').on('click', function() {
-        $('html, body').animate({
-            scrollTop: $('.enterprise-section').offset().top - 100
-        }, 500);
-    });
-
-    // Enhanced responsive table handling
-    function adjustTableForMobile() {
-        const isMobile = window.innerWidth < 768;
-
-        if (isMobile) {
-            $('.table-container').addClass('mobile-optimized');
-            $('.usage-stats, .sort-label').hide();
-        } else {
-            $('.table-container').removeClass('mobile-optimized');
-            $('.usage-stats, .sort-label').show();
-        }
-    }
-
-    // Initial check and resize listener
-    adjustTableForMobile();
-    $(window).resize(adjustTableForMobile);
-
-    // Add ship type category visual indicators
-    $('.ship-type-row').each(function() {
-        const sortOrder = parseInt($(this).find('.sort-number').text());
-
-        if (sortOrder <= 5) {
-            $(this).addClass('high-priority-row');
-        } else if (sortOrder <= 10) {
-            $(this).addClass('standard-priority-row');
-        } else {
-            $(this).addClass('general-priority-row');
+    // Confirm validation
+    $('.validate-button').on('click', function(e) {
+        if (!confirm('Are you sure you want to validate this job? This action will make the job active.')) {
+            e.preventDefault();
+            return false;
         }
     });
-
-    // Enhanced action button interactions
-    $('.action-button').on('mouseenter', function() {
-        $(this).find('i').addClass('animated pulse');
-    }).on('mouseleave', function() {
-        $(this).find('i').removeClass('animated pulse');
-    });
-
-    // Ship type categorization visual feedback
-    $('.ship-icon').each(function() {
-        const $icon = $(this);
-        const shipName = $icon.closest('.ship-display').find('.ship-name').text().toLowerCase();
-
-        // Add subtle animation for ship type recognition
-        if (shipName.includes('tanker')) {
-            $icon.css('animation', 'float 3s ease-in-out infinite');
-        } else if (shipName.includes('container')) {
-            $icon.css('animation', 'bounce 2s ease-in-out infinite');
-        }
-    });
-
-    // Add CSS for animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-    `;
-    document.head.appendChild(style);
 });
 </script>
 @endpush

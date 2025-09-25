@@ -13,6 +13,8 @@ use App\Models\Banner;
 use App\Models\CountryCode;
 use App\Models\User;
 use App\Models\CompanySubadmin;
+use App\Models\CompanySubadminLoginLog;
+use App\Models\CompanyFollowUp;
 
 class CompanyController extends Controller
 {
@@ -30,7 +32,7 @@ class CompanyController extends Controller
         return view('admin.company.index', compact('companies'));
     }
 
-    public function show(int $id)
+    public function show($id)
     {
         $company = $this->service->getCompanyById($id);
         return view('admin.company.show', compact('company'));
@@ -195,44 +197,86 @@ class CompanyController extends Controller
         return view('admin.company.edit_superadmin', compact('company', 'superadmin', 'countryCodes'));
     }
 
-    public function updateSuperadmin(Request $request, $companyId)
+   public function updateSuperadmin(Request $request, $companyId)
     {
         $company = CompanyDetail::findOrFail($companyId);
-        $superadmin = $company->superadmin; // Eloquent relation to User
+        $superadmin = $company->superadmin;
+        $superadminId = $superadmin ? $superadmin->id : null;
 
         $request->validate([
-            'superadmin_username'      => 'required|string|max:100|unique:users,username,' . ($superadmin->id ?? 'NULL') . ',id',
+            'superadmin_username'      => [
+                'required',
+                'string',
+                'max:100',
+                \Illuminate\Validation\Rule::unique('users', 'username')->ignore($superadminId),
+            ],
             'superadmin_name'          => 'required|string|max:255',
             'superadmin_designation'   => 'required|string|max:255',
             'superadmin_country_code'  => 'required|string|max:8',
             'superadmin_mobile'        => 'required|string|max:20',
-            'superadmin_email'         => 'nullable|email|unique:users,email,' . ($superadmin->id ?? 'NULL') . ',id',
+            'superadmin_email'         => [
+                'nullable',
+                'email',
+                \Illuminate\Validation\Rule::unique('users', 'email')->ignore($superadminId),
+            ],
             'superadmin_password'      => $superadmin ? 'nullable|string|min:6' : 'required|string|min:6',
         ]);
 
-        // Only update designation in company_details
-        $company->superadmin_designation = $request->superadmin_designation;
-        $company->save();
+        // Combined uniqueness checks
+        $checks = [
+            [
+                'field' => ['username' => $request->superadmin_username],
+                'error' => ['superadmin_username' => 'The username is already in use.'],
+            ],
+            [
+                'field' => [
+                    'mobile' => $request->superadmin_mobile,
+                    'country_code' => $request->superadmin_country_code,
+                ],
+                'error' => ['superadmin_mobile' => 'The mobile number is already in use.'],
+            ],
+        ];
 
-        // All other fields in user table
-        app(CompanyService::class)->updateOrCreateSuperadmin($company, $request->all());
+        if ($request->superadmin_email) {
+            $checks[] = [
+                'field' => ['email' => $request->superadmin_email],
+                'error' => ['superadmin_email' => 'The email is already in use.'],
+            ];
+        }
 
-        return redirect()->route('admin.company.index')->with('success', 'Superadmin updated successfully.');
+        foreach ($checks as $check) {
+            $query = User::query();
+            foreach ($check['field'] as $col => $val) {
+                $query->where($col, $val);
+            }
+            if ($superadminId) {
+                $query->where('id', '!=', $superadminId);
+            }
+            if ($query->exists()) {
+                return back()->withErrors($check['error'])->withInput();
+            }
+        }
+
+        // All DB operations are handled in the service
+        $this->service->updateOrCreateSuperadmin($company, $request->all());
+
+        return redirect()->route('admin.company.superadmin.edit', $companyId)->with('success', 'Superadmin updated successfully.');
     }
 
     // --- Subadmin Management ---
     public function editSubadmins($companyId)
     {
         $company = CompanyDetail::findOrFail($companyId);
+
         // Get all subadmin users for this company
         $subadmins = $company->subadmins()->with('user')->get()->map(function ($sub) {
             return [
                 'id' => $sub->user->id,
                 'username' => $sub->user->username,
                 'name' => $sub->user->first_name,
-                'designation' => $sub->designation,
-                'country_code' => $sub->country_code ?? '+91',
-                 'mobile' => $sub->mobile ?? '',
+                'designation' => $sub->user->designation, // <-- from user
+                'country_code' => $sub->user->country_code ?? '+91', // <-- from user
+                'mobile' => $sub->user->mobile ?? '', // <-- from user
                 'email' => $sub->user->email,
             ];
         })->toArray();
@@ -258,12 +302,13 @@ class CompanyController extends Controller
         }
         $validated = $request->validate($rules);
 
-        // Custom uniqueness validation for username, mobile (with country_code), and email
+        // Uniqueness checks for username, mobile, and email in users table
         foreach ($request->input('subadmins', []) as $index => $subadmin) {
             $id = $subadmin['id'] ?? null;
 
-            // Username uniqueness in users table
-            $usernameExists = User::where('username', $subadmin['username'])
+            // Username uniqueness (including soft-deleted)
+            $usernameExists = User::withTrashed()
+                ->where('username', $subadmin['username'])
                 ->when($id, fn($q) => $q->where('id', '!=', $id))
                 ->exists();
             if ($usernameExists) {
@@ -272,46 +317,25 @@ class CompanyController extends Controller
                 ])->withInput();
             }
 
-            // Mobile uniqueness in users table
-            $mobileExistsInUsers = User::where('mobile', $subadmin['mobile'])
+            // Mobile uniqueness (including soft-deleted)
+            $mobileExists = User::withTrashed()
+                ->where('mobile', $subadmin['mobile'])
                 ->where('country_code', $subadmin['country_code'])
                 ->when($id, fn($q) => $q->where('id', '!=', $id))
                 ->exists();
-
-            // Mobile uniqueness in company_subadmins table
-            $mobileExistsInSubadmins = CompanySubadmin::where('mobile', $subadmin['mobile'])
-                ->where('country_code', $subadmin['country_code'])
-                ->when($id, fn($q) => $q->where('user_id', '!=', $id))
-                ->exists();
-
-            // Mobile uniqueness in company_details (superadmin)
-            $mobileExistsInSuperadmin = CompanyDetail::where('superadmin_mobile', $subadmin['mobile'])
-                ->where('superadmin_country_code', $subadmin['country_code'])
-                ->where('id', '!=', $company->id)
-                ->exists();
-
-            if ($mobileExistsInUsers || $mobileExistsInSubadmins || $mobileExistsInSuperadmin) {
+            if ($mobileExists) {
                 return back()->withErrors([
                     "subadmins.$index.mobile" => "The mobile number {$subadmin['country_code']} {$subadmin['mobile']} is already in use.",
                 ])->withInput();
             }
 
-            // Email uniqueness in users table
+            // Email uniqueness (including soft-deleted)
             if (!empty($subadmin['email'])) {
-                $emailExistsInUsers = User::where('email', $subadmin['email'])
+                $emailExists = User::withTrashed()
+                    ->where('email', $subadmin['email'])
                     ->when($id, fn($q) => $q->where('id', '!=', $id))
                     ->exists();
-
-                // Email uniqueness in company_subadmins (via user relation)
-                $emailExistsInSubadmins = CompanySubadmin::whereHas('user', function($q) use ($subadmin, $id) {
-                        $q->where('email', $subadmin['email']);
-                        if ($id) {
-                            $q->where('id', '!=', $id);
-                        }
-                    })
-                    ->exists();
-
-                if ($emailExistsInUsers || $emailExistsInSubadmins) {
+                if ($emailExists) {
                     return back()->withErrors([
                         "subadmins.$index.email" => "The email {$subadmin['email']} is already in use.",
                     ])->withInput();
@@ -321,6 +345,91 @@ class CompanyController extends Controller
 
         app(CompanyService::class)->updateSubadmins($company, $request->input('subadmins', []));
 
-        return redirect()->route('admin.company.index')->with('success', 'Subadmins updated successfully!');
+        return redirect()->route('admin.company.subadmins.edit', $company->id)->with('success', 'Subadmins updated successfully!');
+    }
+
+    public function adminLogins($companyId)
+    {
+        $company = CompanyDetail::findOrFail($companyId);
+        $superadmin = $company->superadmin;
+        $subadmins = $company->subadmins()->with('user')->get();
+
+        return view('admin.company.adminlogins', compact('company', 'superadmin', 'subadmins'));
+    }
+
+    public function showLoginLogs($companyId, $userId)
+    {
+        $company = CompanyDetail::findOrFail($companyId);
+        $user = User::findOrFail($userId);
+
+        $logs = CompanySubadminLoginLog::where('user_id', $userId)
+            ->orderByDesc('login_at')
+            ->paginate(50);
+
+        return view('admin.company.loginlogs', compact('company', 'user', 'logs'));
+    }
+
+    // List all follow-ups (today's and next)
+    public function followupsIndex(Request $request)
+    {
+        $perPage = (int) $request->input('per_page', 25);
+        $followups = $this->service->getFollowUpsForTodayAndUpcoming($perPage);
+        return view('admin.company.followups.index', compact('followups'));
+    }
+
+    // Show create form
+    public function followupsCreate(Request $request)
+    {
+        $companyId = $request->get('company_id');
+        $company = CompanyDetail::findOrFail($companyId);
+
+        // Fetch previous follow-ups for this company, ordered by next_follow_up_date descending, then follow_up_date descending
+        $previousFollowups = CompanyFollowUp::where('company_id', $companyId)
+            ->orderByDesc('next_follow_up_date')
+            ->orderByDesc('follow_up_date')
+            ->get();
+
+        return view('admin.company.followups.create', compact('company', 'previousFollowups'));
+    }
+
+    // Store new follow-up
+    public function followupsStore(Request $request)
+    {
+        $data = $request->validate([
+            'company_id'          => 'required|exists:company_details,id',
+            'message'             => 'required|string|max:255',
+            'next_follow_up_date' => 'required|string', // will convert to Y-m-d below
+        ]);
+
+        // Set executive from logged-in admin
+        $data['executive'] = auth('admin')->user()->name ?? auth('admin')->user()->username;
+
+        // Set follow_up_date to today
+        $data['follow_up_date'] = now()->format('Y-m-d');
+
+        // Convert next_follow_up_date from d-m-Y to Y-m-d
+        if (!empty($data['next_follow_up_date'])) {
+            try {
+                $data['next_follow_up_date'] = \Carbon\Carbon::createFromFormat('d-m-Y', $data['next_follow_up_date'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                $data['next_follow_up_date'] = null;
+            }
+        }
+
+        $data['followup_taken'] = false; // default, or set as needed
+
+        $this->service->createFollowUp($data);
+
+        return redirect()->route('admin.company.followups.index')->with('success', 'Follow-up added!');
+    }
+
+    public function bannersIndex(Request $request, CompanyService $service)
+    {
+        $filters = [
+            'company' => $request->input('company'),
+            'section' => $request->input('section'),
+        ];
+        $banners = $service->getAllBanners($filters);
+        return view('admin.company.banners.index', compact('banners'));
     }
 }

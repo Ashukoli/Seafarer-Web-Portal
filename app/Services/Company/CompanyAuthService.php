@@ -4,6 +4,7 @@ namespace App\Services\Company;
 
 use App\Models\User;
 use App\Models\CompanyOtp;
+use App\Models\CompanySubadminLoginLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -78,5 +79,67 @@ class CompanyAuthService
             return true;
         }
         return false;
+    }
+
+    /**
+     * Log company login event.
+     */
+    public function logLogin(User $user, Request $request): void
+    {
+        $ip = $request->ip();
+        if ($ip === '127.0.0.1' || $ip === '::1') {
+            $ip = '157.20.87.192'; // Google's public DNS for testing
+        }
+
+        $location = [];
+
+        try {
+            $response = @file_get_contents("http://ip-api.com/json/{$ip}?fields=status,country,regionName,city,lat,lon,timezone,query");
+            $data = $response ? json_decode($response, true) : null;
+
+            if ($data && $data['status'] === 'success') {
+                $location = [
+                    'country' => $data['country'] ?? null,
+                    'region' => $data['regionName'] ?? null,
+                    'city' => $data['city'] ?? null,
+                    'lat' => $data['lat'] ?? null,
+                    'lon' => $data['lon'] ?? null,
+                    'timezone' => $data['timezone'] ?? null,
+                    'provider' => 'ip-api.com',
+                    'ip' => $data['query'] ?? $ip,
+                ];
+            }
+        } catch (\Exception $e) {
+            // Optionally log error
+            $location = [];
+        }
+
+        $log = CompanySubadminLoginLog::create([
+            'user_id' => $user->id,
+            'company_id' => $user->company_id ?? null,
+            'login_at' => now(),
+            'ip_address' => $ip,
+            'ip_location' => $location,
+            'session_id' => session()->getId(),
+            'user_agent' => $request->userAgent(),
+        ]);
+        session(['company_login_log_id' => $log->id]);
+    }
+
+    /**
+     * Log company logout event.
+     */
+    public function logLogout(?User $user): void
+    {
+        $logId = session('company_login_log_id');
+        if ($logId) {
+            $log = CompanySubadminLoginLog::find($logId);
+            if ($log && !$log->logout_at) {
+                $log->logout_at = now();
+                $log->duration_seconds = $log->logout_at->diffInSeconds($log->login_at);
+                $log->save();
+            }
+            session()->forget('company_login_log_id');
+        }
     }
 }

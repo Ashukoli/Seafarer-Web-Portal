@@ -29,7 +29,7 @@ class CreateResumesTable extends Migration
         $table->string('presea_training_type')->nullable();
         $table->date('presea_training_issue_date')->nullable();
 
-        $table->boolean('coc_held')->default(false);
+        $table->boolean('coc_held')->nullable()->default(null);
         $table->string('coc_type')->nullable();
         $table->string('coc_no')->nullable();
         $table->date('coc_date_of_expiry')->nullable();

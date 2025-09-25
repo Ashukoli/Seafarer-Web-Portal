@@ -143,17 +143,11 @@
                                     </td>
                                     <td class="table-cell-admin">
                                         <div class="admin-actions">
-                                            <a href="{{ route('admin.company.superadmin.edit', $company->id) }}"
-                                               class="admin-btn admin-btn-superadmin"
-                                               data-tooltip="Manage Superadmin">
-                                                <i class="bx bx-crown"></i>
-                                                <span>Superadmin</span>
-                                            </a>
-                                            <a href="{{ route('admin.company.subadmins.edit', $company->id) }}"
-                                               class="admin-btn admin-btn-subadmin"
-                                               data-tooltip="Manage Subadmins">
-                                                <i class="bx bx-group"></i>
-                                                <span>Subadmins</span>
+                                            <a href="{{ route('admin.company.adminlogins', $company->id) }}"
+                                            class="admin-btn admin-btn-superadmin"
+                                            data-tooltip="View Admin Logins">
+                                                <i class="bx bx-user"></i>
+                                                <span>Admin Logins</span>
                                             </a>
                                         </div>
                                     </td>
@@ -163,6 +157,12 @@
                                                class="action-btn action-btn-edit"
                                                data-tooltip="Edit Company">
                                                 <i class="bx bx-edit"></i>
+                                            </a>
+                                            {{-- Add Follow-Up button --}}
+                                            <a href="{{ route('admin.company.followups.create', ['company_id' => $company->id]) }}"
+                                               class="action-btn action-btn-add"
+                                               data-tooltip="Add Follow-Up">
+                                                <i class="bx bx-phone-call"></i>
                                             </a>
                                             <form action="{{ route('admin.company.destroy', $company->id) }}"
                                                   method="POST"

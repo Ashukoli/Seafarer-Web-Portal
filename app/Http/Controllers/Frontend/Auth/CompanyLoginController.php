@@ -65,6 +65,9 @@ class CompanyLoginController extends Controller
 
         Auth::guard('company')->login($user);
 
+        // Log login after successful OTP verification
+        $this->service->logLogin($user, $request);
+
         return response()->json([
             'success' => true,
             'redirect' => route('company.dashboard'),
@@ -76,9 +79,14 @@ class CompanyLoginController extends Controller
      */
     public function logout(Request $request)
     {
+        $user = Auth::guard('company')->user();
+        $this->service->logLogout($user);
+
         Auth::guard('company')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('company.login.form');
     }
+
+   
 }

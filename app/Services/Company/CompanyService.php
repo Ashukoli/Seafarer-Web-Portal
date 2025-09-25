@@ -8,6 +8,7 @@ use App\Models\Advertisement;
 use App\Models\AdvertisementRank;
 use App\Models\User;
 use App\Models\CompanySubadmin;
+use App\Models\CompanyFollowUp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -32,7 +33,7 @@ class CompanyService
      * @param int $id
      * @return CompanyDetail
      */
-    public function getCompanyById(int $id): CompanyDetail
+    public function getCompanyById($id): CompanyDetail
     {
         return CompanyDetail::findOrFail($id);
     }
@@ -176,6 +177,7 @@ class CompanyService
         $userData = [
             'username'      => $data['superadmin_username'],
             'first_name'    => $data['superadmin_name'],
+            'designation'   => $data['superadmin_designation'],
             'email'         => $data['superadmin_email'],
             'country_code'  => $data['superadmin_country_code'],
             'mobile'        => $data['superadmin_mobile'],
@@ -193,13 +195,8 @@ class CompanyService
             $userData['role'] = 'super_admin';
             $superadmin = User::create($userData);
             $company->user_id = $superadmin->id;
+            $company->save();
         }
-
-        // Update these fields in company_details as well
-         $company->superadmin_designation = $data['superadmin_designation'] ?? null;
-        $company->superadmin_country_code = $data['superadmin_country_code'] ?? null;
-        $company->superadmin_mobile = $data['superadmin_mobile'] ?? null;
-        $company->save();
 
         return $superadmin;
     }
@@ -228,12 +225,10 @@ class CompanyService
 
         // Delete removed subadmins
         if (!empty($idsToDelete)) {
-            // Delete from company_subadmins table
             CompanySubadmin::where('company_id', $company->id)
                 ->whereIn('user_id', $idsToDelete)
                 ->delete();
 
-            // Delete users
             User::whereIn('id', $idsToDelete)->delete();
         }
 
@@ -246,21 +241,22 @@ class CompanyService
                     $user->username = $subadmin['username'];
                     $user->first_name = $subadmin['name'];
                     $user->email = $subadmin['email'] ?? null;
+                    $user->country_code = $subadmin['country_code'];
+                    $user->mobile = $subadmin['mobile'];
+                    $user->designation = $subadmin['designation'];
                     if (!empty($subadmin['password'])) {
                         $user->password = Hash::make($subadmin['password']);
                     }
                     $user->save();
 
-                    // Update CompanySubadmin fields
-                    $companySubadmin = CompanySubadmin::where('company_id', $company->id)
-                        ->where('user_id', $user->id)
-                        ->first();
-                    if ($companySubadmin) {
-                        $companySubadmin->designation = $subadmin['designation'];
-                        $companySubadmin->country_code = $subadmin['country_code'];
-                        $companySubadmin->mobile = $subadmin['mobile'];
-                        $companySubadmin->save();
-                    }
+                    // Ensure CompanySubadmin exists (only company_id and user_id)
+                    CompanySubadmin::updateOrCreate(
+                        [
+                            'company_id' => $company->id,
+                            'user_id' => $user->id,
+                        ],
+                        [] // No additional fields
+                    );
                 }
             } else {
                 // Create new subadmin
@@ -270,6 +266,9 @@ class CompanyService
                     'username' => $subadmin['username'],
                     'first_name' => $subadmin['name'],
                     'email' => $subadmin['email'] ?? null,
+                    'country_code' => $subadmin['country_code'],
+                    'mobile' => $subadmin['mobile'],
+                    'designation' => $subadmin['designation'],
                     'password' => Hash::make($subadmin['password']),
                     'status' => 'active',
                 ]);
@@ -277,12 +276,72 @@ class CompanyService
                     CompanySubadmin::create([
                         'company_id' => $company->id,
                         'user_id' => $user->id,
-                        'designation' => $subadmin['designation'],
-                        'country_code' => $subadmin['country_code'],
-                        'mobile' => $subadmin['mobile'],
                     ]);
                 }
             }
         }
+    }
+
+    /**
+     * Get all follow-ups for companies.
+     *
+     * @param int $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getAllFollowUps($perPage = 25)
+    {
+        return CompanyFollowUp::with('company')->orderByDesc('id')->paginate($perPage);
+    }
+
+    /**
+     * Create a new follow-up.
+     *
+     * @param array $data
+     * @return CompanyFollowUp
+     */
+    public function createFollowUp(array $data)
+    {
+        return CompanyFollowUp::create($data);
+    }
+
+    // List today's and upcoming follow-ups
+    public function getFollowUpsForTodayAndUpcoming($perPage = 25)
+    {
+        $today = now()->toDateString();
+
+        // Subquery to get the latest followup id for each company
+        $latestFollowupIds = CompanyFollowUp::selectRaw('MAX(id) as id')
+            ->groupBy('company_id');
+
+        return CompanyFollowUp::with('company')
+            ->whereIn('id', $latestFollowupIds)
+            ->orderByDesc('next_follow_up_date')
+            ->orderByDesc('follow_up_date')
+            ->paginate($perPage);
+    }
+
+    public function getAllBanners($filters = [])
+    {
+        $query = Banner::with('company')->orderBy('order');
+        if (!empty($filters['company'])) {
+            $query->whereHas('company', function($q) use ($filters) {
+                $q->where('company_name', 'like', '%' . $filters['company'] . '%');
+            });
+        }
+        if (!empty($filters['section'])) {
+            $query->where('section', $filters['section']);
+        }
+        return $query->get();
+     }
+
+    public function getSubadmins($companyId)
+    {
+        // Get all user_ids for this company from the pivot table
+        $userIds = CompanySubadmin::where('company_id', $companyId)->pluck('user_id');
+
+        // Fetch user details for those user_ids from the users table
+        return User::whereIn('id', $userIds)
+            ->where('role', 'subadmin')
+            ->get();
     }
 }

@@ -30,6 +30,17 @@
                         <li class="breadcrumb-separator">
                             <i class="bx bx-chevron-right"></i>
                         </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ route('admin.company.adminlogins', $company->id) }}" class="breadcrumb-link">
+                                <div class="breadcrumb-icon">
+                                    <i class="bx bx-group"></i>
+                                </div>
+                                <span class="breadcrumb-text">Admin Logins</span>
+                            </a>
+                        </li>
+                        <li class="breadcrumb-separator">
+                            <i class="bx bx-chevron-right"></i>
+                        </li>
                         <li class="breadcrumb-item active" aria-current="page">
                             <div class="breadcrumb-icon">
                                 <i class="bx bx-user-plus"></i>
@@ -56,6 +67,55 @@
             </div>
 
             <div class="card-body modern-body">
+                @if(session('success'))
+                    <div class="modern-alert modern-alert-success mb-4">
+                        <div class="alert-icon">
+                            <i class="bx bx-check-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Success!</strong>
+                            {{ session('success') }}
+                        </div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="modern-alert modern-alert-error mb-4">
+                        <div class="alert-icon">
+                            <i class="bx bx-error-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Error!</strong>
+                            {{ session('error') }}
+                        </div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="modern-alert modern-alert-error mb-4">
+                        <div class="alert-icon">
+                            <i class="bx bx-error-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>Validation Errors:</strong>
+                            <ul class="error-list">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                            <i class="bx bx-x"></i>
+                        </button>
+                    </div>
+                @endif
+
                 <div id="subadmins-wrapper" class="subadmins-container">
                     @php
                         $oldSubadmins = old('subadmins', $subadmins ?? []);
@@ -94,12 +154,21 @@
                                             <span class="label-text">Username</span>
                                             <span class="required-indicator">*</span>
                                         </label>
-                                        <input type="text"
-                                               name="subadmins[{{ $i }}][username]"
-                                               class="modern-form-control"
-                                               value="{{ $sub['username'] ?? '' }}"
-                                               placeholder="Enter username"
-                                               required>
+                                        <div class="input-container">
+                                            <input type="text"
+                                                   name="subadmins[{{ $i }}][username]"
+                                                   class="modern-form-control @error('subadmins.'.$i.'.username') is-invalid @enderror"
+                                                   value="{{ $sub['username'] ?? '' }}"
+                                                   placeholder="Enter username"
+                                                   required>
+                                            <div class="validation-icon">
+                                                <i class="bx bx-check-circle valid-icon"></i>
+                                                <i class="bx bx-error-circle invalid-icon"></i>
+                                            </div>
+                                        </div>
+                                        @error('subadmins.'.$i.'.username')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -108,12 +177,21 @@
                                             <span class="label-text">Full Name</span>
                                             <span class="required-indicator">*</span>
                                         </label>
-                                        <input type="text"
-                                               name="subadmins[{{ $i }}][name]"
-                                               class="modern-form-control"
-                                               value="{{ $sub['name'] ?? '' }}"
-                                               placeholder="Enter full name"
-                                               required>
+                                        <div class="input-container">
+                                            <input type="text"
+                                                   name="subadmins[{{ $i }}][name]"
+                                                   class="modern-form-control @error('subadmins.'.$i.'.name') is-invalid @enderror"
+                                                   value="{{ $sub['name'] ?? '' }}"
+                                                   placeholder="Enter full name"
+                                                   required>
+                                            <div class="validation-icon">
+                                                <i class="bx bx-check-circle valid-icon"></i>
+                                                <i class="bx bx-error-circle invalid-icon"></i>
+                                            </div>
+                                        </div>
+                                        @error('subadmins.'.$i.'.name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -122,12 +200,21 @@
                                             <span class="label-text">Designation</span>
                                             <span class="required-indicator">*</span>
                                         </label>
-                                        <input type="text"
-                                               name="subadmins[{{ $i }}][designation]"
-                                               class="modern-form-control"
-                                               value="{{ $sub['designation'] ?? '' }}"
-                                               placeholder="Enter designation"
-                                               required>
+                                        <div class="input-container">
+                                            <input type="text"
+                                                   name="subadmins[{{ $i }}][designation]"
+                                                   class="modern-form-control @error('subadmins.'.$i.'.designation') is-invalid @enderror"
+                                                   value="{{ $sub['designation'] ?? '' }}"
+                                                   placeholder="Enter designation"
+                                                   required>
+                                            <div class="validation-icon">
+                                                <i class="bx bx-check-circle valid-icon"></i>
+                                                <i class="bx bx-error-circle invalid-icon"></i>
+                                            </div>
+                                        </div>
+                                        @error('subadmins.'.$i.'.designation')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +233,7 @@
                                             <span class="label-text">Mobile Number</span>
                                             <span class="required-indicator">*</span>
                                         </label>
-                                        <div class="modern-input-group">
+                                        <div class="modern-input-group @error('subadmins.'.$i.'.mobile') is-invalid @enderror">
                                             <select name="subadmins[{{ $i }}][country_code]"
                                                     class="modern-form-control modern-form-select country-select"
                                                     required>
@@ -157,13 +244,22 @@
                                                     </option>
                                                 @endforeach
                                             </select>
-                                            <input type="text"
-                                                   name="subadmins[{{ $i }}][mobile]"
-                                                   class="modern-form-control"
-                                                   value="{{ $sub['mobile'] ?? '' }}"
-                                                   placeholder="Enter mobile number"
-                                                   required>
+                                            <div class="input-container">
+                                                <input type="text"
+                                                       name="subadmins[{{ $i }}][mobile]"
+                                                       class="modern-form-control mobile-input @error('subadmins.'.$i.'.mobile') is-invalid @enderror"
+                                                       value="{{ $sub['mobile'] ?? '' }}"
+                                                       placeholder="Enter mobile number"
+                                                       required>
+                                                <div class="validation-icon">
+                                                    <i class="bx bx-check-circle valid-icon"></i>
+                                                    <i class="bx bx-error-circle invalid-icon"></i>
+                                                </div>
+                                            </div>
                                         </div>
+                                        @error('subadmins.'.$i.'.mobile')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -175,17 +271,26 @@
                                             @endif
                                         </label>
                                         <div class="password-input-wrapper">
-                                            <input type="password"
-                                                   name="subadmins[{{ $i }}][password]"
-                                                   class="modern-form-control"
-                                                   placeholder="Enter password"
-                                                   {{ isset($sub['id']) ? '' : 'required' }}
-                                                   autocomplete="new-password">
-                                            <button type="button" class="password-toggle" tabindex="-1">
-                                                <i class="bx bx-show"></i>
-                                            </button>
+                                            <div class="input-container">
+                                                <input type="password"
+                                                       name="subadmins[{{ $i }}][password]"
+                                                       class="modern-form-control password-input @error('subadmins.'.$i.'.password') is-invalid @enderror"
+                                                       placeholder="Enter password"
+                                                       {{ isset($sub['id']) ? '' : 'required' }}
+                                                       autocomplete="new-password">
+                                                <button type="button" class="password-toggle" tabindex="-1">
+                                                    <i class="bx bx-show"></i>
+                                                </button>
+                                                <div class="validation-icon">
+                                                    <i class="bx bx-check-circle valid-icon"></i>
+                                                    <i class="bx bx-error-circle invalid-icon"></i>
+                                                </div>
+                                            </div>
                                         </div>
                                         <small class="form-hint">Leave blank to keep current password</small>
+                                        @error('subadmins.'.$i.'.password')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -194,11 +299,20 @@
                                             <span class="label-text">Email</span>
                                             <span class="optional-indicator">(Optional)</span>
                                         </label>
-                                        <input type="email"
-                                               name="subadmins[{{ $i }}][email]"
-                                               class="modern-form-control"
-                                               value="{{ $sub['email'] ?? '' }}"
-                                               placeholder="email@company.com">
+                                        <div class="input-container">
+                                            <input type="email"
+                                                   name="subadmins[{{ $i }}][email]"
+                                                   class="modern-form-control @error('subadmins.'.$i.'.email') is-invalid @enderror"
+                                                   value="{{ $sub['email'] ?? '' }}"
+                                                   placeholder="email@company.com">
+                                            <div class="validation-icon">
+                                                <i class="bx bx-check-circle valid-icon"></i>
+                                                <i class="bx bx-error-circle invalid-icon"></i>
+                                            </div>
+                                        </div>
+                                        @error('subadmins.'.$i.'.email')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -262,12 +376,124 @@
     --header-accent: #a5b4fc;
     --header-text: #3730a3;
     --header-text-light: #4338ca;
+
+    /* Eye-Friendly Validation Colors */
+    --valid-color: #059669;
+    --valid-bg: rgba(5, 150, 105, 0.08);
+    --valid-border: rgba(5, 150, 105, 0.25);
+    --invalid-color: #dc2626;
+    --invalid-bg: rgba(220, 38, 38, 0.08);
+    --invalid-border: rgba(220, 38, 38, 0.25);
 }
 
 .professional-bg {
     background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%);
     min-height: 100vh;
     padding: 2rem 0;
+}
+
+/* Modern Alert Styling */
+.modern-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modern-alert-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #065f46;
+}
+
+.modern-alert-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.05) 100%);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: #7f1d1d;
+}
+
+.alert-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1rem;
+}
+
+.modern-alert-success .alert-icon {
+    background: var(--success-color);
+    color: white;
+}
+
+.modern-alert-error .alert-icon {
+    background: var(--danger-color);
+    color: white;
+}
+
+.alert-content {
+    flex: 1;
+    line-height: 1.5;
+}
+
+.alert-content strong {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.error-list {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.25rem;
+    list-style-type: disc;
+}
+
+.error-list li {
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.alert-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+    opacity: 0.7;
+}
+
+.alert-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.alert-close i {
+    font-size: 1rem;
 }
 
 /* Modern Breadcrumb Styling */
@@ -544,10 +770,17 @@
     font-size: 0.75rem;
 }
 
-/* Form Controls */
+/* Enhanced Input Container for Validation */
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Form Controls with Validation States */
 .modern-form-control {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
     font-size: 0.875rem;
     line-height: 1.5;
     color: var(--text-primary);
@@ -574,11 +807,109 @@
     border-color: var(--text-secondary);
 }
 
-/* Optimized Input Groups */
+/* Validation States */
+.modern-form-control:valid:not(:placeholder-shown):not(:focus) {
+    border-color: var(--valid-border);
+    background: var(--valid-bg);
+}
+
+.modern-form-control:valid:not(:placeholder-shown):not(:focus) + .validation-icon .valid-icon {
+    display: block;
+}
+
+.modern-form-control.is-invalid,
+.modern-form-control:invalid:not(:placeholder-shown):not(:focus) {
+    border-color: var(--invalid-border);
+    background: var(--invalid-bg);
+}
+
+.modern-form-control.is-invalid + .validation-icon .invalid-icon,
+.modern-form-control:invalid:not(:placeholder-shown):not(:focus) + .validation-icon .invalid-icon {
+    display: block;
+}
+
+/* Validation Icons */
+.validation-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.valid-icon,
+.invalid-icon {
+    display: none;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.valid-icon {
+    color: var(--valid-color);
+    animation: scaleIn 0.3s ease-out;
+}
+
+.invalid-icon {
+    color: var(--invalid-color);
+    animation: shake 0.5s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+/* Invalid Feedback Messages */
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--invalid-color);
+    background: var(--invalid-bg);
+    border: 1px solid var(--invalid-border);
+    border-radius: var(--border-radius-sm);
+    line-height: 1.4;
+    position: relative;
+}
+
+.invalid-feedback::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 1rem;
+    width: 8px;
+    height: 8px;
+    background: var(--invalid-bg);
+    border-left: 1px solid var(--invalid-border);
+    border-top: 1px solid var(--invalid-border);
+    transform: rotate(45deg);
+}
+
+/* Optimized Input Groups with Validation */
 .modern-input-group {
     display: flex;
     gap: 0;
     position: relative;
+}
+
+.modern-input-group.is-invalid .country-select {
+    border-color: var(--invalid-border);
+    background: var(--invalid-bg);
 }
 
 .modern-form-select.country-select {
@@ -590,6 +921,7 @@
     border-right: none;
     background: #fafbff;
     flex-shrink: 0;
+    padding-right: 2rem;
 }
 
 .mobile-input {
@@ -599,14 +931,23 @@
     min-width: 0;
 }
 
-/* Password Input */
+/* Password Input with Validation */
 .password-input-wrapper {
     position: relative;
+    width: 100%;
+}
+
+.password-input-wrapper .input-container {
+    width: 100%;
+}
+
+.password-input-wrapper .modern-form-control {
+    padding-right: 5rem; /* Space for both password toggle and validation icon */
 }
 
 .password-toggle {
     position: absolute;
-    right: 0.75rem;
+    right: 3rem;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -616,6 +957,7 @@
     padding: 0.25rem;
     border-radius: 4px;
     transition: var(--transition);
+    z-index: 3;
 }
 
 .password-toggle:hover {
@@ -776,7 +1118,6 @@
     background-position: right 0.5rem center;
     background-repeat: no-repeat;
     background-size: 1em 1em;
-    padding-right: 2rem;
 }
 
 /* Responsive Design */
@@ -844,6 +1185,17 @@
     .breadcrumb-link {
         width: 100%;
         justify-content: flex-start;
+    }
+
+    .modern-alert {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .alert-close {
+        position: static;
+        align-self: flex-end;
+        margin-top: -0.5rem;
     }
 }
 
@@ -913,7 +1265,13 @@ $(function(){
                                 <span class="label-text">Username</span>
                                 <span class="required-indicator">*</span>
                             </label>
-                            <input type="text" name="subadmins[${subadminIndex}][username]" class="modern-form-control" placeholder="Enter username" required>
+                            <div class="input-container">
+                                <input type="text" name="subadmins[${subadminIndex}][username]" class="modern-form-control" placeholder="Enter username" required>
+                                <div class="validation-icon">
+                                    <i class="bx bx-check-circle valid-icon"></i>
+                                    <i class="bx bx-error-circle invalid-icon"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -922,7 +1280,13 @@ $(function(){
                                 <span class="label-text">Full Name</span>
                                 <span class="required-indicator">*</span>
                             </label>
-                            <input type="text" name="subadmins[${subadminIndex}][name]" class="modern-form-control" placeholder="Enter full name" required>
+                            <div class="input-container">
+                                <input type="text" name="subadmins[${subadminIndex}][name]" class="modern-form-control" placeholder="Enter full name" required>
+                                <div class="validation-icon">
+                                    <i class="bx bx-check-circle valid-icon"></i>
+                                    <i class="bx bx-error-circle invalid-icon"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -931,7 +1295,13 @@ $(function(){
                                 <span class="label-text">Designation</span>
                                 <span class="required-indicator">*</span>
                             </label>
-                            <input type="text" name="subadmins[${subadminIndex}][designation]" class="modern-form-control" placeholder="Enter designation" required>
+                            <div class="input-container">
+                                <input type="text" name="subadmins[${subadminIndex}][designation]" class="modern-form-control" placeholder="Enter designation" required>
+                                <div class="validation-icon">
+                                    <i class="bx bx-check-circle valid-icon"></i>
+                                    <i class="bx bx-error-circle invalid-icon"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -957,7 +1327,13 @@ $(function(){
                                         </option>
                                     @endforeach
                                 </select>
-                                <input type="text" name="subadmins[${subadminIndex}][mobile]" class="modern-form-control" placeholder="Enter mobile number" required>
+                                <div class="input-container">
+                                    <input type="text" name="subadmins[${subadminIndex}][mobile]" class="modern-form-control mobile-input" placeholder="Enter mobile number" required>
+                                    <div class="validation-icon">
+                                        <i class="bx bx-check-circle valid-icon"></i>
+                                        <i class="bx bx-error-circle invalid-icon"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -967,7 +1343,18 @@ $(function(){
                                 <span class="label-text">Password</span>
                                 <span class="required-indicator">*</span>
                             </label>
-                            <input type="password" name="subadmins[${subadminIndex}][password]" class="modern-form-control" placeholder="Enter password" required autocomplete="new-password">
+                            <div class="password-input-wrapper">
+                                <div class="input-container">
+                                    <input type="password" name="subadmins[${subadminIndex}][password]" class="modern-form-control password-input" placeholder="Enter password" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle" tabindex="-1">
+                                        <i class="bx bx-show"></i>
+                                    </button>
+                                    <div class="validation-icon">
+                                        <i class="bx bx-check-circle valid-icon"></i>
+                                        <i class="bx bx-error-circle invalid-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -976,7 +1363,13 @@ $(function(){
                                 <span class="label-text">Email</span>
                                 <span class="optional-indicator">(Optional)</span>
                             </label>
-                            <input type="email" name="subadmins[${subadminIndex}][email]" class="modern-form-control" placeholder="email@company.com">
+                            <div class="input-container">
+                                <input type="email" name="subadmins[${subadminIndex}][email]" class="modern-form-control" placeholder="email@company.com">
+                                <div class="validation-icon">
+                                    <i class="bx bx-check-circle valid-icon"></i>
+                                    <i class="bx bx-error-circle invalid-icon"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1000,6 +1393,37 @@ $(function(){
         }
     });
 
+    // Password visibility toggle for all password inputs
+    $(document).on('click', '.password-toggle', function() {
+        let $input = $(this).siblings('.password-input, input[type="password"], input[type="text"]');
+        let $icon = $(this).find('i');
+
+        if ($input.attr('type') === 'password') {
+            $input.attr('type', 'text');
+            $icon.removeClass('bx-show').addClass('bx-hide');
+        } else {
+            $input.attr('type', 'password');
+            $icon.removeClass('bx-hide').addClass('bx-show');
+        }
+    });
+
+    // Real-time validation
+    $(document).on('input blur', '.modern-form-control', function() {
+        validateField($(this));
+    });
+
+    function validateField($field) {
+        const isValid = $field[0].checkValidity() && $field.val().trim() !== '';
+
+        if (isValid) {
+            $field.removeClass('is-invalid').addClass('is-valid');
+        } else if ($field.val().trim() !== '') {
+            $field.removeClass('is-valid').addClass('is-invalid');
+        } else {
+            $field.removeClass('is-valid is-invalid');
+        }
+    }
+
     function updateRemoveButtons() {
         let rows = $('#subadmins-wrapper .subadmin-row');
         if (rows.length > 1) {
@@ -1017,6 +1441,57 @@ $(function(){
             `);
         });
     }
+
+    // Form submission validation
+    $('form').on('submit', function(e) {
+        let isValid = true;
+        let firstInvalidField = null;
+
+        $('.modern-form-control[required]').each(function() {
+            const $field = $(this);
+            if (!this.checkValidity() || $field.val().trim() === '') {
+                $field.addClass('is-invalid');
+                isValid = false;
+                if (!firstInvalidField) {
+                    firstInvalidField = $field;
+                }
+            }
+        });
+
+        if (!isValid) {
+            e.preventDefault();
+
+            // Scroll to first invalid field
+            if (firstInvalidField) {
+                $('html, body').animate({
+                    scrollTop: firstInvalidField.offset().top - 100
+                }, 500);
+                firstInvalidField.focus();
+            }
+
+            // Show error alert
+            $('<div class="modern-alert modern-alert-error mb-4">' +
+                '<div class="alert-icon"><i class="bx bx-error-circle"></i></div>' +
+                '<div class="alert-content"><strong>Validation Error!</strong> Please check all required fields and correct any errors.</div>' +
+                '<button type="button" class="alert-close" onclick="this.parentElement.remove()"><i class="bx bx-x"></i></button>' +
+              '</div>').prependTo('.modern-body').hide().slideDown(300);
+
+            return false;
+        }
+
+        // Add loading state
+        let $submitBtn = $(this).find('button[type="submit"]');
+        $submitBtn.addClass('loading');
+        $submitBtn.find('span').text('Updating...');
+    });
+
+    // Auto-hide alerts after 5 seconds
+    $('.modern-alert').each(function() {
+        const $alert = $(this);
+        setTimeout(() => {
+            $alert.fadeOut(300, () => $alert.remove());
+        }, 5000);
+    });
 });
 </script>
 @endpush
