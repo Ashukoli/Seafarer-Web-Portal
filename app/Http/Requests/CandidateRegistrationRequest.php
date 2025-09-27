@@ -24,10 +24,38 @@ class CandidateRegistrationRequest extends FormRequest
             'marital_status' => 'nullable|in:single,married,divorced,widowed',
             'gender' => 'nullable|in:male,female,other',
             'dob' => 'nullable|date_format:Y-m-d', // we convert dates to ISO before submit (see JS)
-            'mobile_cc' => 'nullable|string|max:10',
-            'mobile_number' => 'required|string|max:30',
-            'whatsapp_cc' => 'nullable|string|max:10',
-            'whatsapp_number' => 'nullable|string|max:30',
+            'mobile_cc' => 'required|string',
+            'mobile_number' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $cc = $this->input('mobile_cc');
+                    if (
+                        \App\Models\CandidateProfile::where('mobile_cc', $cc)
+                            ->where('mobile_number', $value)
+                            ->exists()
+                    ) {
+                        $fail('The mobile number with this country code is already taken.');
+                    }
+                }
+            ],
+            'whatsapp_cc' => 'required_with:whatsapp_number|string',
+            'whatsapp_number' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $cc = $this->input('whatsapp_cc');
+                    if ($value && $cc) {
+                        if (
+                            \App\Models\CandidateProfile::where('whatsapp_cc', $cc)
+                                ->where('whatsapp_number', $value)
+                                ->exists()
+                        ) {
+                            $fail('The WhatsApp number with this country code is already taken.');
+                        }
+                    }
+                }
+            ],
             'address' => 'nullable|string|max:1000',
 
             // nationality and document-country fields now reference countries.id
@@ -86,6 +114,10 @@ class CandidateRegistrationRequest extends FormRequest
 
             // additional
             'additional_information' => 'nullable|string|max:2000',
+            'state_id' => 'nullable|exists:states,id',
+            'city_id' => 'nullable|exists:cities,id',
+            'usa_visa' => 'nullable|string',
+            'cdc_number' => 'nullable|string',
         ];
     }
 

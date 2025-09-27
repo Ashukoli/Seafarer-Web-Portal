@@ -18,6 +18,7 @@ use App\Models\CoursesAndOtherCertificateMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 
 class CandidateRegistrationController extends Controller
@@ -34,40 +35,6 @@ class CandidateRegistrationController extends Controller
 
         // optionally protect with middleware('auth:admin') if you have a custom guard
         $this->middleware('auth'); // adjust as needed
-    }
-
-    public function index(Request $request)
-    {
-        $perPage = (int) $request->get('per_page', 25);
-
-        $filters = [
-            'q' => $request->get('q'),
-            'rank_id' => $request->get('rank_id'),
-            'date_from' => $request->get('date_from'),
-            'date_to' => $request->get('date_to'),
-        ];
-
-        // CandidateService should provide paginateCandidates($perPage, $filters)
-        $candidates = $this->readService->paginateCandidates($perPage, $filters);
-
-        $ranks = Rank::orderBy('sort')->get();
-
-        return view('admin.candidate.index', compact('candidates', 'ranks', 'filters'));
-    }
-
-    /**
-     * Show candidate details / resume page
-     */
-    public function show($id)
-    {
-        // CandidateService::findCandidateWithRelations($id) should return User with profile/resume relations
-        $candidate = $this->readService->findCandidateWithRelations($id);
-
-        if (! $candidate) {
-            return redirect()->route('admin.candidates.index')->withErrors('Candidate not found.');
-        }
-
-        return view('admin.candidate.show', compact('candidate'));
     }
 
     /**
@@ -117,6 +84,9 @@ class CandidateRegistrationController extends Controller
             $data['profile_pic_file'] = $request->file('profile_pic');
         }
 
+        // Attach skipped steps info
+        $data['skipped'] = $request->input('skipped', []);
+
         // Determine admin id (works for "admin" guard or default guard)
         $createdBy = $this->getAdminId();
 
@@ -133,6 +103,55 @@ class CandidateRegistrationController extends Controller
             ]);
             return back()->withInput()->withErrors(['error' => 'Registration failed: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Validate candidate data via AJAX (admin).
+     */
+    public function ajaxValidate(Request $request)
+    {
+        $rules = [
+            'email' => 'required|email|unique:users,email',
+            'mobile_cc' => 'required|string',
+            'mobile_number' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    $cc = $request->input('mobile_cc');
+                    if (
+                        \App\Models\CandidateProfile::where('mobile_cc', $cc)
+                            ->where('mobile_number', $value)
+                            ->exists()
+                    ) {
+                        $fail('The mobile number with this country code is already taken.');
+                    }
+                }
+            ],
+            'whatsapp_cc' => 'required_with:whatsapp_number|string',
+            'whatsapp_number' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    $cc = $request->input('whatsapp_cc');
+                    if ($value && $cc) {
+                        if (
+                            \App\Models\CandidateProfile::where('whatsapp_cc', $cc)
+                                ->where('whatsapp_number', $value)
+                                ->exists()
+                        ) {
+                            $fail('The WhatsApp number with this country code is already taken.');
+                        }
+                    }
+                }
+            ],
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+        return response()->json(['success' => true]);
     }
 
 

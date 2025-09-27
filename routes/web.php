@@ -20,6 +20,8 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Company\CompanyController;
 use App\Http\Controllers\Admin\company\CompanyRegisterController;
 use App\Http\Controllers\Admin\Hotjobs\HotjobsController;
+use App\Http\Controllers\Admin\Message\MessageController;
+use App\Http\Controllers\Company\MessageController as CompanyMessageController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -106,8 +108,12 @@ Route::prefix('admin')
             Route::resource('course-certificates', CourseCertificateController::class);
             Route::resource('cities', CityController::class);
             Route::resource('candidates', CandidateRegistrationController::class);
-
+            Route::post('candidates/validate', [CandidateRegistrationController::class, 'ajaxValidate'])->name('candidates.ajaxValidate');
+            Route::get('messages', [MessageController::class, 'index'])->name('messages');
+            Route::post('messages/send', [MessageController::class, 'send'])->name('messages.send');
+            Route::get('messages/fetch', [MessageController::class, 'fetch'])->name('messages.fetch');
             Route::prefix('company')->name('company.')->group(function () {
+
                 Route::get('register/{step?}', [CompanyRegisterController::class, 'showForm'])->name('register.step');
                 Route::post('register/{step}', [CompanyRegisterController::class, 'handleStep'])->name('register.handle');
                 Route::get('followups', [\App\Http\Controllers\Admin\Company\CompanyController::class, 'followupsIndex'])->name('followups.index');
@@ -170,7 +176,13 @@ Route::prefix('company')->name('company.')->group(function () {
         Route::get('subadmins/{subadmin}/edit', [CompanyController::class, 'editSubadmin'])->name('subadmin.edit');
         Route::put('subadmins/{subadmin}', [CompanyController::class, 'updateSubadmin'])->name('subadmin.update');
         Route::get('subadmins/{subadmin}/login-history', [CompanyController::class, 'subadminLoginHistory'])->name('subadmin.login-history');
+        Route::get('messages', [CompanyMessageController::class, 'index'])->name('messages');
+        Route::post('messages/send', [CompanyMessageController::class, 'send'])->name('messages.send');
+        Route::get('messages/fetch', [CompanyMessageController::class, 'fetch'])->name('messages.fetch');
     });
 });
+
+
+
 
 

@@ -18,6 +18,8 @@ use App\Models\City;
 use App\Models\DceEndorsement; // master
 // use App\Models\CourseAndOtherCertificateMaster as CourseMaster; // adjust if different
 use App\Models\CoursesAndOtherCertificateMaster as CourseMaster; // adjust to your actual model name
+use App\Models\Country;
+use App\Models\MobileCountryCode;
 
 class CandidateService
 {
@@ -27,37 +29,33 @@ class CandidateService
      */
     public function getForEdit(int $userId): array
     {
-        $user = User::with(['profile', 'resume', 'seaServiceDetails', 'dceEndorsements', 'courseCertificates'])->findOrFail($userId);
+        $user = User::with([
+            'profile',
+            'resume',
+            'seaServiceDetails',
+            'dceEndorsements',
+            'courseCertificates'
+        ])->findOrFail($userId);
 
-        $states = State::orderBy('state_name')->get();
-        // If profile has state_id, eager load cities for that state so the edit form can pre-populate
-        $cities = collect();
-        if ($user->profile && $user->profile->state_id) {
-            $cities = City::where('state_id', $user->profile->state_id)->orderBy('city_name')->get();
-        } else {
-            // fallback: all cities (optional) or empty
-            $cities = City::orderBy('city_name')->limit(0)->get();
-        }
-
-        $ranks = Rank::orderBy('rank')->get();
-        $shiptypes = ShipType::orderBy('ship_name')->get();
-
-        // DCE master records used in dropdown
-        $dces = DceEndorsement::orderBy('dce_name')->get();
-
-        // courses master
-        $coursesMaster = CourseMaster::orderBy('name')->get();
+        $states = State::all();
+        $cities = City::all();
+        $ranks = Rank::all();
+        $shiptypes = ShipType::all();
+        $dces = DceEndorsement::all();
+        $coursesMaster = CourseMaster::all();
+        $countries = Country::all();
+        $mobileCountryCodes = MobileCountryCode::where('status', 1)->orderBy('country_name')->get(); // <-- Add this line
 
         return [
             'user' => $user,
-            'profile' => $user->profile,
-            'resume' => $user->resume,
             'states' => $states,
             'cities' => $cities,
             'ranks' => $ranks,
             'shiptypes' => $shiptypes,
             'dces' => $dces,
             'coursesMaster' => $coursesMaster,
+            'countries' => $countries,
+            'mobileCountryCodes' => $mobileCountryCodes, // <-- And this line
         ];
     }
 
@@ -69,7 +67,6 @@ class CandidateService
     public function updateResume(int $userId, array $data): void
     {
         DB::transaction(function () use ($userId, $data) {
-
             $user = User::findOrFail($userId);
 
             // ---- CandidateProfile upsert ----
@@ -123,13 +120,13 @@ class CandidateService
                 'passport_nationality' => $data['passport_nationality'] ?? null,
                 'passport_number' => $data['passport_number'] ?? null,
                 'passport_expiry' => $data['passport_expiry'] ?? null,
-                'usa_visa' => array_key_exists('usa_visa', $data) ? (bool)$data['usa_visa'] : null,
+                'usa_visa' => isset($data['usa_visa']) ? (int)$data['usa_visa'] : null,
                 'cdc_nationality' => $data['cdc_nationality'] ?? null,
                 'cdc_no' => $data['cdc_no'] ?? null,
                 'cdc_expiry' => $data['cdc_expiry'] ?? null,
                 'presea_training_type' => $data['presea_training_type'] ?? null,
                 'presea_training_issue_date' => $data['presea_training_issue_date'] ?? null,
-                'coc_held' => array_key_exists('coc_held', $data) ? (bool)$data['coc_held'] : false,
+                'coc_held' => isset($data['coc_held']) ? (int)$data['coc_held'] : null,
                 'coc_type' => $data['coc_type'] ?? null,
                 'coc_no' => $data['coc_no'] ?? null,
                 'coc_date_of_expiry' => $data['coc_date_of_expiry'] ?? null,
@@ -143,12 +140,9 @@ class CandidateService
                 CandidateResume::create($resumeData);
             }
 
-            // ---- Candidate DCE endorsements (simple replace strategy) ----
-            // We will remove existing candidate_dce_endorsements and recreate from submitted arrays.
+            // ---- Candidate DCE endorsements (replace) ----
             if (isset($data['dce_id']) && is_array($data['dce_id'])) {
-                // delete existing endorsements for this user
                 CandidateDceEndorsement::where('user_id', $user->id)->delete();
-
                 foreach ($data['dce_id'] as $idx => $dceId) {
                     if (empty($dceId)) continue;
                     $validity = $data['dce_validity'][$idx] ?? null;
@@ -162,7 +156,6 @@ class CandidateService
 
             // ---- Courses certificates (replace) ----
             if (isset($data['courses']) && is_array($data['courses'])) {
-                // remove existing and re-create
                 CandidateCourseCertificate::where('user_id', $user->id)->delete();
                 foreach ($data['courses'] as $courseId) {
                     if (empty($courseId)) continue;
@@ -173,19 +166,15 @@ class CandidateService
                 }
             }
 
-            // ---- Sea service details (replace strategy) ----
+            // ---- Sea service details (replace) ----
             if (isset($data['sea_service']) && is_array($data['sea_service'])) {
-                // delete all and re-insert (you can make this incremental if needed)
                 SeaServiceDetail::where('user_id', $user->id)->delete();
-
                 foreach ($data['sea_service'] as $entry) {
-                    // skip empty rows
                     $allEmpty = true;
                     foreach (['rank_id','ship_type_id','company_name','ship_name','sign_on','sign_off','grt_value','grt_unit','bhp'] as $k) {
                         if (!empty($entry[$k]) || (isset($entry[$k]) && $entry[$k] === '0')) { $allEmpty = false; break; }
                     }
                     if ($allEmpty) continue;
-
                     SeaServiceDetail::create([
                         'user_id' => $user->id,
                         'rank_id' => $entry['rank_id'] ?? null,
@@ -201,7 +190,7 @@ class CandidateService
                 }
             }
 
-            // optionally update profile_completion metric on profile (simple heuristic)
+            // ---- Optionally update profile_completion metric ----
             if ($user->profile) {
                 $complete = 0;
                 if ($user->profile->first_name) $complete += 10;

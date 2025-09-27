@@ -94,16 +94,44 @@
                         @error('last_name')<div class="text-danger small">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="col-md-6">
-                        <label class="form-label">Mobile (cc)</label>
-                        <input name="mobile_cc" class="form-control" value="{{ old('mobile_cc', $user->profile->mobile_cc ?? '') }}">
+                    {{-- Row: Mobile and WhatsApp --}}
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div style="width:20%; min-width:90px;">
+                            <label class="form-label">Mobile (cc)</label>
+                            <select name="mobile_cc" class="form-select">
+                                <option value="">CC</option>
+                                @foreach($mobileCountryCodes as $cc)
+                                    <option value="{{ $cc->dial_code }}" {{ old('mobile_cc', $user->profile->mobile_cc ?? '') == $cc->dial_code ? 'selected' : '' }}>
+                                        {{ $cc->country_name }} ({{ $cc->dial_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="width:80%;">
+                            <label class="form-label">Mobile Number</label>
+                            <input name="mobile_number" class="form-control" value="{{ old('mobile_number', $user->profile->mobile_number ?? '') }}">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Mobile Number</label>
-                        <input name="mobile_number" class="form-control" value="{{ old('mobile_number', $user->profile->mobile_number ?? '') }}">
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div style="width:20%; min-width:90px;">
+                            <label class="form-label">WhatsApp (cc)</label>
+                            <select name="whatsapp_cc" class="form-select">
+                                <option value="">CC</option>
+                                @foreach($mobileCountryCodes as $cc)
+                                    <option value="{{ $cc->dial_code }}" {{ old('whatsapp_cc', $user->profile->whatsapp_cc ?? '') == $cc->dial_code ? 'selected' : '' }}>
+                                        {{ $cc->country_name }} ({{ $cc->dial_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="width:80%;">
+                            <label class="form-label">WhatsApp Number</label>
+                            <input name="whatsapp_number" class="form-control" value="{{ old('whatsapp_number', $user->profile->whatsapp_number ?? '') }}">
+                        </div>
                     </div>
 
-                    <div class="col-md-3">
+                    {{-- Row: Marital, Gender, DOB --}}
+                    <div class="col-md-4">
                         <label class="form-label">Marital Status</label>
                         <select name="marital_status" class="form-select">
                             <option value="">Select</option>
@@ -113,8 +141,7 @@
                             <option value="widowed" {{ (old('marital_status', $user->profile->marital_status ?? '')=='widowed') ? 'selected':'' }}>Widowed</option>
                         </select>
                     </div>
-
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">Gender</label>
                         <select name="gender" class="form-select">
                             <option value="">Select</option>
@@ -123,17 +150,24 @@
                             <option value="other" {{ (old('gender', $user->profile->gender ?? '')=='other') ? 'selected':'' }}>Other</option>
                         </select>
                     </div>
-
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label class="form-label">DOB</label>
                         <input type="date" name="dob" class="form-control" value="{{ old('dob', optional($user->profile->dob)->format('Y-m-d') ?? '') }}">
                     </div>
 
-                    <div class="col-md-3">
+                    {{-- Row: Nationality, State, City --}}
+                    <div class="col-md-4">
                         <label class="form-label">Nationality</label>
-                        <input name="nationality" class="form-control" value="{{ old('nationality', $user->profile->nationality ?? '') }}">
+                        <select name="nationality" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($countries as $country)
+                                <option value="{{ $country->id }}"
+                                    {{ (string)old('nationality', $user->profile->nationality ?? '') === (string)$country->id ? 'selected' : '' }}>
+                                    {{ $country->country_name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-
                     <div class="col-md-4">
                         <label class="form-label">State</label>
                         <select name="state_id" id="state_id" class="form-select">
@@ -153,12 +187,14 @@
                         </select>
                     </div>
 
-                    <div class="col-md-6">
+                    {{-- Row: Address --}}
+                    <div class="col-md-12">
                         <label class="form-label">Address</label>
                         <textarea name="address" class="form-control" rows="2">{{ old('address', $user->profile->address ?? '') }}</textarea>
                     </div>
 
-                    <div class="col-md-6">
+                    {{-- Row: Profile Picture --}}
+                    <div class="col-md-12">
                         <label class="form-label">Profile Picture</label>
                         <input type="file" name="profile_pic" class="form-control">
                         @if(!empty($user->profile->profile_pic))
@@ -221,26 +257,44 @@
             <div class="card-header bg-light"><h5 class="mb-0">Passport & Seamen Book</h5></div>
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Passport Nationality</label>
-                        <input name="passport_nationality" class="form-control" value="{{ old('passport_nationality', $user->resume->passport_nationality ?? '') }}">
+                        <select name="passport_nationality" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($countries as $country)
+                                <option value="{{ $country->id }}"
+                                    {{ (string)old('passport_nationality', $user->resume->passport_nationality ?? '') === (string)$country->id ? 'selected' : '' }}>
+                                    {{ $country->country_name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Passport Number</label>
                         <input name="passport_number" class="form-control" value="{{ old('passport_number', $user->resume->passport_number ?? '') }}">
                     </div>
-
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Passport Expiry</label>
                         <input type="date" name="passport_expiry" class="form-control" value="{{ old('passport_expiry', optional($user->resume->passport_expiry)->format('Y-m-d') ?? '') }}">
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label">CDC Nationality</label>
+                        <select name="cdc_nationality" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($countries as $country)
+                                <option value="{{ $country->id }}"
+                                    {{ (string)old('cdc_nationality', $user->resume->cdc_nationality ?? '') === (string)$country->id ? 'selected' : '' }}>
+                                    {{ $country->country_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">CDC No</label>
                         <input name="cdc_no" class="form-control" value="{{ old('cdc_no', $user->resume->cdc_no ?? '') }}">
                     </div>
-
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">CDC Expiry</label>
                         <input type="date" name="cdc_expiry" class="form-control" value="{{ old('cdc_expiry', optional($user->resume->cdc_expiry)->format('Y-m-d') ?? '') }}">
                     </div>

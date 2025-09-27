@@ -49,7 +49,7 @@ class CandidateController extends Controller
         $userId = Auth::id();
 
         $rules = [
-            // profile
+            // Profile
             'first_name' => 'nullable|string|max:100',
             'middle_name' => 'nullable|string|max:100',
             'last_name' => 'nullable|string|max:100',
@@ -66,22 +66,22 @@ class CandidateController extends Controller
             'nationality' => 'nullable|string|max:100',
             'profile_pic' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
 
-            // resume
-            'present_rank' => 'nullable|string|max:255',
+            // Resume
+            'present_rank' => 'nullable|exists:ranks,id',
             'present_rank_exp' => 'nullable|string|max:255',
-            'post_applied_for' => 'nullable|string|max:255',
+            'post_applied_for' => 'nullable|exists:ranks,id',
             'date_of_availability' => 'nullable|date_format:Y-m-d',
             'indos_number' => 'nullable|string|max:255',
-            'passport_nationality' => 'nullable|string|max:255',
+            'passport_nationality' => 'nullable|exists:countries,id',
             'passport_number' => 'nullable|string|max:255',
             'passport_expiry' => 'nullable|date_format:Y-m-d',
-            'usa_visa' => 'nullable|boolean',
-            'cdc_nationality' => 'nullable|string|max:255',
+            'usa_visa' => 'nullable|in:0,1',
+            'cdc_nationality' => 'nullable|exists:countries,id',
             'cdc_no' => 'nullable|string|max:255',
             'cdc_expiry' => 'nullable|date_format:Y-m-d',
             'presea_training_type' => 'nullable|string|max:255',
             'presea_training_issue_date' => 'nullable|date_format:Y-m-d',
-            'coc_held' => 'nullable|boolean',
+            'coc_held' => 'nullable|in:0,1',
             'coc_type' => 'nullable|string|max:255',
             'coc_no' => 'nullable|string|max:255',
             'coc_date_of_expiry' => 'nullable|date_format:Y-m-d',
@@ -93,11 +93,11 @@ class CandidateController extends Controller
             'dce_validity' => 'nullable|array',
             'dce_validity.*' => 'nullable|date_format:Y-m-d',
 
-            // courses
+            // Courses
             'courses' => 'nullable|array',
             'courses.*' => 'nullable|exists:courses_and_other_certificate_master,id',
 
-            // sea service
+            // Sea service
             'sea_service' => 'nullable|array',
             'sea_service.*.rank_id' => 'nullable|exists:ranks,id',
             'sea_service.*.ship_type_id' => 'nullable|exists:ship_types,id',
@@ -116,9 +116,8 @@ class CandidateController extends Controller
             $validated['profile_pic_file'] = $request->file('profile_pic');
         }
 
-        $this->service->updateResume($userId, $validated);
+        app(CandidateService::class)->updateResume($userId, $validated);
 
-        // redirect back to canonical edit route
         return redirect()->route('candidate.resume.edit')->with('success', 'Resume saved successfully.');
     }
 
