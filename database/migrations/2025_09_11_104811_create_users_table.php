@@ -66,7 +66,7 @@ class CreateUsersTable extends Migration
 
             // Who created this user (nullable, in case a system seed or external import)
             $table->unsignedBigInteger('created_by')->nullable()->comment('users.id of creator');
-
+            $table->boolean('profile_deleted')->default(false)->index()->comment('true when profile has been removed from visibility');
             // Soft deletes and timestamps
             $table->softDeletes(); // deleted_at
             $table->timestamps(); // created_at, updated_at

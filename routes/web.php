@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\company\CompanyRegisterController;
 use App\Http\Controllers\Admin\Hotjobs\HotjobsController;
 use App\Http\Controllers\Admin\Message\MessageController;
 use App\Http\Controllers\Company\MessageController as CompanyMessageController;
+use App\Http\Controllers\Admin\Candidate\CandidateController as AdminCandidateController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -70,14 +71,16 @@ Route::prefix('candidate')
             Route::get('resume/show', function () {
                 return redirect()->route('candidate.view.resume');
             })->name('resume.view');
-            Route::post('resume/hide', [CandidateController::class, 'toggleResumeVisibility'])->name('resume.hide');
+            Route::get('resume/hide', [CandidateController::class, 'hideResumeForm'])->name('resume.hide.form');
+            Route::post('resume/hide', [CandidateController::class, 'hideResume'])->name('resume.hide');
             Route::get('jobs/search', [CandidateController::class, 'searchJobs'])->name('jobs.search');
             Route::get('jobs/hot', [CandidateController::class, 'hotJobs'])->name('jobs.hot');
             Route::get('express-service', [CandidateController::class, 'expressService'])->name('express.service');
             Route::get('statistics/applied', [CandidateController::class, 'statisticsApplied'])->name('statistics1');
             Route::get('statistics/viewed', [CandidateController::class, 'statisticsViewed'])->name('statistics2');
             Route::get('messages', [CandidateController::class, 'messages'])->name('messages');
-            Route::post('profile/delete', [CandidateController::class, 'deleteProfile'])->name('profile.delete');
+            Route::get('profile/delete', [CandidateController::class, 'deleteProfile'])->name('profile.delete');
+            Route::post('profile/delete/confirm', [CandidateController::class, 'confirmDelete'])->name('profile.delete.confirm');
             Route::post('logout', [CandidateLoginController::class, 'logout'])->name('logout');
         });
     });
@@ -107,8 +110,18 @@ Route::prefix('admin')
             Route::resource('dce-endorsements', DceEndorsementController::class);
             Route::resource('course-certificates', CourseCertificateController::class);
             Route::resource('cities', CityController::class);
-            Route::resource('candidates', CandidateRegistrationController::class);
+             // Candidate registration (for create/store only)
+            Route::resource('candidates', CandidateRegistrationController::class)->except(['index', 'edit', 'update', 'destroy']);
             Route::post('candidates/validate', [CandidateRegistrationController::class, 'ajaxValidate'])->name('candidates.ajaxValidate');
+
+            // Admin candidate management (index, edit, update, destroy)
+            Route::get('candidates', [AdminCandidateController::class, 'index'])->name('candidates.index');
+            Route::get('candidates/{id}/edit', [AdminCandidateController::class, 'edit'])->name('candidates.edit');
+            Route::put('candidates/{id}', [AdminCandidateController::class, 'update'])->name('candidates.update');
+            Route::delete('candidates/{id}', [AdminCandidateController::class, 'destroy'])->name('candidates.destroy');
+            Route::get('/followups', [AdminCandidateController::class, 'followups'])->name('followups');
+
+            // Messages
             Route::get('messages', [MessageController::class, 'index'])->name('messages');
             Route::post('messages/send', [MessageController::class, 'send'])->name('messages.send');
             Route::get('messages/fetch', [MessageController::class, 'fetch'])->name('messages.fetch');

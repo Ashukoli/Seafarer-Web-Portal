@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\Candidate\CandidateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ProfileDeleteRequest;
+
+
 
 class CandidateController extends Controller
 {
@@ -134,12 +137,35 @@ class CandidateController extends Controller
         return view('candidate.resume.show', $data);
     }
 
+    public function hideResumeForm()
+    {
+        $userId = Auth::id();
+        $data = $this->service->getForHide($userId);
+        return view('candidate.resume.hide', $data);
+    }
+
     /**
-     * POST /candidate/resume/hide - toggle visibility (simple example).
+     * Handle POST to hide/unhide resume for selected companies.
      */
+    public function hideResume(Request $request)
+    {
+        $validated = $request->validate([
+            'companies'   => 'nullable|array|max:5',
+            // validate against company_details table (NOT companies)
+            'companies.*' => 'integer|exists:company_details,id',
+        ]);
 
+        $companies = $validated['companies'] ?? [];
 
-    /* ---------- Small stubs for other routes referenced in web.php ---------- */
+        $this->service->updateHiddenCompanies(Auth::id(), $companies);
+
+        if ($request->ajax()) {
+            return response()->json(['status' => 'success', 'message' => 'Privacy settings updated.']);
+        }
+
+        return redirect()->back()->with('success', 'Privacy settings updated.');
+    }
+
 
     public function searchJobs()
     {
@@ -174,11 +200,28 @@ class CandidateController extends Controller
     /**
      * DELETE-style action via POST
      */
-    public function deleteProfile(Request $request)
+    public function deleteProfile()
     {
-        $user = Auth::user();
-        // for safety, don't actually delete here — implement as needed
-        // $user->delete();
-        return redirect()->route('home')->with('success', 'Profile delete requested (implement actual deletion).');
+        $userId = Auth::id();
+        $deleteRequest = ProfileDeleteRequest::where('candidate_id', $userId)
+            ->orderByDesc('created_at')
+            ->first();
+
+        return view('candidate.profile.delete', compact('deleteRequest'));
+    }
+
+    public function confirmDelete(Request $request)
+    {
+        $request->validate([
+            'reason' => 'required|string',
+            'other_reason' => 'nullable|string|max:2000',
+        ]);
+
+        $userId = Auth::id();
+
+        // delegate to service
+        $this->service->createProfileDeleteRequest($userId, $request->input('reason'), $request->input('other_reason'));
+
+        return redirect()->back()->with('success', 'Delete request submitted. Support will contact you.');
     }
 }

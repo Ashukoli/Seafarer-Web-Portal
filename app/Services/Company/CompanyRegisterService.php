@@ -75,12 +75,46 @@ class CompanyRegisterService
 
     public function storeAdvertisement($request)
     {
+        $rawDesc = $request->input('advertisement_description', '');
+
+        if (!empty($rawDesc)) {
+            // match src="data:image/...;base64,...." (handles single/double quotes)
+            if (preg_match_all('/src=[\'"]data:(image\/[a-zA-Z0-9.+-]+);base64,([^\'"]+)[\'"]/i', $rawDesc, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $m) {
+                    $mime = $m[1] ?? 'image/png';
+                    $b64  = $m[2] ?? '';
+                    $ext  = explode('/', $mime)[1] ?? 'png';
+                    $data = base64_decode($b64);
+                    if ($data === false) {
+                        continue;
+                    }
+
+                    $fileName = 'ad_img_' . time() . '_' . Str::random(8) . '.' . $ext;
+                    $dir = public_path('theme/assets/images/company_advertisements');
+
+                    if (!is_dir($dir)) {
+                        mkdir($dir, 0755, true);
+                    }
+
+                    $filePath = $dir . DIRECTORY_SEPARATOR . $fileName;
+                    file_put_contents($filePath, $data);
+
+                    // public URL for the saved image
+                    $url = asset('theme/assets/images/company_advertisements/' . $fileName);
+
+                    // replace the inline data src with the stored file URL
+                    $rawDesc = str_replace($m[0], 'src="' . $url . '"', $rawDesc);
+                }
+            }
+        }
+
         $data = [
             'advertisement_subject' => $request->input('advertisement_subject'),
-            'advertisement_description' => $request->input('advertisement_description'),
+            'advertisement_description' => $rawDesc, // cleaned HTML with stored image URLs
             'advertisement_shiptypes' => $request->input('advertisement_shiptypes', []),
             'advertisement_posted_date' => $request->input('advertisement_posted_date'),
         ];
+
         Session::put('register.advertisement', $data);
     }
 

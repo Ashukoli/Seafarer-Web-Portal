@@ -1,7 +1,7 @@
 @extends('layouts.candidate.app')
 @section('content')
 <main class="page-content professional-bg">
-    <!--Enhanced Breadcrumb-->
+    <!--Breadcrumb (unchanged)-->
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
         <div class="breadcrumb-title pe-3">
             <i class="bx bx-user-circle me-2 text-primary"></i>Candidate
@@ -21,236 +21,129 @@
             </nav>
         </div>
     </div>
-    <!--end breadcrumb-->
 
     <div class="container py-4">
-        <!-- Hide Resume Section -->
         <div class="card mb-4 professional-card">
             <div class="card-header professional-header resume-privacy-header">
-                <h5 class="mb-0 header-title">
-                    <i class="bx bx-shield-check me-2"></i>Resume Privacy Settings
-                </h5>
-                <div class="header-stats">
-                    <span class="stats-badge">
-                        <i class="bx bx-lock me-1"></i>Privacy Control
-                    </span>
-                </div>
+                <h5 class="mb-0 header-title"><i class="bx bx-shield-check me-2"></i>Resume Privacy Settings</h5>
+                <div class="header-stats"><span class="stats-badge"><i class="bx bx-lock me-1"></i>Privacy Control</span></div>
             </div>
+
             <div class="card-body p-4">
-                <!-- Information Section -->
-                <div class="info-section mb-4">
-                    <div class="info-card">
-                        <div class="info-icon">
-                            <i class="bx bx-info-circle"></i>
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                <form method="POST" action="{{ route('candidate.resume.hide') }}" id="hideResumeForm">
+                    @csrf
+
+                    <div class="form-header mb-4">
+                        <h6 class="section-title"><i class="bx bx-buildings me-2"></i>Select Companies to Hide From</h6>
+                        <p class="section-subtitle">Choose up to 5 companies that should not be able to view your resume</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label enhanced-label">
+                                <span class="label-text"><i class="bx bx-select-multiple me-2"></i>Companies</span>
+                                <small class="label-hint">Select companies from the dropdown (Maximum 5)</small>
+                            </label>
+
+                            <div class="multiselect-wrapper">
+                                <div class="multiselect-container" id="companiesMultiselect">
+                                    <div class="multiselect-header" onclick="toggleDropdown()">
+                                        <span class="selected-text" id="headerSelected">Select companies to hide from...</span>
+                                        <div class="dropdown-arrow"><i class="bx bx-chevron-down"></i></div>
+                                    </div>
+
+                                    <div class="multiselect-dropdown" id="companiesDropdown">
+                                        <div class="dropdown-search">
+                                            <input type="text" class="search-input" placeholder="Search companies..." onkeyup="filterCompanies(this.value)">
+                                            <i class="bx bx-search search-icon"></i>
+                                        </div>
+
+                                        <div class="dropdown-options" id="companiesOptions">
+                                            @foreach($companies as $company)
+                                                @php
+                                                    $cid = $company->id;
+                                                    $checked = in_array($cid, $hiddenCompanies ?? []) ? 'checked' : '';
+                                                    $logo = $company->company_logo ?? $company->logo ?? null;
+                                                    // use company_logo folder inside public/theme/assets/images; accept absolute URLs or leading-slash paths
+                                                    if ($logo) {
+                                                        $logoUrl = \Illuminate\Support\Str::startsWith($logo, ['http', '/'])
+                                                            ? $logo
+                                                            : asset('theme/assets/images/company_logo/' . ltrim($logo, '/'));
+                                                    } else {
+                                                        $logoUrl = asset('theme/assets/images/company_logo/default.png');
+                                                    }
+                                                @endphp
+                                                <div class="option-item" data-value="{{ $cid }}" data-logo-url="{{ $logoUrl }}">
+                                                    <label class="option-label">
+                                                        <input type="checkbox"
+                                                               name="companies[]"
+                                                               value="{{ $cid }}"
+                                                               class="company-checkbox"
+                                                               data-id="{{ $cid }}"
+                                                               {{ $checked }}>
+                                                        <div class="custom-checkbox"><i class="bx bx-check"></i></div>
+                                                        <img src="{{ $logoUrl }}" alt="{{ $company->company_name ?? $company->name }}" class="company-logo">
+                                                        <span class="company-name">{{ $company->company_name ?? $company->name }}</span>
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="selection-feedback">
+                                    <div class="selected-count">
+                                        <span id="selectedCount">{{ count($hiddenCompanies ?? []) }}</span> of 5 companies selected
+                                    </div>
+                                    <div class="validation-message" id="validationMessage"></div>
+                                </div>
+                            </div>
+
+                            @error('companies')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
-                        <div class="info-content">
-                            <h6 class="info-title">Why Hide Your Resume?</h6>
-                            <p class="info-text">
-                                You can hide your resume from specific companies to maintain privacy or avoid unwanted contact.
-                                This is useful when you don't want certain employers to see your profile while keeping it visible to others.
-                            </p>
-                            <ul class="info-list">
-                                <li>Your resume will be completely hidden from selected companies</li>
-                                <li>You can select up to 5 companies at a time</li>
-                                <li>This setting can be changed anytime</li>
-                                <li>Hidden companies cannot view or download your profile</li>
-                            </ul>
+
+                        <div class="col-md-4">
+                            <div class="help-sidebar">
+                                <div class="help-card">
+                                    <div class="help-icon"><i class="bx bx-help-circle"></i></div>
+                                    <h6 class="help-title">Need Help?</h6>
+                                    <ul class="help-list">
+                                        <li>Click on the dropdown to see all companies</li>
+                                        <li>Use checkboxes to select up to 5 companies</li>
+                                        <li>Use the search box to find specific companies</li>
+                                        <li>Selected companies will appear below the dropdown</li>
+                                        <li>You can change your selections anytime</li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Hide Resume Form -->
-                <form method="POST" action="" id="hideResumeForm">
-                    @csrf
-                    <div class="form-section">
-                        <div class="form-header mb-4">
-                            <h6 class="section-title">
-                                <i class="bx bx-buildings me-2"></i>Select Companies to Hide From
-                            </h6>
-                            <p class="section-subtitle">Choose up to 5 companies that should not be able to view your resume</p>
+                    <div class="selected-companies mt-4" id="selectedCompanies">
+                        <div class="selected-header">
+                            <h6 class="selected-title"><i class="bx bx-list-check me-2"></i>Selected Companies</h6>
                         </div>
+                        <div class="selected-items" id="selectedItems"></div>
+                    </div>
 
-                        <div class="row">
-                            <div class="col-md-8">
-                                <label for="companies" class="form-label enhanced-label">
-                                    <span class="label-text">
-                                        <i class="bx bx-select-multiple me-2"></i>Companies
-                                    </span>
-                                    <small class="label-hint">Select companies from the dropdown (Maximum 5)</small>
-                                </label>
-
-                                <!-- Custom Multiselect Dropdown -->
-                                <div class="multiselect-wrapper">
-                                    <div class="multiselect-container" id="companiesMultiselect">
-                                        <div class="multiselect-header" onclick="toggleDropdown()">
-                                            <span class="selected-text">Select companies to hide from...</span>
-                                            <div class="dropdown-arrow">
-                                                <i class="bx bx-chevron-down"></i>
-                                            </div>
-                                        </div>
-                                        <div class="multiselect-dropdown" id="companiesDropdown">
-                                            <div class="dropdown-search">
-                                                <input type="text" class="search-input" placeholder="Search companies..." onkeyup="filterCompanies(this.value)">
-                                                <i class="bx bx-search search-icon"></i>
-                                            </div>
-                                            <div class="dropdown-options" id="companiesOptions">
-                                                <div class="option-item" data-value="mas-ship-management">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="mas-ship-management" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/28.png') }}" alt="MAS" class="company-logo">
-                                                        <span class="company-name">MAS Ship Management Pvt. Ltd</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="oceanic-crew">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="oceanic-crew" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Oceanic" class="company-logo">
-                                                        <span class="company-name">Oceanic Crew Management</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="global-maritime">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="global-maritime" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/download.png') }}" alt="Global" class="company-logo">
-                                                        <span class="company-name">Global Maritime Services</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="blue-wave-shipping">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="blue-wave-shipping" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Blue Wave" class="company-logo">
-                                                        <span class="company-name">Blue Wave Shipping</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="ses-marine">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="ses-marine" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/28.png') }}" alt="SES" class="company-logo">
-                                                        <span class="company-name">SES Marine Services</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="tangar-ship">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="tangar-ship" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/download.png') }}" alt="Tangar" class="company-logo">
-                                                        <span class="company-name">Tangar Ship Management Pvt. Ltd</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="shreysun-global">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="shreysun-global" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Shreysun" class="company-logo">
-                                                        <span class="company-name">Shreysun Global Shipping Pvt. Ltd</span>
-                                                    </label>
-                                                </div>
-                                                <div class="option-item" data-value="vr-maritime">
-                                                    <label class="option-label">
-                                                        <input type="checkbox" name="companies[]" value="vr-maritime" class="company-checkbox">
-                                                        <div class="custom-checkbox">
-                                                            <i class="bx bx-check"></i>
-                                                        </div>
-                                                        <img src="{{ asset('theme/assets/images/products/28.png') }}" alt="VR Maritime" class="company-logo">
-                                                        <span class="company-name">VR Maritime Services Pvt. Ltd</span>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="selection-feedback">
-                                        <div class="selected-count">
-                                            <span id="selectedCount">0</span> of 5 companies selected
-                                        </div>
-                                        <div class="validation-message" id="validationMessage"></div>
-                                    </div>
-                                </div>
-
-                                <!-- Selected Companies Display -->
-                                <div class="selected-companies" id="selectedCompanies">
-                                    <div class="selected-header">
-                                        <h6 class="selected-title">
-                                            <i class="bx bx-list-check me-2"></i>Selected Companies
-                                        </h6>
-                                    </div>
-                                    <div class="selected-items" id="selectedItems">
-                                        <div class="no-selection">
-                                            <i class="bx bx-info-circle me-2"></i>
-                                            No companies selected yet
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="help-sidebar">
-                                    <div class="help-card">
-                                        <div class="help-icon">
-                                            <i class="bx bx-help-circle"></i>
-                                        </div>
-                                        <h6 class="help-title">Need Help?</h6>
-                                        <ul class="help-list">
-                                            <li>Click on the dropdown to see all companies</li>
-                                            <li>Use checkboxes to select up to 5 companies</li>
-                                            <li>Use the search box to find specific companies</li>
-                                            <li>Selected companies will appear below the dropdown</li>
-                                            <li>You can change your selections anytime</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Form Actions -->
-                        <div class="form-actions mt-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="privacy-note">
-                                    <i class="bx bx-shield-check me-2 text-success"></i>
-                                    <small class="text-muted">Your privacy settings will be updated immediately</small>
-                                </div>
-                                <div class="action-buttons">
-                                    <button type="button" class="btn btn-outline-secondary me-3" onclick="clearSelections()">
-                                        <i class="bx bx-reset me-2"></i>Clear All
-                                    </button>
-                                    <button type="submit" class="btn btn-primary" id="saveButton">
-                                        <i class="bx bx-save me-2"></i>Save Privacy Settings
-                                    </button>
-                                </div>
+                    <div class="form-actions mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="privacy-note"><i class="bx bx-shield-check me-2 text-success"></i><small class="text-muted">Your privacy settings will be updated immediately</small></div>
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-outline-secondary me-3" onclick="clearSelections()"><i class="bx bx-reset me-2"></i>Clear All</button>
+                                <button type="submit" class="btn btn-primary" id="saveButton"><i class="bx bx-save me-2"></i>Save Privacy Settings</button>
                             </div>
                         </div>
                     </div>
                 </form>
 
-                <!-- Current Hidden Companies -->
                 <div class="current-settings mt-5 pt-4 border-top">
-                    <h6 class="settings-title">
-                        <i class="bx bx-eye-close me-2"></i>Currently Hidden From
-                    </h6>
-                    <div class="current-hidden" id="currentHidden">
-                        <div class="no-hidden">
-                            <i class="bx bx-info-circle me-2"></i>
-                            Your resume is currently visible to all companies
-                        </div>
-                    </div>
+                    <h6 class="settings-title"><i class="bx bx-eye-close me-2"></i>Currently Hidden From</h6>
+                    <div class="current-hidden" id="currentHidden"></div>
                 </div>
             </div>
         </div>
@@ -986,230 +879,148 @@
 </style>
 
 <script>
-let selectedCompanies = [];
-const maxSelections = 5;
+    const maxSelections = 5;
+    const companies = @json($companies);
+    const initialHidden = @json($hiddenCompanies ?? []);
+    // base path for relative company logo filenames stored in company_logo column
+    const baseLogoPath = "{{ asset('theme/assets/images/company_logo') }}";
 
-// Toggle dropdown visibility
-function toggleDropdown() {
-    const dropdown = document.getElementById('companiesDropdown');
-    const arrow = document.querySelector('.dropdown-arrow');
-    const header = document.querySelector('.multiselect-header');
+    let selectedCompanies = initialHidden.map(Number);
 
-    if (dropdown.classList.contains('show')) {
-        dropdown.classList.remove('show');
-        arrow.classList.remove('rotated');
-        header.classList.remove('active');
-    } else {
-        dropdown.classList.add('show');
-        arrow.classList.add('rotated');
-        header.classList.add('active');
+    // when building JS image src, prefer absolute/leading-slash values; otherwise prepend baseLogoPath
+    function resolveLogoPath(raw) {
+        if (!raw) return baseLogoPath + '/default.png';
+        try {
+            if (raw.startsWith('http') || raw.startsWith('/')) return raw;
+        } catch(e) {}
+        return baseLogoPath + '/' + raw.replace(/^\/+/, '');
     }
-}
 
-// Filter companies based on search
-function filterCompanies(searchTerm) {
-    const options = document.querySelectorAll('.option-item');
-    searchTerm = searchTerm.toLowerCase();
+    function toggleDropdown() {
+        const dd = document.getElementById('companiesDropdown');
+        const arrow = document.querySelector('.dropdown-arrow');
+        const header = document.querySelector('.multiselect-header');
+        dd.classList.toggle('show');
+        arrow.classList.toggle('rotated');
+        header.classList.toggle('active');
+    }
 
-    options.forEach(option => {
-        const companyName = option.querySelector('.company-name').textContent.toLowerCase();
-        if (companyName.includes(searchTerm)) {
-            option.style.display = 'block';
-        } else {
-            option.style.display = 'none';
-        }
-    });
-}
-
-// Handle company selection
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.company-checkbox');
-
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            handleCompanySelection(this);
+    function filterCompanies(term) {
+        term = term.trim().toLowerCase();
+        document.querySelectorAll('.option-item').forEach(opt => {
+            const name = opt.querySelector('.company-name').textContent.toLowerCase();
+            opt.style.display = name.includes(term) ? 'block' : 'none';
         });
-    });
+    }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const multiselect = document.getElementById('companiesMultiselect');
-        if (!multiselect.contains(e.target)) {
-            const dropdown = document.getElementById('companiesDropdown');
-            const arrow = document.querySelector('.dropdown-arrow');
-            const header = document.querySelector('.multiselect-header');
-
-            dropdown.classList.remove('show');
-            arrow.classList.remove('rotated');
-            header.classList.remove('active');
-        }
-    });
-
-    // Form submission
-    const form = document.getElementById('hideResumeForm');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
+    function updateHeaderText() {
+        const header = document.getElementById('headerSelected');
         if (selectedCompanies.length === 0) {
-            alert('Please select at least one company to hide your resume from.');
+            header.textContent = 'Select companies to hide from...';
+        } else if (selectedCompanies.length === 1) {
+            const c = companies.find(x => x.id === selectedCompanies[0]);
+            header.textContent = c ? (c.company_name || c.name) : '1 company selected';
+        } else {
+            header.textContent = `${selectedCompanies.length} companies selected`;
+        }
+        document.getElementById('selectedCount').textContent = selectedCompanies.length;
+    }
+
+    function updateSelectedDisplay() {
+        const container = document.getElementById('selectedItems');
+        const currentHidden = document.getElementById('currentHidden');
+        if (selectedCompanies.length === 0) {
+            const no = `<div class="no-selection"><i class="bx bx-info-circle me-2"></i>No companies selected</div>`;
+            container.innerHTML = no;
+            currentHidden.innerHTML = `<div class="no-hidden"><i class="bx bx-info-circle me-2"></i>Your resume is currently visible to all companies</div>`;
             return;
         }
 
-        // Show loading state
-        const saveButton = document.getElementById('saveButton');
-        const originalText = saveButton.innerHTML;
-        saveButton.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Saving...';
-        saveButton.disabled = true;
+        const html = selectedCompanies.map(id => {
+            const c = companies.find(x => x.id === id);
+            if (!c) return '';
+            const rawLogo = c.company_logo || c.logo || null;
+            const logo = resolveLogoPath(rawLogo);
+            return `
+                <div class="selected-item">
+                    <img src="${logo}" alt="${c.company_name || c.name}" class="company-logo">
+                    <span class="company-name">${c.company_name || c.name}</span>
+                    <button type="button" class="remove-item" onclick="removeCompany(${id})"><i class="bx bx-x"></i></button>
+                </div>
+            `;
+        }).join('');
+        container.innerHTML = html;
+        currentHidden.innerHTML = html;
+    }
 
-        // Simulate form submission (replace with actual form submission)
-        setTimeout(() => {
-            saveButton.innerHTML = '<i class="bx bx-check me-2"></i>Saved Successfully!';
-            setTimeout(() => {
-                saveButton.innerHTML = originalText;
-                saveButton.disabled = false;
-
-                // Show success message
-                const validationMessage = document.getElementById('validationMessage');
-                validationMessage.textContent = 'Privacy settings updated successfully!';
-                validationMessage.classList.add('success');
-
-                setTimeout(() => {
-                    validationMessage.textContent = '';
-                    validationMessage.classList.remove('success');
-                }, 3000);
-
-            }, 2000);
-        }, 1500);
-    });
-});
-
-function handleCompanySelection(checkbox) {
-    const optionItem = checkbox.closest('.option-item');
-    const companyValue = checkbox.value;
-    const companyName = optionItem.querySelector('.company-name').textContent;
-    const companyLogo = optionItem.querySelector('.company-logo').src;
-
-    if (checkbox.checked) {
-        // Check if we can add more selections
-        if (selectedCompanies.length >= maxSelections) {
-            checkbox.checked = false;
-            showValidationMessage(`You can only select up to ${maxSelections} companies.`);
-            return;
+    function handleCheckboxChange(cb) {
+        const id = Number(cb.value);
+        if (cb.checked) {
+            if (selectedCompanies.length >= maxSelections) {
+                cb.checked = false;
+                showValidationMessage(`You can only select up to ${maxSelections} companies.`);
+                return;
+            }
+            if (!selectedCompanies.includes(id)) selectedCompanies.push(id);
+        } else {
+            selectedCompanies = selectedCompanies.filter(i => i !== id);
         }
+        updateSelectedDisplay();
+        updateHeaderText();
+    }
 
-        // Add to selected companies
-        selectedCompanies.push({
-            value: companyValue,
-            name: companyName,
-            logo: companyLogo
+    function removeCompany(id) {
+        const cb = document.querySelector(`.company-checkbox[data-id="${id}"]`);
+        if (cb) cb.checked = false;
+        selectedCompanies = selectedCompanies.filter(i => i !== id);
+        updateSelectedDisplay();
+        updateHeaderText();
+    }
+
+    function clearSelections() {
+        selectedCompanies = [];
+        document.querySelectorAll('.company-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedDisplay();
+        updateHeaderText();
+    }
+
+    function showValidationMessage(msg) {
+        const el = document.getElementById('validationMessage');
+        el.textContent = msg;
+        setTimeout(()=> el.textContent = '', 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // wire existing checkboxes and initial UI
+        document.querySelectorAll('.company-checkbox').forEach(cb => {
+            const id = Number(cb.value);
+            // ensure checkbox state matches initialHidden (in case server set)
+            if (initialHidden.includes(id)) cb.checked = true;
+            cb.addEventListener('change', function() { handleCheckboxChange(this); });
         });
-    } else {
-        // Remove from selected companies
-        selectedCompanies = selectedCompanies.filter(company => company.value !== companyValue);
-    }
 
-    updateSelectedDisplay();
-    updateHeaderText();
-    updateSelectedCount();
-}
+        updateHeaderText();
+        updateSelectedDisplay();
 
-function updateSelectedDisplay() {
-    const selectedItems = document.getElementById('selectedItems');
+        // validate on submit (server still validates)
+        document.getElementById('hideResumeForm').addEventListener('submit', function(e) {
+            if (selectedCompanies.length > maxSelections) {
+                e.preventDefault();
+                showValidationMessage(`You can only select up to ${maxSelections} companies.`);
+                return false;
+            }
+            // allow form submit; selected checkboxes already present in DOM
+        });
 
-    if (selectedCompanies.length === 0) {
-        selectedItems.innerHTML = `
-            <div class="no-selection">
-                <i class="bx bx-info-circle me-2"></i>
-                No companies selected yet
-            </div>
-        `;
-    } else {
-        selectedItems.innerHTML = selectedCompanies.map(company => `
-            <div class="selected-item">
-                <img src="${company.logo}" alt="${company.name}" class="company-logo">
-                <span class="company-name">${company.name}</span>
-                <button type="button" class="remove-item" onclick="removeCompany('${company.value}')">
-                    <i class="bx bx-x"></i>
-                </button>
-            </div>
-        `).join('');
-    }
-}
-
-function updateHeaderText() {
-    const selectedText = document.querySelector('.selected-text');
-
-    if (selectedCompanies.length === 0) {
-        selectedText.textContent = 'Select companies to hide from...';
-        selectedText.classList.remove('has-selection');
-    } else if (selectedCompanies.length === 1) {
-        selectedText.textContent = `${selectedCompanies[0].name}`;
-        selectedText.classList.add('has-selection');
-    } else {
-        selectedText.textContent = `${selectedCompanies.length} companies selected`;
-        selectedText.classList.add('has-selection');
-    }
-}
-
-function updateSelectedCount() {
-    const selectedCount = document.getElementById('selectedCount');
-    selectedCount.textContent = selectedCompanies.length;
-
-    // Clear validation message if within limits
-    if (selectedCompanies.length <= maxSelections) {
-        const validationMessage = document.getElementById('validationMessage');
-        validationMessage.textContent = '';
-        validationMessage.classList.remove('success');
-    }
-}
-
-function removeCompany(companyValue) {
-    // Uncheck the checkbox
-    const checkbox = document.querySelector(`input[value="${companyValue}"]`);
-    if (checkbox) {
-        checkbox.checked = false;
-    }
-
-    // Remove from selected companies
-    selectedCompanies = selectedCompanies.filter(company => company.value !== companyValue);
-
-    updateSelectedDisplay();
-    updateHeaderText();
-    updateSelectedCount();
-}
-
-function clearSelections() {
-    // Uncheck all checkboxes
-    const checkboxes = document.querySelectorAll('.company-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = false;
+        // close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const multiselect = document.getElementById('companiesMultiselect');
+            if (!multiselect.contains(e.target)) {
+                document.getElementById('companiesDropdown').classList.remove('show');
+                document.querySelector('.dropdown-arrow').classList.remove('rotated');
+                document.querySelector('.multiselect-header').classList.remove('active');
+            }
+        });
     });
-
-    // Clear selected companies array
-    selectedCompanies = [];
-
-    updateSelectedDisplay();
-    updateHeaderText();
-    updateSelectedCount();
-
-    const validationMessage = document.getElementById('validationMessage');
-    validationMessage.textContent = 'All selections cleared.';
-    validationMessage.classList.add('success');
-
-    setTimeout(() => {
-        validationMessage.textContent = '';
-        validationMessage.classList.remove('success');
-    }, 2000);
-}
-
-function showValidationMessage(message) {
-    const validationMessage = document.getElementById('validationMessage');
-    validationMessage.textContent = message;
-    validationMessage.classList.remove('success');
-
-    setTimeout(() => {
-        validationMessage.textContent = '';
-    }, 3000);
-}
 </script>
 @endsection

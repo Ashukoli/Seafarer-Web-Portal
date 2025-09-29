@@ -20,6 +20,10 @@ use App\Models\DceEndorsement; // master
 use App\Models\CoursesAndOtherCertificateMaster as CourseMaster; // adjust to your actual model name
 use App\Models\Country;
 use App\Models\MobileCountryCode;
+use Illuminate\Support\Carbon;
+use App\Models\CandidateHiddenCompany;
+use App\Models\CompanyDetail;
+use App\Models\ProfileDeleteRequest;
 
 class CandidateService
 {
@@ -57,6 +61,65 @@ class CandidateService
             'countries' => $countries,
             'mobileCountryCodes' => $mobileCountryCodes, // <-- And this line
         ];
+    }
+
+    public function getForHide(int $userId): array
+    {
+        // fetch companies via Eloquent
+        $companies = CompanyDetail::with('user')
+            ->select('id', 'company_name', 'company_logo', 'user_id')
+            ->orderBy('company_name')
+            ->get()
+            ->map(function ($c) {
+                return (object)[
+                    'id' => $c->id,
+                    'name' => $c->company_name,
+                    'logo' => $c->company_logo ?: 'theme/assets/images/products/download.png',
+                    'user_id' => $c->user_id,
+                    'slug' => optional($c->user)->slug ?? '',
+                ];
+            });
+
+        // fetch hidden company ids using Eloquent model
+        $hidden = CandidateHiddenCompany::where('candidate_id', $userId)
+            ->pluck('company_id')
+            ->map(fn($v) => (int)$v)
+            ->toArray();
+
+        return [
+            'companies' => $companies,
+            'hiddenCompanies' => $hidden,
+        ];
+    }
+
+    /**
+     * Replace candidate's hidden companies (max 5).
+     *
+     * @param int $userId
+     * @param array $companyIds
+     * @return void
+     */
+    public function updateHiddenCompanies(int $userId, array $companyIds): void
+    {
+        // normalize and deduplicate input, enforce max 5
+        $companyIds = array_values(array_unique(array_filter(array_map('intval', $companyIds))));
+        $companyIds = array_slice($companyIds, 0, 5);
+
+        DB::transaction(function () use ($userId, $companyIds) {
+            DB::table('candidate_hidden_companies')->where('candidate_id', $userId)->delete();
+
+            if (!empty($companyIds)) {
+                $now = Carbon::now();
+                $rows = array_map(fn($cid) => [
+                    'candidate_id' => $userId,
+                    'company_id'  => $cid,
+                    'created_at'  => $now,
+                    'updated_at'  => $now,
+                ], $companyIds);
+
+                DB::table('candidate_hidden_companies')->insert($rows);
+            }
+        });
     }
 
     /**
@@ -273,28 +336,95 @@ class CandidateService
 
 
     public function paginateCandidates(int $perPage = 20, array $filters = [], array $with = [])
-    {
-        $query = User::query()->where('user_type', 'candidate');
+{
 
-        // Apply filters if provided
-        if (!empty($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
+    //dd($filters);
+    $query = User::query()->where('user_type', 'candidate');
 
-        // Eager load relations if provided
-        if (!empty($with)) {
-            $query->with($with);
-        }
-
-        return $query->orderByDesc('id')->paginate($perPage);
+    if (!empty($with)) {
+        $query->with($with);
     }
+
+    $searchField = $filters['search_field'] ?? null;
+    $searchValue = $filters['search_value'] ?? null;
+    $searchRank = $filters['search_rank'] ?? null;
+    $searchShiptype = $filters['search_shiptype'] ?? null;
+
+        if ($searchField && ($searchValue || $searchRank || $searchShiptype)) {
+        switch ($searchField) {
+            case 'id':
+                if ($searchValue) {
+                    $query->where('id', $searchValue);
+                }
+                break;
+            case 'indos':
+                if ($searchValue) {
+                    $query->whereHas('resume', function ($q) use ($searchValue) {
+                        $q->where('indos_number', 'like', "%$searchValue%");
+                    });
+                }
+                break;
+            case 'name':
+                if ($searchValue) {
+                    $query->whereHas('profile', function ($q) use ($searchValue) {
+                        $q->where('first_name', 'like', "%$searchValue%")
+                        ->orWhere('last_name', 'like', "%$searchValue%");
+                    });
+                }
+                break;
+            case 'email':
+                if ($searchValue) {
+                    $query->where('email', 'like', "%$searchValue%");
+                }
+                break;
+            case 'mobile':
+                if ($searchValue) {
+                    $query->whereHas('profile', function ($q) use ($searchValue) {
+                        $q->where('mobile_number', 'like', "%$searchValue%");
+                    });
+                }
+                break;
+            case 'date_of_availability':
+                if ($searchValue) {
+                    try {
+                        $date = \Carbon\Carbon::createFromFormat('d-m-Y', $searchValue)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $date = $searchValue;
+                    }
+                    $query->whereHas('resume', function ($q) use ($date) {
+                        $q->where('date_of_availability', $date);
+                    });
+                }
+                break;
+            case 'present_rank':
+                if ($searchRank) {
+                    $query->whereHas('resume', function ($q) use ($searchRank) {
+                        $q->where('present_rank', $searchRank);
+                    });
+                }
+                if ($searchShiptype) {
+                    $query->whereHas('seaServiceDetails', function ($q) use ($searchShiptype) {
+                        $q->where('ship_type_id', $searchShiptype);
+                    });
+                }
+                break;
+            case 'post_applied_for':
+                if ($searchRank) {
+                    $query->whereHas('resume', function ($q) use ($searchRank) {
+                        $q->where('post_applied_for', $searchRank);
+                    });
+                }
+                if ($searchShiptype) {
+                    $query->whereHas('seaServiceDetails', function ($q) use ($searchShiptype) {
+                        $q->where('ship_type_id', $searchShiptype);
+                    });
+                }
+                break;
+        }
+    }
+
+    return $query->orderByDesc('id')->paginate($perPage)->appends($filters);
+}
 
     /**
      * Find a candidate by user ID with all related profile/resume data.
@@ -320,5 +450,16 @@ class CandidateService
         }
 
         return $query->first();
+    }
+
+    public function createProfileDeleteRequest(int $userId, string $reason, ?string $otherReason = null): void
+    {
+        ProfileDeleteRequest::updateOrCreate(
+            ['candidate_id' => $userId, 'status' => 'pending'],
+            [
+                'reason' => $reason,
+                'other_reason' => $otherReason,
+            ]
+        );
     }
 }
