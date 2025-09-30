@@ -121,11 +121,16 @@ Route::prefix('admin')
             Route::delete('candidates/{id}', [AdminCandidateController::class, 'destroy'])->name('candidates.destroy');
             Route::get('/followups', [AdminCandidateController::class, 'followups'])->name('followups');
 
+             // delete profile requests
+            Route::get('candidate/delete-requests', [AdminCandidateController::class, 'deleteRequests'])->name('candidate.delete_requests.index');
+            Route::get('candidate/delete-requests/{id}', [AdminCandidateController::class, 'showDeleteRequest'])->name('candidate.delete_requests.show');
+            Route::post('candidate/delete-requests/{id}/process', [AdminCandidateController::class, 'processDeleteRequest'])->name('candidate.delete_requests.process');
             // Messages
             Route::get('messages', [MessageController::class, 'index'])->name('messages');
             Route::post('messages/send', [MessageController::class, 'send'])->name('messages.send');
             Route::get('messages/fetch', [MessageController::class, 'fetch'])->name('messages.fetch');
             Route::prefix('company')->name('company.')->group(function () {
+
 
                 Route::get('register/{step?}', [CompanyRegisterController::class, 'showForm'])->name('register.step');
                 Route::post('register/{step}', [CompanyRegisterController::class, 'handleStep'])->name('register.handle');

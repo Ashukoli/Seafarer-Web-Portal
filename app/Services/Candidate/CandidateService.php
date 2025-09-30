@@ -462,4 +462,64 @@ class CandidateService
             ]
         );
     }
+
+    public function getProfileDeleteRequests(?string $status = 'pending', int $perPage = 20, ?string $search = null)
+    {
+        $query = ProfileDeleteRequest::with(['candidate.profile']) // <-- Updated line
+            ->orderByDesc('created_at');
+
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if (!empty($search)) {
+            $term = '%' . trim($search) . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('reason', 'like', $term)
+                  ->orWhere('other_reason', 'like', $term)
+                  ->orWhereHas('candidate', function ($qc) use ($term) {
+                      $qc->where('first_name', 'like', $term)
+                         ->orWhere('last_name', 'like', $term)
+                         ->orWhere('email', 'like', $term);
+                  });
+            });
+        }
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    public function processProfileDeleteRequest(int $requestId, int $adminId): void
+    {
+        $req = ProfileDeleteRequest::lockForUpdate()->findOrFail($requestId);
+
+        if ($req->status !== 'pending') {
+            // already processed or cancelled
+            return;
+        }
+
+        DB::transaction(function () use ($req, $adminId) {
+            $userId = $req->candidate_id;
+
+            // Remove resume/profile related data (adjust table names as per your schema)
+            DB::table('candidate_hidden_companies')->where('candidate_id', $userId)->delete();
+            DB::table('sea_services')->where('user_id', $userId)->delete();
+            DB::table('resumes')->where('user_id', $userId)->delete();
+            DB::table('candidate_profiles')->where('user_id', $userId)->delete();
+            DB::table('candidate_course_certificates')->where('user_id', $userId)->delete();
+            DB::table('candidate_dce_endorsements')->where('user_id', $userId)->delete();
+            // delete uploaded files if stored paths in DB — implement file deletion if needed
+
+            // mark user profile as deleted (keeps user row for audit)
+            User::where('id', $userId)->update([
+                'profile_deleted' => true,
+                'updated_at' => Carbon::now(),
+            ]);
+
+            // mark request processed
+            $req->status = 'processed';
+            $req->processed_by = $adminId;
+            $req->processed_at = Carbon::now();
+            $req->save();
+        });
+    }
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin\Candidate;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Candidate\CandidateService;
+use App\Models\ProfileDeleteRequest;
+use Illuminate\Support\Facades\Auth;
 
 class CandidateController extends Controller
 {
@@ -154,5 +156,40 @@ class CandidateController extends Controller
         $user->delete();
 
         return redirect()->route('admin.candidates.index')->with('success', 'Candidate deleted successfully.');
+    }
+
+
+    public function showDeleteRequest($id)
+    {
+        $req = ProfileDeleteRequest::with('candidate')->findOrFail($id);
+        return view('admin.candidate.delete_requests.show', compact('req'));
+    }
+
+    public function deleteRequests(Request $request)
+    {
+        $status = $request->input('status', 'pending'); // pending | processed | all
+        $perPage = (int) $request->input('per_page', 20);
+        $search  = $request->input('q', null);
+
+        $requests = $this->candidateService->getProfileDeleteRequests($status, $perPage, $search);
+
+        return view('admin.candidate.delete_requests.index', compact('requests', 'status', 'search'));
+    }
+
+    /**
+     * Process (confirm) a delete request. Expects a POST with confirmation.
+     */
+    public function processDeleteRequest(Request $request, $id)
+    {
+        $request->validate([
+            'confirm' => 'required|in:yes'
+        ]);
+
+        $adminId = Auth::id();
+
+        $this->candidateService->processProfileDeleteRequest($id, $adminId);
+
+        return redirect()->route('admin.candidate.delete_requests.index')
+            ->with('success', 'Candidate profile deleted and request processed.');
     }
 }

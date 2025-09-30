@@ -1,17 +1,17 @@
-@extends('layouts.app')
+@extends('layouts.candidate.app')
 @section('content')
 <!-- Add Swiper.js CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
-<main class="page-content professional-bg">
+<main class="page-content modern-professional-bg">
     <!--Enhanced Breadcrumb-->
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
         <div class="breadcrumb-title pe-3">
-            <i class="bx bx-user-circle me-2 text-primary"></i>Candidate
+            <i class="bx bx-user-circle me-2"></i>Candidate
         </div>
         <div class="ps-3">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 p-0 enhanced-breadcrumb">
+                <ol class="breadcrumb mb-0 p-0 modern-breadcrumb">
                     <li class="breadcrumb-item">
                         <a href="{{ route('candidate.dashboard') }}" class="breadcrumb-link">
                             <i class="bx bx-home-alt me-1"></i>Dashboard
@@ -26,930 +26,815 @@
     </div>
     <!--end breadcrumb-->
 
-    <!-- Compact Search Filter Card -->
-    <div class="card mb-4 professional-card">
-        <div class="card-body p-3">
-            <form class="row g-3 align-items-end">
+    <!-- Modern Search Filter Card -->
+    <div class="card mb-4 modern-card elevation-soft">
+        <div class="card-body p-4">
+            <form class="row g-4 align-items-end" method="GET" action="{{ route('candidate.jobs.search') }}">
                 <div class="col-md-4 col-12">
-                    <label for="rank" class="form-label search-label">
-                        <i class="bx bx-medal me-1"></i>Select Rank
+                    <label for="rank" class="form-label modern-label">
+                        <i class="bx bx-medal me-2"></i>Select Rank
                     </label>
-                    <select class="form-select professional-select" id="rank" name="rank">
-                        <option selected disabled>Choose your rank...</option>
-                        <option value="fresher">Fresher</option>
-                        <option value="dpo">DPO</option>
-                        <option value="sr.dpo">Sr. DPO</option>
-                        <option value="deck-cadet">Deck Cadet</option>
-                        <option value="engine-cadet">Engine Cadet</option>
-                        <option value="third-officer">Third Officer</option>
-                        <option value="second-officer">Second Officer</option>
-                        <option value="chief-officer">Chief Officer</option>
-                        <option value="master">Master</option>
+                    <select class="form-select modern-select" id="rank" name="rank">
+                        <option value="">Choose your rank...</option>
+                        @foreach($ranks as $rank)
+                            <option value="{{ $rank->id }}" {{ request('rank') == $rank->id ? 'selected' : '' }}>
+                                {{ $rank->rank }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 col-12">
-                    <label for="vessel-type" class="form-label search-label">
-                        <i class="bx bx-anchor me-1"></i>Vessel Type
+                <div class="col-md-4 col-12">
+                    <label for="vessel-type" class="form-label modern-label">
+                        <i class="bx bx-anchor me-2"></i>Ship Type
                     </label>
-                    <select class="form-select professional-select" id="vessel-type" name="vessel_type">
+                    <select class="form-select modern-select" id="vessel-type" name="ship_type">
                         <option value="">All Types</option>
-                        <option value="bulk-carrier">Bulk Carrier</option>
-                        <option value="oil-tanker">Oil Tanker</option>
-                        <option value="container">Container</option>
-                        <option value="tug-boat">Tug Boat</option>
+                        @foreach($shipTypes as $shipType)
+                            <option value="{{ $shipType->id }}" {{ request('ship_type') == $shipType->id ? 'selected' : '' }}>
+                                {{ $shipType->ship_name }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
-                <div class="col-md-2 col-12">
-                    <button type="submit" class="btn btn-primary search-btn w-100">
-                        <i class="bx bx-search me-1"></i>Search
+                <div class="col-md-4 col-12">
+                    <button type="submit" class="btn btn-modern-primary search-btn w-100">
+                        <i class="bx bx-search me-2"></i>Search Jobs
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Hot Jobs Section with Professional Slider -->
-    <div class="card mb-4 professional-card">
-        <div class="card-header professional-header jobs-header">
-            <h5 class="mb-0 header-title">
-                <i class="bx bx-hot me-2"></i>Hot Jobs
-            </h5>
-            <div class="header-stats">               
-                <div class="slider-controls">
-                    <button class="slider-nav prev-btn" id="jobsPrev">
-                        <i class="bx bx-chevron-left"></i>
-                    </button>
-                    <button class="slider-nav next-btn" id="jobsNext">
-                        <i class="bx bx-chevron-right"></i>
-                    </button>
+    <!-- Modern Hot Jobs Section -->
+    <div class="card mb-4 modern-card elevation-soft">
+        <div class="card-header modern-header gradient-ocean">
+            <div class="header-content">
+                <h5 class="header-title">
+                    <div class="title-icon">
+                        <i class="bx bx-fire"></i>
+                    </div>
+                    <span>Hot Jobs</span>
+                    <div class="title-badge">{{ count($hotJobs ?? []) }} Available</div>
+                </h5>
+                <div class="header-controls">
+                    <div class="slider-navigation">
+                        <button class="nav-btn prev-btn" id="jobsPrev">
+                            <i class="bx bx-chevron-left"></i>
+                        </button>
+                        <button class="nav-btn next-btn" id="jobsNext">
+                            <i class="bx bx-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="card-body p-3">
+        <div class="card-body p-4">
             <!-- Swiper Slider Container -->
-            <div class="swiper hot-jobs-swiper">
+            <div class="swiper modern-jobs-swiper">
                 <div class="swiper-wrapper">
-                    <!-- Job Slide 1 -->
-                    <div class="swiper-slide">
-                        <div class="job-item hot-job slider-job">
-                            <div class="job-header">
-                                <div class="job-number">
-                                    <span class="number-badge">1</span>
-                                </div>
-                                <div class="job-status">
-                                    <div class="status-badge active">
-                                        <i class="bx bx-check-circle me-1"></i>Active
+                    @if(isset($hotJobs) && count($hotJobs) > 0)
+                        @foreach($hotJobs as $index => $job)
+                            <div class="swiper-slide">
+                                <div class="blue-job-card">
+                                    <div class="job-title">
+                                        Required {{ $job->rank->rank ?? 'Position' }} for {{ $job->shipType->ship_name ?? 'Vessel' }}
+                                    </div>
+                                    <div class="job-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Joining Date:</span>
+                                            <span class="detail-value">{{ optional($job->joining_date)->format('Y-m-d') ?? '2025-10-06' }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Nationality:</span>
+                                            <span class="detail-value">{{ $job->nationality ?? 'Indian' }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Minimum Exp:</span>
+                                            <span class="detail-value">{{ $job->min_experience ?? '2' }} Years</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Job Description:</span>
+                                            <span class="detail-value">{{ $job->description ?? 'Urgent Requirement' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="job-action">
+                                        <a href="{{ route('candidate.jobs.show', $job->id) }}" class="more-btn">More</a>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="job-content">
-                                <h6 class="company-name">
-                                    <i class="bx bx-buildings me-2"></i>Tangar Ship Management Pvt. Ltd
-                                </h6>
-                                
-                                <div class="job-details">
-                                    <div class="detail-row">
-                                        <i class="bx bx-briefcase me-2"></i>
-                                        <span><strong>Position:</strong> Master for Bulk Carrier</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-calendar me-2"></i>
-                                        <span><strong>Joining:</strong> Aug 29, 2025</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-time me-2"></i>
-                                        <span><strong>Experience:</strong> 6 Months min.</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-action">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-primary btn-apply">
-                                    <i class="bx bx-paper-plane me-2"></i>Apply Now
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                        @endforeach
+                    @else
+                        <!-- Sample data when no jobs available -->
+                        @php
+                            $sampleJobs = [
+                                ['position' => 'Chief Engr.', 'vessel' => 'AHTS DP', 'nationality' => 'Indian'],
+                                ['position' => 'NWKO', 'vessel' => 'PSV DP', 'nationality' => 'Indian'],
+                                ['position' => 'NWKO', 'vessel' => 'AHTS DP', 'nationality' => 'Indian'],
+                                ['position' => 'NWKO', 'vessel' => 'OSV', 'nationality' => 'Any'],
+                                ['position' => 'Master', 'vessel' => 'Bulk Carrier', 'nationality' => 'Indian'],
+                            ];
+                        @endphp
 
-                    <!-- Job Slide 2 -->
-                    <div class="swiper-slide">
-                        <div class="job-item hot-job slider-job">
-                            <div class="job-header">
-                                <div class="job-number">
-                                    <span class="number-badge">2</span>
-                                </div>
-                                <div class="job-status">
-                                    <div class="status-badge active">
-                                        <i class="bx bx-check-circle me-1"></i>Active
+                        @foreach($sampleJobs as $index => $job)
+                            <div class="swiper-slide">
+                                <div class="blue-job-card">
+                                    <div class="job-title">
+                                        Required {{ $job['position'] }} for {{ $job['vessel'] }}
+                                    </div>
+                                    <div class="job-details">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Joining Date:</span>
+                                            <span class="detail-value">{{ now()->addDays(($index + 1) * 5)->format('Y-m-d') }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Nationality:</span>
+                                            <span class="detail-value">{{ $job['nationality'] }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Minimum Exp:</span>
+                                            <span class="detail-value">{{ ($index + 1) * 2 }} Years</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Job Description:</span>
+                                            <span class="detail-value">Urgent Requirement</span>
+                                        </div>
+                                    </div>
+                                    <div class="job-action">
+                                        <a href="#" class="more-btn">More</a>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="job-content">
-                                <h6 class="company-name">
-                                    <i class="bx bx-buildings me-2"></i>VR Maritime Services Pvt. Ltd
-                                </h6>
-                                
-                                <div class="job-details">
-                                    <div class="detail-row">
-                                        <i class="bx bx-briefcase me-2"></i>
-                                        <span><strong>Position:</strong> Master for Container</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-calendar me-2"></i>
-                                        <span><strong>Joining:</strong> Aug 28, 2025</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-time me-2"></i>
-                                        <span><strong>Experience:</strong> 6 Months min.</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-action">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-primary btn-apply">
-                                    <i class="bx bx-paper-plane me-2"></i>Apply Now
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Job Slide 3 -->
-                    <div class="swiper-slide">
-                        <div class="job-item hot-job slider-job">
-                            <div class="job-header">
-                                <div class="job-number">
-                                    <span class="number-badge">3</span>
-                                </div>
-                                <div class="job-status">
-                                    <div class="status-badge active">
-                                        <i class="bx bx-check-circle me-1"></i>Active
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-content">
-                                <h6 class="company-name">
-                                    <i class="bx bx-buildings me-2"></i>Blue Ocean Shipping Ltd.
-                                </h6>
-                                
-                                <div class="job-details">
-                                    <div class="detail-row">
-                                        <i class="bx bx-briefcase me-2"></i>
-                                        <span><strong>Position:</strong> Chief Engineer</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-calendar me-2"></i>
-                                        <span><strong>Joining:</strong> Sep 15, 2025</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-time me-2"></i>
-                                        <span><strong>Experience:</strong> 1 Year min.</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-action">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-primary btn-apply">
-                                    <i class="bx bx-paper-plane me-2"></i>Apply Now
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Job Slide 4 -->
-                    <div class="swiper-slide">
-                        <div class="job-item hot-job slider-job">
-                            <div class="job-header">
-                                <div class="job-number">
-                                    <span class="number-badge">4</span>
-                                </div>
-                                <div class="job-status">
-                                    <div class="status-badge active">
-                                        <i class="bx bx-check-circle me-1"></i>Active
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-content">
-                                <h6 class="company-name">
-                                    <i class="bx bx-buildings me-2"></i>Maritime Experts Co.
-                                </h6>
-                                
-                                <div class="job-details">
-                                    <div class="detail-row">
-                                        <i class="bx bx-briefcase me-2"></i>
-                                        <span><strong>Position:</strong> Second Engineer</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-calendar me-2"></i>
-                                        <span><strong>Joining:</strong> Oct 1, 2025</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-time me-2"></i>
-                                        <span><strong>Experience:</strong> 6 Months min.</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-action">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-primary btn-apply">
-                                    <i class="bx bx-paper-plane me-2"></i>Apply Now
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Job Slide 5 -->
-                    <div class="swiper-slide">
-                        <div class="job-item hot-job slider-job">
-                            <div class="job-header">
-                                <div class="job-number">
-                                    <span class="number-badge">5</span>
-                                </div>
-                                <div class="job-status">
-                                    <div class="status-badge active">
-                                        <i class="bx bx-check-circle me-1"></i>Active
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-content">
-                                <h6 class="company-name">
-                                    <i class="bx bx-buildings me-2"></i>Global Marine Corp.
-                                </h6>
-                                
-                                <div class="job-details">
-                                    <div class="detail-row">
-                                        <i class="bx bx-briefcase me-2"></i>
-                                        <span><strong>Position:</strong> Third Officer</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-calendar me-2"></i>
-                                        <span><strong>Joining:</strong> Oct 15, 2025</span>
-                                    </div>
-                                    <div class="detail-row">
-                                        <i class="bx bx-time me-2"></i>
-                                        <span><strong>Experience:</strong> 3 Months min.</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="job-action">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-primary btn-apply">
-                                    <i class="bx bx-paper-plane me-2"></i>Apply Now
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                        @endforeach
+                    @endif
                 </div>
-                
+
                 <!-- Pagination dots -->
-                <div class="swiper-pagination"></div>
+                <div class="swiper-pagination modern-pagination"></div>
             </div>
         </div>
     </div>
 
-    <!-- Advertisements Section -->
-    <div class="card mb-4 professional-card">
-        <div class="card-header professional-header ads-header">
-            <h5 class="mb-0 header-title">
-                <i class="bx bx-bullhorn me-2"></i>Advertisements
-            </h5>
-            <div class="header-stats">
-                <span class="stats-badge">
-                    <i class="bx bx-calendar me-1"></i>2 Recent
-                </span>
+    <!-- Modern Advertisements Section -->
+    <div class="card mb-4 modern-card elevation-soft">
+        <div class="card-header modern-header gradient-slate">
+            <div class="header-content">
+                <h5 class="header-title">
+                    <div class="title-icon">
+                        <i class="bx bx-bullhorn"></i>
+                    </div>
+                    <span>Latest Announcements</span>
+                    <div class="title-badge">{{ count($advertisements ?? []) }} Recent</div>
+                </h5>
             </div>
         </div>
-        <div class="card-body p-3">
-            <div class="row g-3">
-                <!-- Advertisement Card 1 -->
-                <div class="col-12">
-                    <div class="ad-item">
-                        <div class="d-flex align-items-center">
-                            <div class="ad-logo me-3">
-                                <img src="{{ asset('theme/assets/images/products/28.png') }}" alt="Company Logo" class="rounded">
-                            </div>
-                            <div class="ad-info flex-grow-1">
-                                <h6 class="ad-title mb-1">
-                                    <i class="bx bx-building me-1 text-muted"></i>Oceanic Shipping Ltd.
-                                </h6>
-                                <div class="ad-meta">
-                                    <span class="posted-date">
-                                        <i class="bx bx-calendar me-1"></i>Posted: July 30, 2025
-                                    </span>
-                                    <span class="ad-type ms-3">
-                                        <i class="bx bx-bullhorn me-1"></i>Advertisement
-                                    </span>
+        <div class="card-body p-4">
+            <div class="announcements-grid">
+                @if(isset($advertisements) && count($advertisements) > 0)
+                    @foreach($advertisements as $ad)
+                        <div class="announcement-card">
+                            <div class="announcement-content">
+                                <div class="announcement-logo">
+                                    @if($ad->logo)
+                                        <img src="{{ asset('storage/' . $ad->logo) }}" alt="{{ $ad->company_name }}" class="logo-img">
+                                    @else
+                                        <div class="logo-placeholder">
+                                            <i class="bx bx-building"></i>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="announcement-info">
+                                    <h6 class="announcement-title">{{ $ad->company_name ?? 'Company Name' }}</h6>
+                                    <div class="announcement-meta">
+                                        <span class="meta-date">
+                                            <i class="bx bx-calendar-alt me-1"></i>
+                                            {{ optional($ad->created_at)->format('M d, Y') ?? 'Recent' }}
+                                        </span>
+                                        <span class="meta-type">
+                                            <i class="bx bx-tag me-1"></i>
+                                            {{ $ad->type ?? 'Announcement' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="announcement-action">
+                                    <a href="{{ route('candidate.advertisements.show', $ad->id) }}" class="btn btn-modern-subtle">
+                                        <i class="bx bx-show me-1"></i>
+                                        View
+                                    </a>
                                 </div>
                             </div>
-                            <div class="ad-actions ms-3">
-                                <a href="{{ route('candidate.advertisement.details') }}" class="btn btn-outline-info btn-sm">
-                                    <i class="bx bx-show me-1"></i>View Details
-                                </a>
-                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Advertisement Card 2 -->
-                <div class="col-12">
-                    <div class="ad-item">
-                        <div class="d-flex align-items-center">
-                            <div class="ad-logo me-3">
-                                <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Company Logo" class="rounded">
-                            </div>
-                            <div class="ad-info flex-grow-1">
-                                <h6 class="ad-title mb-1">
-                                    <i class="bx bx-building me-1 text-muted"></i>Marine Careers
-                                </h6>
-                                <div class="ad-meta">
-                                    <span class="posted-date">
-                                        <i class="bx bx-calendar me-1"></i>Posted: July 28, 2025
-                                    </span>
-                                    <span class="ad-type ms-3">
-                                        <i class="bx bx-bullhorn me-1"></i>Advertisement
-                                    </span>
+                    @endforeach
+                @else
+                    <!-- Sample data when no advertisements available -->
+                    @for($i = 1; $i <= 2; $i++)
+                        <div class="announcement-card">
+                            <div class="announcement-content">
+                                <div class="announcement-logo">
+                                    <div class="logo-placeholder">
+                                        <i class="bx bx-building"></i>
+                                    </div>
+                                </div>
+                                <div class="announcement-info">
+                                    <h6 class="announcement-title">{{ ['Oceanic Shipping Ltd.', 'Marine Careers Group'][$i-1] }}</h6>
+                                    <div class="announcement-meta">
+                                        <span class="meta-date">
+                                            <i class="bx bx-calendar-alt me-1"></i>
+                                            {{ now()->subDays($i * 2)->format('M d, Y') }}
+                                        </span>
+                                        <span class="meta-type">
+                                            <i class="bx bx-tag me-1"></i>
+                                            Announcement
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="announcement-action">
+                                    <a href="#" class="btn btn-modern-subtle">
+                                        <i class="bx bx-show me-1"></i>
+                                        View
+                                    </a>
                                 </div>
                             </div>
-                            <div class="ad-actions ms-3">
-                                <a href="{{ route('candidate.advertisement.details') }}" class="btn btn-outline-info btn-sm">
-                                    <i class="bx bx-show me-1"></i>View Details
-                                </a>
-                            </div>
                         </div>
-                    </div>
-                </div>
+                    @endfor
+                @endif
             </div>
         </div>
     </div>
 </main>
 
 <style>
-/* Professional Balanced Background */
-.professional-bg {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    min-height: 100vh;
+/* Modern Professional Color Palette */
+:root {
+    --primary-50: #f0f9ff;
+    --primary-100: #e0f2fe;
+    --primary-500: #0ea5e9;
+    --primary-600: #0284c7;
+    --primary-700: #0369a1;
+
+    --blue-gradient-start: #4A90E2;
+    --blue-gradient-end: #357ABD;
+    --blue-border: #2E5F8F;
+    --blue-text: #1E3A5F;
+
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    --success-50: #f0fdf4;
+    --success-500: #22c55e;
+    --success-600: #16a34a;
+
+    --warning-50: #fffbeb;
+    --warning-500: #f59e0b;
+
+    --red-50: #fef2f2;
+    --red-500: #ef4444;
+
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    --transition: all 0.15s ease-in-out;
 }
 
-/* Toned Down Breadcrumb Styling */
-.enhanced-breadcrumb {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    padding: 12px 20px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+/* Modern Background */
+.modern-professional-bg {
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--primary-50) 100%);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+}
+
+/* Modern Breadcrumb */
+.modern-breadcrumb {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1.5rem;
+    box-shadow: var(--shadow-sm);
 }
 
 .breadcrumb-link {
-    color: #475569; /* Muted blue-gray instead of bright blue */
+    color: var(--gray-600);
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: var(--transition);
     display: flex;
     align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
 }
 
 .breadcrumb-link:hover {
-    color: #334155; /* Darker on hover */
-    transform: translateX(2px);
+    color: var(--primary-600);
+    background: var(--primary-50);
 }
 
 .breadcrumb-title {
     font-weight: 600;
-    color: #374151;
+    color: var(--gray-700);
     font-size: 1.1rem;
     display: flex;
     align-items: center;
 }
 
 .breadcrumb-item.active {
-    color: #6b7280;
+    color: var(--gray-500);
     font-weight: 500;
     display: flex;
     align-items: center;
 }
 
-/* Muted Professional Card Styling */
-.professional-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+/* Modern Cards */
+.modern-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
     overflow: hidden;
+    transition: var(--transition);
+    margin: 0 0.5rem 1.5rem 0.5rem;
 }
 
-/* Compact Search Form */
-.search-label {
-    color: #374151;
-    font-size: 0.9rem;
+.elevation-soft {
+    box-shadow: var(--shadow-md);
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Modern Form Elements */
+.modern-label {
+    color: var(--gray-700);
+    font-size: 0.875rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 0.5rem;
 }
 
-.professional-select {
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    background: #ffffff;
+.modern-select {
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: var(--transition);
+    background: white;
+    color: var(--gray-700);
 }
 
-.professional-select:focus {
-    border-color: #6366f1; /* Muted indigo instead of bright blue */
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+.modern-select:focus {
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
     outline: none;
 }
 
-.search-btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #6366f1, #4f46e5); /* Muted indigo gradient */
-    border: none;
+/* Modern Buttons */
+.btn-modern-primary {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    border: 2px solid var(--primary-500);
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-modern-primary:hover {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
     color: white;
 }
 
-.search-btn:hover {
-    transform: translateY(-1px);
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+.btn-modern-subtle {
+    background: var(--gray-100);
+    border: 2px solid var(--gray-200);
+    color: var(--gray-700);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 0.875rem;
 }
 
-/* Muted Professional Headers */
-.professional-header {
-    padding: 16px 20px;
+.btn-modern-subtle:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-200);
+    color: var(--primary-700);
+    transform: translateY(-1px);
+}
+
+/* Modern Headers */
+.modern-header {
+    border: none;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.gradient-ocean {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 50%, var(--primary-700) 100%);
+}
+
+.gradient-slate {
+    background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 50%, var(--gray-800) 100%);
+}
+
+.header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: none;
-}
-
-.jobs-header {
-    background: linear-gradient(135deg, #64748b 0%, #475569 100%); /* Muted slate instead of bright blue */
-}
-
-.ads-header {
-    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); /* Consistent muted tones */
+    position: relative;
+    z-index: 2;
 }
 
 .header-title {
-    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: white;
     font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.title-icon {
+    width: 2rem;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.title-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
     font-weight: 600;
+}
+
+/* Modern Slider Navigation */
+.slider-navigation {
     display: flex;
-    align-items: center;
-    margin: 0;
+    gap: 0.375rem;
 }
 
-.stats-badge {
-    background: rgba(255, 255, 255, 0.15); /* More subtle */
-    color: #ffffff;
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-}
-
-/* Minimal Hot Jobs Slider Styles */
-.hot-jobs-swiper {
-    width: 100%;
-    height: auto;
-    padding-bottom: 30px;
-    margin: 0;
-}
-
-.hot-jobs-swiper .swiper-wrapper {
-    align-items: stretch;
-}
-
-.hot-jobs-swiper .swiper-slide {
-    height: auto;
-    display: flex;
-    padding: 0;
-    margin: 0;
-}
-
-/* Balanced Slider Navigation Controls */
-.slider-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: 16px;
-}
-
-.slider-nav {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: rgba(255, 255, 255, 0.15); /* More subtle */
-    color: #ffffff;
-    border-radius: 50%;
+.nav-btn {
+    width: 2rem;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.1rem;
+    transition: var(--transition);
+    font-size: 1rem;
 }
 
-.slider-nav:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.05); /* Reduced scale */
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
 }
 
-.slider-nav:disabled {
-    opacity: 0.4;
+.nav-btn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
-/* Muted Job Slider Cards */
-.slider-job {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    margin: 0;
-    width: 100%;
+/* Blue Job Cards - Horizontal Layout like in image */
+.modern-jobs-swiper {
+    padding-bottom: 1.5rem;
 }
 
-.slider-job::before {
+.blue-job-card {
+    background: linear-gradient(135deg, var(--blue-gradient-start), var(--blue-gradient-end));
+    border: 2px solid var(--blue-border);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    color: white;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    height: 180px; /* Fixed height for consistent layout */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.blue-job-card::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(135deg, #64748b, #475569); /* Muted accent */
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.slider-job:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-color: #cbd5e1;
-}
-
-.slider-job:hover::before {
-    opacity: 1;
-}
-
-/* Balanced card content */
-.job-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.job-header .number-badge {
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    color: #64748b;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.75rem;
-    border: 1px solid #e2e8f0;
+    transform: translate(30px, -30px);
+    pointer-events: none;
 }
 
-.job-content {
-    flex-grow: 1;
-    margin-bottom: 12px;
+.blue-job-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    background: linear-gradient(135deg, var(--blue-gradient-end), var(--blue-border));
 }
 
-.slider-job .company-name {
-    color: #374151;
+.job-title {
+    font-size: 1rem;
     font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    line-height: 1.2;
+    color: white;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .job-details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex-grow: 1;
+    margin-bottom: 1rem;
 }
 
-.detail-row {
+.detail-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    color: #6b7280;
-    font-size: 0.75rem;
-    line-height: 1.3;
-}
-
-.detail-row i {
-    color: #9ca3af;
+    margin-bottom: 0.4rem;
     font-size: 0.85rem;
-    min-width: 16px;
-    margin-right: 6px;
 }
 
-.detail-row strong {
-    color: #374151;
+.detail-label {
     font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    min-width: 100px;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: white;
+    text-align: right;
 }
 
 .job-action {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
     margin-top: auto;
 }
 
-/* Outline Style Apply Buttons */
-.btn-apply {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 6px;
+.more-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
     font-weight: 600;
-    font-size: 0.8rem;
-    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+}
+
+.more-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Modern Pagination */
+.modern-pagination {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.modern-jobs-swiper .swiper-pagination-bullet {
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--gray-300);
+    opacity: 1;
+    margin: 0 0.25rem;
+    transition: var(--transition);
+}
+
+.modern-jobs-swiper .swiper-pagination-bullet-active {
+    background: var(--primary-500);
+    transform: scale(1.5);
+}
+
+/* Modern Announcements */
+.announcements-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.announcement-card {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.announcement-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-200);
+}
+
+.announcement-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.announcement-logo {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gray-100);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid; /* Add border for outline style */
-    background: transparent; /* Remove background */
+    color: var(--gray-500);
+    font-size: 1.5rem;
 }
 
-.btn-apply.btn-primary {
-    color: #6366f1; /* Text color matches the border - muted indigo */
-    border-color: #6366f1; /* Muted indigo border */
-    background: transparent; /* Transparent background */
+.announcement-info {
+    flex-grow: 1;
 }
 
-.btn-apply.btn-primary:hover {
-    background: #6366f1; /* Fill background on hover */
-    color: #ffffff; /* White text on hover */
-    border-color: #6366f1;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-}
-
-.btn-apply.btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
-}
-
-.btn-apply.btn-secondary {
-    background: transparent;
-    border: 2px solid #e2e8f0;
-    color: #64748b;
-    cursor: not-allowed;
-}
-
-.btn-apply.btn-secondary:hover {
-    background: #f8fafc; /* Very subtle background on hover for disabled state */
-}
-
-/* Optional: Add a subtle focus ring for accessibility */
-.btn-apply:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-/* Muted Status Badges */
-.slider-job .status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-}
-
-.slider-job .status-badge.active {
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5); /* Softer green */
-    color: #166534;
-    border: 1px solid #86efac;
-}
-
-.slider-job .status-badge.expired {
-    background: linear-gradient(135deg, #fef2f2, #fee2e2);
-    color: #dc2626;
-    border: 1px solid #f87171;
-}
-
-/* Subtle pagination */
-.hot-jobs-swiper .swiper-pagination {
-    bottom: 0;
-    margin-top: 5px;
-}
-
-.hot-jobs-swiper .swiper-pagination-bullet {
-    width: 5px;
-    height: 5px;
-    background: #cbd5e1;
-    opacity: 1;
-    margin: 0 2px;
-}
-
-.hot-jobs-swiper .swiper-pagination-bullet-active {
-    background: #6366f1; /* Muted indigo */
-    transform: scale(1.4);
-}
-
-/* Reduced container padding */
-.card-body {
-    padding: 12px !important;
-}
-
-/* Advertisement styling with muted colors */
-.ad-logo img {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-    border: 1px solid #e5e7eb;
-    padding: 4px;
-    background: #fafafa;
-    border-radius: 6px;
-}
-
-.ad-title {
-    color: #374151;
-    font-weight: 600;
+.announcement-title {
+    color: var(--gray-800);
+    font-weight: 700;
     font-size: 1rem;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
+    margin: 0 0 0.5rem 0;
 }
 
-.ad-meta {
+.announcement-meta {
     display: flex;
-    align-items: center;
-    gap: 15px;
+    gap: 1rem;
     flex-wrap: wrap;
 }
 
-.posted-date, .ad-type {
-    color: #6b7280;
-    font-size: 0.8rem;
+.meta-date,
+.meta-type {
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    font-weight: 500;
 }
 
-.posted-date i, .ad-type i {
-    color: #9ca3af;
-    font-size: 0.85rem;
+/* Enhanced Card Spacing */
+.card-body {
+    padding: 1.5rem !important;
 }
 
-/* Advertisement Items */
-.ad-item {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.3s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.ad-item:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-    border-color: #cbd5e1;
-}
-
-/* Muted Button Styling */
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-}
-
-.btn-sm:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.btn-outline-primary.btn-sm {
-    color: #6366f1; /* Muted indigo */
-    border-color: #6366f1;
-}
-
-.btn-outline-primary.btn-sm:hover {
-    background: #6366f1;
-    color: #ffffff;
-}
-
-.btn-outline-info.btn-sm {
-    color: #0891b2; /* Muted cyan */
-    border-color: #0891b2;
-}
-
-.btn-outline-info.btn-sm:hover {
-    background: #0891b2;
-    color: #ffffff;
-}
-
-.btn-outline-secondary.btn-sm {
-    color: #6b7280;
-    border-color: #6b7280;
-    cursor: not-allowed;
-}
-
-/* Mobile responsive adjustments */
+/* Responsive Design */
 @media (max-width: 768px) {
-    .professional-bg {
-        background: #f8fafc;
+    .modern-professional-bg {
+        padding: 1rem 0.5rem;
     }
-    
-    .slider-controls {
+
+    .modern-card {
+        margin: 0 0 1rem 0;
+    }
+
+    .slider-navigation {
         display: none;
     }
-    
-    .slider-job {
-        padding: 10px;
-        border-radius: 8px;
+
+    .blue-job-card {
+        padding: 1rem;
+        height: 160px;
     }
-    
-    .job-header {
-        margin-bottom: 8px;
+
+    .job-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
     }
-    
-    .job-content {
-        margin-bottom: 10px;
+
+    .detail-item {
+        margin-bottom: 0.3rem;
+        font-size: 0.8rem;
     }
-    
-    .slider-job .company-name {
-        font-size: 0.85rem;
-        margin-bottom: 8px;
+
+    .detail-label {
+        min-width: 80px;
     }
-    
-    .detail-row {
-        font-size: 0.7rem;
+
+    .header-content {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
     }
-    
-    .job-details {
-        gap: 4px;
+
+    .header-title {
+        font-size: 0.9rem;
     }
-    
-    .btn-apply {
-        padding: 6px 10px;
-        font-size: 0.75rem;
-        border: 1.5px solid; /* Slightly thinner border on mobile */
+
+    .modern-header {
+        padding: 1rem;
     }
-    
-    .btn-apply.btn-primary:hover {
-        background: #6366f1;
-        color: #ffffff;
+
+    .announcement-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .announcement-info {
+        width: 100%;
+    }
+
+    .announcement-action {
+        width: 100%;
+    }
+
+    .card-body {
+        padding: 1rem !important;
     }
 }
 
 @media (max-width: 576px) {
-    .hot-jobs-swiper .swiper-slide {
-        padding: 0 1px;
+    .modern-card {
+        border-radius: var(--radius-lg);
     }
-    
-    .slider-job {
-        margin: 0;
-        padding: 8px;
+
+    .blue-job-card {
+        height: 140px;
+        padding: 0.75rem;
     }
-    
-    .btn-apply {
-        border: 1.5px solid;
+
+    .job-title {
+        font-size: 0.85rem;
+    }
+
+    .detail-item {
+        font-size: 0.75rem;
     }
 }
 
-/* Focus states for accessibility */
-.professional-select:focus,
-.search-btn:focus,
-.btn-sm:focus {
-    outline: 2px solid #6366f1;
+/* Focus States for Accessibility */
+.modern-select:focus,
+.btn-modern-primary:focus,
+.btn-modern-subtle:focus,
+.more-btn:focus {
+    outline: 2px solid var(--primary-500);
     outline-offset: 2px;
 }
 
 .breadcrumb-link:focus {
-    outline: 2px solid #475569;
+    outline: 2px solid var(--primary-500);
     outline-offset: 2px;
-    border-radius: 4px;
 }
 </style>
 
@@ -958,124 +843,121 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Hot Jobs Swiper Slider with Auto-Scroll and Minimal Spacing
-    const hotJobsSwiper = new Swiper('.hot-jobs-swiper', {
-        // Slider Settings
-        slidesPerView: 1.2,
-        spaceBetween: 8, // Minimal spacing
+    // Initialize Modern Jobs Swiper
+    const modernJobsSwiper = new Swiper('.modern-jobs-swiper', {
+        slidesPerView: 1.1,
+        spaceBetween: 16,
         centeredSlides: false,
-        loop: true, // Enable infinite loop for continuous scrolling
+        loop: true,
         grabCursor: true,
-        
-        // Auto-Scroll Configuration
+
         autoplay: {
-            delay: 3000, // 3 seconds delay between slides
-            disableOnInteraction: false, // Continue autoplay after user interactions
-            pauseOnMouseEnter: true, // Pause when hovering over the slider
+            delay: 4000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
         },
-        
-        // Pagination
+
         pagination: {
             el: '.swiper-pagination',
             clickable: true,
             dynamicBullets: true,
         },
-        
-        // Navigation
+
         navigation: {
             nextEl: '#jobsNext',
             prevEl: '#jobsPrev',
         },
-        
-        // Responsive breakpoints with minimal spacing
+
         breakpoints: {
-            // When window width is >= 576px
             576: {
-                slidesPerView: 1.8,
-                spaceBetween: 8,
+                slidesPerView: 1.5,
+                spaceBetween: 20,
             },
-            // When window width is >= 768px
             768: {
-                slidesPerView: 2.2,
-                spaceBetween: 10,
+                slidesPerView: 2,
+                spaceBetween: 24,
             },
-            // When window width is >= 992px
             992: {
-                slidesPerView: 2.8,
-                spaceBetween: 12,
+                slidesPerView: 2.5,
+                spaceBetween: 28,
             },
-            // When window width is >= 1200px
             1200: {
-                slidesPerView: 3.2,
-                spaceBetween: 14,
+                slidesPerView: 3,
+                spaceBetween: 32,
+            },
+            1400: {
+                slidesPerView: 4,
+                spaceBetween: 32,
             }
         },
-        
-        // Auto height
-        autoHeight: false,
-        
-        // Events
+
         on: {
             init: function () {
-                updateNavigationButtons(this);
+                updateNavigationState(this);
             },
             slideChange: function () {
-                updateNavigationButtons(this);
+                updateNavigationState(this);
             },
         }
     });
-    
-    // Update navigation button states
-    function updateNavigationButtons(swiper) {
+
+    function updateNavigationState(swiper) {
         const prevBtn = document.getElementById('jobsPrev');
         const nextBtn = document.getElementById('jobsNext');
-        
+
         if (prevBtn && nextBtn) {
-            // For infinite loop, buttons should always be enabled
             prevBtn.disabled = false;
             nextBtn.disabled = false;
         }
     }
-    
-    // Pause autoplay on hover for better UX
-    const swiperContainer = document.querySelector('.hot-jobs-swiper');
+
+    // Pause autoplay on hover
+    const swiperContainer = document.querySelector('.modern-jobs-swiper');
     if (swiperContainer) {
-        swiperContainer.addEventListener('mouseenter', function() {
-            hotJobsSwiper.autoplay.stop();
+        swiperContainer.addEventListener('mouseenter', () => {
+            modernJobsSwiper.autoplay.stop();
         });
-        
-        swiperContainer.addEventListener('mouseleave', function() {
-            hotJobsSwiper.autoplay.start();
+
+        swiperContainer.addEventListener('mouseleave', () => {
+            modernJobsSwiper.autoplay.start();
         });
     }
-    
-    // Add touch/swipe feedback
-    const sliderJobs = document.querySelectorAll('.slider-job');
-    sliderJobs.forEach(job => {
-        job.addEventListener('touchstart', function() {
-            this.style.transform = 'scale(0.98)';
+
+    // Enhanced form interactions
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.search-btn');
+            const originalText = submitBtn.innerHTML;
+
+            submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-2"></i>Searching...';
+            submitBtn.disabled = true;
+
+            // Re-enable after a delay if no actual submission
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
         });
-        
-        job.addEventListener('touchend', function() {
-            this.style.transform = 'scale(1)';
+    }
+
+    // Add smooth animations
+    const cards = document.querySelectorAll('.blue-job-card, .announcement-card');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
         });
     });
 
-    // Search form handling
-    const searchForm = document.querySelector('form');
-    if (searchForm) {
-        searchForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const rank = formData.get('rank');
-            const vesselType = formData.get('vessel_type');
-            
-            console.log('Search parameters:', { rank, vesselType });
-            
-            // Add your search logic here
-            // For example: window.location.href = `/search?rank=${rank}&vessel_type=${vesselType}`;
-        });
-    }
+    cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
 });
 </script>
 @endsection

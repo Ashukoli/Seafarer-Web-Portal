@@ -37,6 +37,11 @@
                         <div class="menu-title">Hide Resume</div>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('candidate.profile.delete') }}">
+                        <div class="menu-title">Delete Profile</div>
+                    </a>
+                </li>
             </ul>
         </li>
         <li>
@@ -85,12 +90,6 @@
             <a href="http://tmwsmagazine.com/magazine.php" target="_blank">
                 <div class="parent-icon"><i class="bx bx-book"></i></div>
                 <div class="menu-title">TMWS Magazine</div>
-            </a>
-        </li>
-          <li>
-            <a href="{{ route('candidate.profile.delete') }}">
-                <div class="parent-icon"><i class="bx bx-trash"></i></div>
-                <div class="menu-title ">Delete Profile</div>
             </a>
         </li>
     </ul>

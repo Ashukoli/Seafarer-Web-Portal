@@ -80,6 +80,11 @@
                         <div class="menu-title">All Candidates</div>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.candidate.delete_requests.index') }}" class="menu-link">
+                        <div class="menu-title">Profile Delete Requests</div>
+                    </a>
+                </li>
             </ul>
         </li>
         <li>

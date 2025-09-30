@@ -7,6 +7,9 @@ use App\Services\Candidate\CandidateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\ProfileDeleteRequest;
+use App\Models\Country;
+use App\Models\Rank;
+use App\Models\ShipType;
 
 
 
@@ -128,13 +131,16 @@ class CandidateController extends Controller
      * GET /candidate/resume/view (route name candidate.resume.view)
      * Read-only resume view.
      */
-    public function show()
+    public function viewResume()
     {
         $userId = Auth::id();
         $data = $this->service->getForShow($userId);
+         $countries = Country::where('status', 1)
+                                   ->orderBy('country_name')
+                                   ->get();
 
         // returns: user, profile, resume, seaServices, dceEndorsements, courses, ranks, shiptypes, states, cities
-        return view('candidate.resume.show', $data);
+        return view('candidate.resume.view', array_merge($data, ['countries' => $countries]));
     }
 
     public function hideResumeForm()
@@ -169,7 +175,9 @@ class CandidateController extends Controller
 
     public function searchJobs()
     {
-        return view('candidate.jobs.search');
+        $ranks = Rank::all();
+        $shipTypes = ShipType::all();
+        return view('candidate.jobs.search-jobs', compact('ranks', 'shipTypes'));
     }
 
     public function hotJobs()
