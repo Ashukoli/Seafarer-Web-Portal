@@ -24,4 +24,10 @@ class Hotjob extends Model
     {
         return $this->belongsTo(ShipType::class, 'ship_id');
     }
+
+    public function stats()
+    {
+        return $this->morphMany(Stat::class, 'statable');
+    }
+
 }

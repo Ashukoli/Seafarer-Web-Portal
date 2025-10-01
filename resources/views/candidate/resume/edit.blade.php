@@ -1,5 +1,5 @@
 {{-- resources/views/candidate/resume/edit.blade.php --}}
-@extends('layouts.admin.app')
+@extends('layouts.candidate.app')
 
 @section('content')
 <main class="page-content">

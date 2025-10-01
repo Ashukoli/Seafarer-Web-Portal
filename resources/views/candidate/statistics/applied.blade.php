@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.candidate.app')
 @section('content')
 <main class="page-content professional-bg">
     <!--breadcrumb-->
@@ -22,7 +22,7 @@
         </div>
     </div>
     <!--end breadcrumb-->
-    
+
     <div class="container py-4">
         <!-- Combined Applications Section -->
         <div class="card mb-4 professional-card">
@@ -99,7 +99,7 @@
                                 </div>
                             </div>
                             <div class="app-actions ms-3">
-                                <a href="{{ route('candidate.view-statistics') }}" class="btn btn-outline-primary btn-action">
+                                <a href="#" class="btn btn-outline-primary btn-action">
                                     <i class="bx bx-show me-1"></i>
                                     <span class="d-none d-sm-inline">View Statistics</span>
                                     <span class="d-sm-none">View</span>
@@ -107,7 +107,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Application Card 2 - Hot Job -->
                     <div class="application-card" data-type="hot-job" data-date="2025-07-28">
                         <div class="application-type-tag hot-job-tag">
@@ -134,7 +134,7 @@
                                 </div>
                             </div>
                             <div class="app-actions ms-3">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-outline-secondary btn-action">
+                                <a href="#" class="btn btn-outline-secondary btn-action">
                                     <i class="bx bx-show me-1"></i>
                                     <span class="d-none d-sm-inline">View Details</span>
                                     <span class="d-sm-none">View</span>
@@ -169,7 +169,7 @@
                                 </div>
                             </div>
                             <div class="app-actions ms-3">
-                                <a href="{{ route('candidate.view-statistics') }}" class="btn btn-outline-primary btn-action">
+                                <a href="#" class="btn btn-outline-primary btn-action">
                                     <i class="bx bx-show me-1"></i>
                                     <span class="d-none d-sm-inline">View Statistics</span>
                                     <span class="d-sm-none">View</span>
@@ -204,7 +204,7 @@
                                 </div>
                             </div>
                             <div class="app-actions ms-3">
-                                <a href="{{ route('candidate.hot-job.details') }}" class="btn btn-outline-secondary btn-action">
+                                <a href="#" class="btn btn-outline-secondary btn-action">
                                     <i class="bx bx-show me-1"></i>
                                     <span class="d-none d-sm-inline">View Details</span>
                                     <span class="d-sm-none">View</span>
@@ -235,30 +235,30 @@ function initializeApplicationFilters() {
     const sortSelect = document.querySelector('.sort-select');
     const applicationsList = document.getElementById('applicationsList');
     const emptyState = document.getElementById('emptyState');
-    
+
     // Filter functionality
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
             // Update active button
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            
+
             const filterType = this.getAttribute('data-filter');
             filterApplications(filterType);
         });
     });
-    
+
     // Sort functionality
     if (sortSelect) {
         sortSelect.addEventListener('change', function() {
             sortApplications(this.value);
         });
     }
-    
+
     function filterApplications(type) {
         const applications = document.querySelectorAll('.application-card');
         let visibleCount = 0;
-        
+
         applications.forEach(app => {
             if (type === 'all' || app.getAttribute('data-type') === type) {
                 app.style.display = 'block';
@@ -267,7 +267,7 @@ function initializeApplicationFilters() {
                 app.style.display = 'none';
             }
         });
-        
+
         // Show/hide empty state
         if (visibleCount === 0) {
             applicationsList.style.display = 'none';
@@ -277,10 +277,10 @@ function initializeApplicationFilters() {
             emptyState.classList.add('d-none');
         }
     }
-    
+
     function sortApplications(sortBy) {
         const applications = Array.from(document.querySelectorAll('.application-card'));
-        
+
         applications.sort((a, b) => {
             switch(sortBy) {
                 case 'recent':
@@ -295,7 +295,7 @@ function initializeApplicationFilters() {
                     return 0;
             }
         });
-        
+
         // Re-append sorted applications
         const container = applications[0].parentNode;
         applications.forEach(app => container.appendChild(app));
@@ -310,7 +310,7 @@ function initializeApplicationFilters() {
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         min-height: 100vh;
     }
-    
+
     /* Enhanced Breadcrumb Styling */
     .enhanced-breadcrumb {
         background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -319,7 +319,7 @@ function initializeApplicationFilters() {
         border: 1px solid #e2e8f0;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
-    
+
     .breadcrumb-link {
         color: #4f46e5;
         text-decoration: none;
@@ -328,12 +328,12 @@ function initializeApplicationFilters() {
         display: flex;
         align-items: center;
     }
-    
+
     .breadcrumb-link:hover {
         color: #3730a3;
         transform: translateX(2px);
     }
-    
+
     .breadcrumb-title {
         font-weight: 600;
         color: #374151;
@@ -341,14 +341,14 @@ function initializeApplicationFilters() {
         display: flex;
         align-items: center;
     }
-    
+
     .breadcrumb-item.active {
         color: #6b7280;
         font-weight: 500;
         display: flex;
         align-items: center;
     }
-    
+
     /* Professional Card Styling */
     .professional-card {
         background: #ffffff;
@@ -357,14 +357,14 @@ function initializeApplicationFilters() {
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         overflow: hidden;
     }
-    
+
     /* Professional Header */
     .professional-header {
         background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
         border: none;
         padding: 20px 24px;
     }
-    
+
     .header-title {
         color: #ffffff;
         font-size: 1.1rem;
@@ -373,17 +373,17 @@ function initializeApplicationFilters() {
         align-items: center;
         margin: 0;
     }
-    
+
     .header-title i {
         font-size: 1.2rem;
         opacity: 0.9;
     }
-    
+
     .header-stats {
         display: flex;
         align-items: center;
     }
-    
+
     .stats-badge {
         background: rgba(255, 255, 255, 0.2);
         color: #ffffff;
@@ -394,7 +394,7 @@ function initializeApplicationFilters() {
         display: flex;
         align-items: center;
     }
-    
+
     /* Filter and Sort Section */
     .applications-filter {
         background: #f8fafc;
@@ -402,7 +402,7 @@ function initializeApplicationFilters() {
         border-radius: 8px;
         padding: 16px;
     }
-    
+
     .filter-label {
         font-size: 0.875rem;
         font-weight: 600;
@@ -410,13 +410,13 @@ function initializeApplicationFilters() {
         margin-bottom: 8px;
         display: block;
     }
-    
+
     .filter-buttons {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
     }
-    
+
     .filter-btn {
         background: #ffffff;
         border: 1px solid #d1d5db;
@@ -430,18 +430,18 @@ function initializeApplicationFilters() {
         display: flex;
         align-items: center;
     }
-    
+
     .filter-btn:hover {
         border-color: #9ca3af;
         background: #f9fafb;
     }
-    
+
     .filter-btn.active {
         background: #4f46e5;
         border-color: #4f46e5;
         color: #ffffff;
     }
-    
+
     .sort-select {
         background: #ffffff;
         border: 1px solid #d1d5db;
@@ -451,20 +451,20 @@ function initializeApplicationFilters() {
         color: #374151;
         min-width: 150px;
     }
-    
+
     .sort-select:focus {
         outline: none;
         border-color: #4f46e5;
         box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
     }
-    
+
     /* Application Card Styling */
     .applications-list {
         display: flex;
         flex-direction: column;
         gap: 16px;
     }
-    
+
     .application-card {
         background: #ffffff;
         border: 1px solid #e5e7eb;
@@ -475,13 +475,13 @@ function initializeApplicationFilters() {
         position: relative;
         overflow: hidden;
     }
-    
+
     .application-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         border-color: #d1d5db;
     }
-    
+
     /* Application Type Tags */
     .application-type-tag {
         position: absolute;
@@ -494,17 +494,17 @@ function initializeApplicationFilters() {
         display: flex;
         align-items: center;
     }
-    
+
     .company-banner-tag {
         background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: #ffffff;
     }
-    
+
     .hot-job-tag {
         background: linear-gradient(135deg, #ef4444, #dc2626);
         color: #ffffff;
     }
-    
+
     /* Logo Styling */
     .app-logo img {
         width: 60px;
@@ -516,12 +516,12 @@ function initializeApplicationFilters() {
         transition: all 0.3s ease;
         border-radius: 6px;
     }
-    
+
     .application-card:hover .app-logo img {
         border-color: #e5e7eb;
         transform: scale(1.02);
     }
-    
+
     /* Title and Info Styling */
     .app-title {
         color: #374151;
@@ -531,7 +531,7 @@ function initializeApplicationFilters() {
         display: flex;
         align-items: center;
     }
-    
+
     .app-meta {
         display: flex;
         align-items: center;
@@ -539,7 +539,7 @@ function initializeApplicationFilters() {
         flex-wrap: wrap;
         margin-bottom: 8px;
     }
-    
+
     .posted-date, .application-status {
         color: #6b7280;
         font-size: 0.85rem;
@@ -547,36 +547,36 @@ function initializeApplicationFilters() {
         align-items: center;
         font-weight: 500;
     }
-    
+
     .posted-date i, .application-status i {
         color: #9ca3af;
         font-size: 0.9rem;
     }
-    
+
     .app-description {
         margin-top: 8px;
     }
-    
+
     .description-text {
         color: #6b7280;
         font-size: 0.875rem;
         margin: 0;
         line-height: 1.4;
     }
-    
+
     /* Status-specific colors */
     .application-status i.bx-check-circle {
         color: #10b981;
     }
-    
+
     .application-status i.bx-x-circle {
         color: #ef4444;
     }
-    
+
     .application-status i.bx-time-five {
         color: #f59e0b;
     }
-    
+
     /* Professional Button Styling */
     .btn-action {
         padding: 8px 16px;
@@ -589,172 +589,172 @@ function initializeApplicationFilters() {
         white-space: nowrap;
         border-width: 1px;
     }
-    
+
     .btn-action:hover {
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    
+
     .btn-outline-primary.btn-action {
         color: #4f46e5;
         border-color: #4f46e5;
         background: transparent;
     }
-    
+
     .btn-outline-primary.btn-action:hover {
         background: #4f46e5;
         color: #ffffff;
         border-color: #4f46e5;
     }
-    
+
     .btn-outline-secondary.btn-action {
         color: #6b7280;
         border-color: #6b7280;
         background: transparent;
     }
-    
+
     .btn-outline-secondary.btn-action:hover {
         background: #6b7280;
         color: #ffffff;
         border-color: #6b7280;
     }
-    
+
     /* Empty State Styling */
     .empty-state {
         text-align: center;
         padding: 60px 20px;
         color: #9ca3af;
     }
-    
+
     .empty-state i {
         font-size: 3rem;
         margin-bottom: 16px;
         opacity: 0.6;
         color: #d1d5db;
     }
-    
+
     .empty-state h6 {
         color: #6b7280;
         margin-bottom: 8px;
     }
-    
+
     .empty-state p {
         color: #9ca3af;
         font-size: 0.875rem;
     }
-    
+
     /* Responsive Adjustments */
     @media (max-width: 767.98px) {
         .professional-bg {
             background: #f8fafc;
         }
-        
+
         .application-card {
             padding: 16px;
         }
-        
+
         .app-logo img {
             width: 50px;
             height: 50px;
         }
-        
+
         .app-title {
             font-size: 1rem;
         }
-        
+
         .app-meta {
             gap: 15px;
         }
-        
+
         .posted-date, .application-status {
             font-size: 0.8rem;
         }
-        
+
         .btn-action {
             padding: 6px 12px;
             font-size: 0.8rem;
         }
-        
+
         .breadcrumb-title {
             font-size: 1rem;
         }
-        
+
         .enhanced-breadcrumb {
             padding: 12px 16px;
         }
-        
+
         .professional-header {
             padding: 16px 20px;
         }
-        
+
         .header-title {
             font-size: 1rem;
         }
-        
+
         .applications-filter {
             padding: 12px;
         }
-        
+
         .filter-buttons {
             gap: 6px;
         }
-        
+
         .filter-btn {
             padding: 4px 8px;
             font-size: 0.75rem;
         }
-        
+
         .sort-select {
             min-width: 120px;
             font-size: 0.8rem;
         }
-        
+
         .application-type-tag {
             padding: 4px 8px;
             font-size: 0.7rem;
         }
     }
-    
+
     @media (max-width: 575.98px) {
         .application-card .d-flex {
             flex-direction: column;
             align-items: flex-start;
         }
-        
+
         .app-actions {
             margin-left: 0 !important;
             margin-top: 15px;
             width: 100%;
         }
-        
+
         .btn-action {
             width: 100%;
             justify-content: center;
         }
-        
+
         .app-info {
             margin-top: 12px;
             width: 100%;
         }
-        
+
         .app-meta {
             justify-content: space-between;
         }
-        
+
         .filter-group, .sort-group {
             text-align: left !important;
         }
-        
+
         .header-stats {
             margin-top: 10px;
         }
-        
+
         .professional-header .d-flex {
             flex-direction: column;
             align-items: flex-start;
         }
     }
-    
+
     /* Subtle Animation for cards */
     @keyframes subtleFadeIn {
         from {
@@ -766,35 +766,35 @@ function initializeApplicationFilters() {
             transform: translateY(0);
         }
     }
-    
+
     .application-card {
         animation: subtleFadeIn 0.4s ease-out;
     }
-    
+
     .application-card:nth-child(2) {
         animation-delay: 0.1s;
     }
-    
+
     .application-card:nth-child(3) {
         animation-delay: 0.2s;
     }
-    
+
     .application-card:nth-child(4) {
         animation-delay: 0.3s;
     }
-    
+
     /* Focus states for accessibility */
     .btn-action:focus {
         outline: 2px solid #4f46e5;
         outline-offset: 2px;
     }
-    
+
     .breadcrumb-link:focus {
         outline: 2px solid #4f46e5;
         outline-offset: 2px;
         border-radius: 4px;
     }
-    
+
     .filter-btn:focus {
         outline: 2px solid #4f46e5;
         outline-offset: 2px;

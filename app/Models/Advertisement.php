@@ -20,4 +20,9 @@ class Advertisement extends Model
     {
         return $this->belongsTo(CompanyDetail::class, 'company_id');
     }
+
+    public function stats()
+    {
+        return $this->morphMany(Stat::class, 'statable');
+    }
 }

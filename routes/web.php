@@ -73,8 +73,15 @@ Route::prefix('candidate')
             })->name('resume.view');
             Route::get('resume/hide', [CandidateController::class, 'hideResumeForm'])->name('resume.hide.form');
             Route::post('resume/hide', [CandidateController::class, 'hideResume'])->name('resume.hide');
+             // Candidate banner jobs
             Route::get('jobs/search', [CandidateController::class, 'searchJobs'])->name('jobs.search');
+
+          // Candidate hot jobs
             Route::get('jobs/hot', [CandidateController::class, 'hotJobs'])->name('jobs.hot');
+            Route::get('jobs/{hotjob}', [CandidateController::class, 'showHotJob'])->name('jobs.show');
+            Route::post('hotjobs/{hotjob}/apply', [CandidateController::class, 'applyHotJob'])
+    ->name('hotjobs.apply');
+
             Route::get('express-service', [CandidateController::class, 'expressService'])->name('express.service');
             Route::get('statistics/applied', [CandidateController::class, 'statisticsApplied'])->name('statistics1');
             Route::get('statistics/viewed', [CandidateController::class, 'statisticsViewed'])->name('statistics2');

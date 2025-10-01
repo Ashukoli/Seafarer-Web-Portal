@@ -28,7 +28,7 @@
   <link href="{{ asset('theme/assets/css/light-theme.css') }}" rel="stylesheet">
   <link href="{{ asset('theme/assets/css/semi-dark.css') }}" rel="stylesheet">
   <link href="{{ asset('theme/assets/css/header-colors.css') }}" rel="stylesheet">
-
+  <link href="{{ asset('theme/assets/css/candidate/candidate-professional.css') }}" rel="stylesheet">
   <title>Jano Training::Dashboard</title>
 </head>
 

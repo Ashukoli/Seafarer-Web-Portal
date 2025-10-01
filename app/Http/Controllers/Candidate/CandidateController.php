@@ -10,17 +10,24 @@ use App\Models\ProfileDeleteRequest;
 use App\Models\Country;
 use App\Models\Rank;
 use App\Models\ShipType;
+use App\Services\HotJobsService;
+use App\Models\Stat;
+use App\Services\AdvertisementMatchingService;
+use App\Models\Banner;
 
 
 
 class CandidateController extends Controller
 {
     protected CandidateService $service;
-
-    public function __construct(CandidateService $service)
+     protected HotJobsService $hotJobsService;
+    protected AdvertisementMatchingService $adMatcher;
+    public function __construct(CandidateService $service, HotJobsService $hotJobsService,AdvertisementMatchingService $adMatcher)
     {
         $this->middleware('auth');
         $this->service = $service;
+        $this->hotJobsService = $hotJobsService;
+        $this->adMatcher = $adMatcher;
     }
 
     /**
@@ -177,12 +184,104 @@ class CandidateController extends Controller
     {
         $ranks = Rank::all();
         $shipTypes = ShipType::all();
-        return view('candidate.jobs.search-jobs', compact('ranks', 'shipTypes'));
+
+        $user = Auth::user();
+        $matches = $this->adMatcher->matchForCandidate($user);
+
+        // $matches contains ['bannerAds' => Collection, 'hotJobs' => Collection]
+        $bannerAds = $matches['bannerAds'] ?? collect();
+        $hotJobs = $matches['hotJobs'] ?? collect();
+
+        // Eager load company relation if not already loaded
+        if ($bannerAds->count() && method_exists($bannerAds, 'load')) {
+            $bannerAds->load('company');
+        }
+
+        return view('candidate.jobs.search-jobs', compact('ranks', 'shipTypes', 'bannerAds', 'hotJobs'));
     }
 
-    public function hotJobs()
+    public function hotJobs(Request $request)
     {
-        return view('candidate.jobs.hot');
+        $user = Auth::user();
+        $ranks = Rank::orderBy('sort')->get();
+        $selectedRank = $request->query('rank') ? (int) $request->query('rank') : null;
+
+        $hotJobs = $this->hotJobsService->getForCandidate($user->id, $selectedRank);
+
+        return view('candidate.jobs.hot-jobs', compact('hotJobs', 'ranks', 'selectedRank'));
+    }
+
+    public function advertisementDetails($id)
+    {
+        $ad = Banner::with('company')->findOrFail($id);
+        return view('candidate.jobs.advertisement-details', compact('ad'));
+    }
+
+    public function showHotJob(int $hotjobId, Request $request)
+    {
+        $user = Auth::user();
+        $job = $this->hotJobsService->findForCandidateById($user->id, $hotjobId);
+
+        if (! $job) {
+            abort(404);
+        }
+
+        // record view
+        app(\App\Services\StatisticsService::class)->record(
+            $job,
+            'view',
+            $request,
+            ['source' => 'hotjobs_list']
+        );
+
+        // detect if current user already applied (uses stats 'apply' event)
+        $hasApplied = false;
+        if (class_exists(Stat::class) && $user) {
+            $hasApplied = Stat::where('statable_type', get_class($job))
+                ->where('statable_id', $job->id)
+                ->where('event', 'apply')
+                ->where('user_id', $user->id)
+                ->exists();
+        }
+
+        return view('candidate.jobs.hot-job-details', compact('job', 'hasApplied'));
+    }
+
+    public function applyHotJob(int $hotjobId, Request $request)
+    {
+        $user = Auth::user();
+        $job = $this->hotJobsService->findForCandidateById($user->id, $hotjobId);
+
+        if (! $job) {
+            abort(404);
+        }
+        if (class_exists(Stat::class)) {
+            $alreadyApplied = Stat::where('statable_type', get_class($job))
+                ->where('statable_id', $job->id)
+                ->where('event', 'apply')
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if ($alreadyApplied) {
+                return redirect()->route('candidate.jobs.hot')->with('info', 'You have already applied for this job.');
+            }
+        }
+
+        // TODO: run your existing application saving logic here (store application, notify employer, etc.)
+
+        // record apply stat (non-blocking)
+        try {
+            app(\App\Services\StatisticsService::class)->record(
+                $job,
+                'apply',
+                $request,
+                ['source' => 'hotjobs_detail', 'method' => 'form']
+            );
+        } catch (\Throwable $e) {
+            // ignore logging errors
+        }
+
+        return redirect()->route('candidate.jobs.hot')->with('success', 'Application submitted.');
     }
 
     public function expressService()
@@ -232,4 +331,6 @@ class CandidateController extends Controller
 
         return redirect()->back()->with('success', 'Delete request submitted. Support will contact you.');
     }
+
+
 }

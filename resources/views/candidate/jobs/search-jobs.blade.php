@@ -4,6 +4,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
 <main class="page-content modern-professional-bg">
+    {{-- flash messages --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            {{ session('info') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!--Enhanced Breadcrumb-->
     <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
         <div class="breadcrumb-title pe-3">
@@ -67,14 +81,14 @@
 
     <!-- Modern Hot Jobs Section -->
     <div class="card mb-4 modern-card elevation-soft">
-        <div class="card-header modern-header gradient-ocean">
+        <div class="card-header modern-header gradient-custom">
             <div class="header-content">
                 <h5 class="header-title">
                     <div class="title-icon">
-                        <i class="bx bx-fire"></i>
+                        <i class="bx bxs-hot"></i>
                     </div>
                     <span>Hot Jobs</span>
-                    <div class="title-badge">{{ count($hotJobs ?? []) }} Available</div>
+                    <div class="title-badge">{{ isset($hotJobs) && count($hotJobs) > 0 ? count($hotJobs) : '0' }} Available</div>
                 </h5>
                 <div class="header-controls">
                     <div class="slider-navigation">
@@ -89,113 +103,78 @@
             </div>
         </div>
         <div class="card-body p-4">
-            <!-- Swiper Slider Container -->
-            <div class="swiper modern-jobs-swiper">
-                <div class="swiper-wrapper">
-                    @if(isset($hotJobs) && count($hotJobs) > 0)
-                        @foreach($hotJobs as $index => $job)
+            @if(isset($hotJobs) && count($hotJobs) > 0)
+                <!-- Swiper Slider Container -->
+                <div class="swiper modern-jobs-swiper">
+                    <div class="swiper-wrapper">
+                        @foreach($hotJobs as $job)
                             <div class="swiper-slide">
                                 <div class="blue-job-card">
-                                    <div class="job-title">
-                                        Required {{ $job->rank->rank ?? 'Position' }} for {{ $job->shipType->ship_name ?? 'Vessel' }}
-                                    </div>
-                                    <div class="job-details">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Joining Date:</span>
-                                            <span class="detail-value">{{ optional($job->joining_date)->format('Y-m-d') ?? '2025-10-06' }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Nationality:</span>
-                                            <span class="detail-value">{{ $job->nationality ?? 'Indian' }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Minimum Exp:</span>
-                                            <span class="detail-value">{{ $job->min_experience ?? '2' }} Years</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Job Description:</span>
-                                            <span class="detail-value">{{ $job->description ?? 'Urgent Requirement' }}</span>
+                                    <!-- Job Title Section -->
+                                    <div class="job-title-section">
+                                        <div class="job-title">
+                                            Required {{ optional($job->rank)->rank ?? 'Bosun' }} for {{ optional($job->ship)->ship_name ?? 'Crude Oil Tanker' }}
                                         </div>
                                     </div>
-                                    <div class="job-action">
-                                        <a href="{{ route('candidate.jobs.show', $job->id) }}" class="more-btn">More</a>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <!-- Sample data when no jobs available -->
-                        @php
-                            $sampleJobs = [
-                                ['position' => 'Chief Engr.', 'vessel' => 'AHTS DP', 'nationality' => 'Indian'],
-                                ['position' => 'NWKO', 'vessel' => 'PSV DP', 'nationality' => 'Indian'],
-                                ['position' => 'NWKO', 'vessel' => 'AHTS DP', 'nationality' => 'Indian'],
-                                ['position' => 'NWKO', 'vessel' => 'OSV', 'nationality' => 'Any'],
-                                ['position' => 'Master', 'vessel' => 'Bulk Carrier', 'nationality' => 'Indian'],
-                            ];
-                        @endphp
 
-                        @foreach($sampleJobs as $index => $job)
-                            <div class="swiper-slide">
-                                <div class="blue-job-card">
-                                    <div class="job-title">
-                                        Required {{ $job['position'] }} for {{ $job['vessel'] }}
-                                    </div>
-                                    <div class="job-details">
+                                    <!-- Job Details Section -->
+                                    <div class="job-details-section">
                                         <div class="detail-item">
                                             <span class="detail-label">Joining Date:</span>
-                                            <span class="detail-value">{{ now()->addDays(($index + 1) * 5)->format('Y-m-d') }}</span>
+                                            <span class="detail-value">{{ $job->joiningdate ? \Carbon\Carbon::parse($job->joiningdate)->format('Y-m-d') : '2025-10-16' }}</span>
                                         </div>
                                         <div class="detail-item">
                                             <span class="detail-label">Nationality:</span>
-                                            <span class="detail-value">{{ $job['nationality'] }}</span>
+                                            <span class="detail-value">{{ $job->nationality ?? 'India' }}</span>
                                         </div>
                                         <div class="detail-item">
                                             <span class="detail-label">Minimum Exp:</span>
-                                            <span class="detail-value">{{ ($index + 1) * 2 }} Years</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Job Description:</span>
-                                            <span class="detail-value">Urgent Requirement</span>
+                                            <span class="detail-value">{{ $job->experience ?? '7 Years' }}</span>
                                         </div>
                                     </div>
-                                    <div class="job-action">
-                                        <a href="#" class="more-btn">More</a>
+
+                                    <!-- Action Button - Always at Bottom Right -->
+                                    <div class="job-action-section">
+                                        <a href="{{ url('candidate/jobs/'.$job->id) }}" class="more-btn">More</a>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
-                    @endif
+                    </div>
+                    <!-- Pagination dots -->
+                    <div class="swiper-pagination modern-pagination"></div>
                 </div>
-
-                <!-- Pagination dots -->
-                <div class="swiper-pagination modern-pagination"></div>
-            </div>
+            @else
+                <div class="text-center text-muted py-4">
+                    No hot jobs available.
+                </div>
+            @endif
         </div>
     </div>
 
     <!-- Modern Advertisements Section -->
     <div class="card mb-4 modern-card elevation-soft">
-        <div class="card-header modern-header gradient-slate">
+        <div class="card-header modern-header gradient-custom">
             <div class="header-content">
                 <h5 class="header-title">
                     <div class="title-icon">
-                        <i class="bx bx-bullhorn"></i>
+                        <i class="bx bxs-megaphone"></i>
                     </div>
-                    <span>Latest Announcements</span>
-                    <div class="title-badge">{{ count($advertisements ?? []) }} Recent</div>
+                    <span>Banner Advertisements</span>
+                    <div class="title-badge">{{ isset($bannerAds) && count($bannerAds) > 0 ? count($bannerAds) : '0' }} Recent</div>
                 </h5>
             </div>
         </div>
         <div class="card-body p-4">
-            <div class="announcements-grid">
-                @if(isset($advertisements) && count($advertisements) > 0)
-                    @foreach($advertisements as $ad)
+            @if(isset($bannerAds) && count($bannerAds) > 0)
+                <div class="announcements-grid">
+                    @foreach($bannerAds as $ad)
                         <div class="announcement-card">
                             <div class="announcement-content">
+                                {{-- Company Logo --}}
                                 <div class="announcement-logo">
-                                    @if($ad->logo)
-                                        <img src="{{ asset('storage/' . $ad->logo) }}" alt="{{ $ad->company_name }}" class="logo-img">
+                                    @if($ad->company && $ad->company->company_logo)
+                                        <img src="{{ asset('theme/assets/images/company_logo/' . $ad->company->company_logo) }}" alt="{{ $ad->company->company_name }}" class="logo-img">
                                     @else
                                         <div class="logo-placeholder">
                                             <i class="bx bx-building"></i>
@@ -203,61 +182,30 @@
                                     @endif
                                 </div>
                                 <div class="announcement-info">
-                                    <h6 class="announcement-title">{{ $ad->company_name ?? 'Company Name' }}</h6>
+                                    {{-- Company Name --}}
+                                    <h6 class="announcement-title">
+                                        {{ $ad->company->company_name ?? 'Company Name' }}
+                                    </h6>
+                                    {{-- Posted Date --}}
                                     <div class="announcement-meta">
                                         <span class="meta-date">
                                             <i class="bx bx-calendar-alt me-1"></i>
-                                            {{ optional($ad->created_at)->format('M d, Y') ?? 'Recent' }}
-                                        </span>
-                                        <span class="meta-type">
-                                            <i class="bx bx-tag me-1"></i>
-                                            {{ $ad->type ?? 'Announcement' }}
+                                            {{ $ad->posted_date ? \Carbon\Carbon::parse($ad->posted_date)->format('d M Y') : 'Recent' }}
                                         </span>
                                     </div>
                                 </div>
                                 <div class="announcement-action">
-                                    <a href="{{ route('candidate.advertisements.show', $ad->id) }}" class="btn btn-modern-subtle">
-                                        <i class="bx bx-show me-1"></i>
-                                        View
-                                    </a>
+                                    <a href="{{ route('candidate.advertisements.details', $ad->id) }}">View</a>
                                 </div>
                             </div>
                         </div>
                     @endforeach
-                @else
-                    <!-- Sample data when no advertisements available -->
-                    @for($i = 1; $i <= 2; $i++)
-                        <div class="announcement-card">
-                            <div class="announcement-content">
-                                <div class="announcement-logo">
-                                    <div class="logo-placeholder">
-                                        <i class="bx bx-building"></i>
-                                    </div>
-                                </div>
-                                <div class="announcement-info">
-                                    <h6 class="announcement-title">{{ ['Oceanic Shipping Ltd.', 'Marine Careers Group'][$i-1] }}</h6>
-                                    <div class="announcement-meta">
-                                        <span class="meta-date">
-                                            <i class="bx bx-calendar-alt me-1"></i>
-                                            {{ now()->subDays($i * 2)->format('M d, Y') }}
-                                        </span>
-                                        <span class="meta-type">
-                                            <i class="bx bx-tag me-1"></i>
-                                            Announcement
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="announcement-action">
-                                    <a href="#" class="btn btn-modern-subtle">
-                                        <i class="bx bx-show me-1"></i>
-                                        View
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endfor
-                @endif
-            </div>
+                </div>
+            @else
+                <div class="text-center text-muted py-4">
+                    No advertisements available.
+                </div>
+            @endif
         </div>
     </div>
 </main>
@@ -271,10 +219,11 @@
     --primary-600: #0284c7;
     --primary-700: #0369a1;
 
-    --blue-gradient-start: #4A90E2;
-    --blue-gradient-end: #357ABD;
-    --blue-border: #2E5F8F;
-    --blue-text: #1E3A5F;
+    --header-primary: #e0e7ff;
+    --header-secondary: #c7d2fe;
+    --header-accent: #a5b4fc;
+    --header-text: #3730a3;
+    --header-text-light: #4338ca;
 
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
@@ -398,16 +347,16 @@
 }
 
 .modern-select:focus {
-    border-color: var(--primary-500);
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    border-color: var(--header-accent);
+    box-shadow: 0 0 0 3px rgba(165, 180, 252, 0.15);
     outline: none;
 }
 
-/* Modern Buttons */
+/* Modern Buttons - Matching Header Colors */
 .btn-modern-primary {
-    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
-    border: 2px solid var(--primary-500);
-    color: white;
+    background: linear-gradient(135deg, var(--header-secondary), var(--header-accent));
+    border: 2px solid var(--header-accent);
+    color: var(--header-text);
     font-weight: 600;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
@@ -415,13 +364,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 4px rgba(165, 180, 252, 0.2);
 }
 
 .btn-modern-primary:hover {
-    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--header-accent), var(--header-text-light));
+    border-color: var(--header-text-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(165, 180, 252, 0.3);
     color: white;
+}
+
+.btn-modern-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(165, 180, 252, 0.2);
 }
 
 .btn-modern-subtle {
@@ -440,13 +396,13 @@
 }
 
 .btn-modern-subtle:hover {
-    background: var(--primary-50);
-    border-color: var(--primary-200);
-    color: var(--primary-700);
+    background: var(--header-primary);
+    border-color: var(--header-secondary);
+    color: var(--header-text);
     transform: translateY(-1px);
 }
 
-/* Modern Headers */
+/* Modern Headers with New Background */
 .modern-header {
     border: none;
     padding: 1.25rem 1.5rem;
@@ -454,12 +410,8 @@
     overflow: hidden;
 }
 
-.gradient-ocean {
-    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 50%, var(--primary-700) 100%);
-}
-
-.gradient-slate {
-    background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 50%, var(--gray-800) 100%);
+.gradient-custom {
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.95), rgba(53, 122, 189, 1));
 }
 
 .header-content {
@@ -474,7 +426,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: white;
+    color: #000000;
     font-size: 1rem;
     font-weight: 700;
     margin: 0;
@@ -483,17 +435,18 @@
 .title-icon {
     width: 2rem;
     height: 2rem;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.3);
     border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1rem;
+    color: #000000;
 }
 
 .title-badge {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    background: rgba(255, 255, 255, 0.4);
+    color: #000000;
     padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     font-size: 0.7rem;
@@ -509,9 +462,9 @@
 .nav-btn {
     width: 2rem;
     height: 2rem;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #000000;
     border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
@@ -522,8 +475,9 @@
 }
 
 .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.5);
     transform: scale(1.05);
+    color: #000000;
 }
 
 .nav-btn:disabled {
@@ -532,106 +486,132 @@
     transform: none;
 }
 
-/* Blue Job Cards - Horizontal Layout like in image */
+/* COMPLETELY FIXED: Job Cards Layout */
 .modern-jobs-swiper {
     padding-bottom: 1.5rem;
+    overflow: visible;
+}
+
+.swiper-slide {
+    display: flex;
+    align-items: stretch;
+    height: auto;
+}
+
+.modern-jobs-swiper .swiper-slide {
+    height: 180px; /* Match card height */
 }
 
 .blue-job-card {
-    background: linear-gradient(135deg, var(--blue-gradient-start), var(--blue-gradient-end));
-    border: 2px solid var(--blue-border);
-    border-radius: var(--radius-xl);
-    padding: 1.5rem;
-    color: white;
-    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, #b8d4f0 0%, #6ca7d9 100%);
+    border: 2px solid #4a90c2;
+    border-radius: 16px;
+    color: #000000;
+    box-shadow: 0 4px 12px rgba(74, 144, 194, 0.2);
     transition: var(--transition);
-    height: 180px; /* Fixed height for consistent layout */
+    width: 100%;
+    height: 190px; /* Fixed height for consistency */
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     position: relative;
     overflow: hidden;
-}
-
-.blue-job-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    transform: translate(30px, -30px);
-    pointer-events: none;
+    padding: 0; /* Remove padding, add to sections instead */
 }
 
 .blue-job-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-    background: linear-gradient(135deg, var(--blue-gradient-end), var(--blue-border));
+    box-shadow: 0 8px 25px rgba(74, 144, 194, 0.3);
+    background: linear-gradient(135deg, #a8c4e0 0%, #5c97c9 100%);
+}
+
+/* Job Title Section */
+.job-title-section {
+    padding: 1rem 1rem 0.5rem 1rem;
+    flex-shrink: 0;
 }
 
 .job-title {
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 700;
-    color: white;
-    margin-bottom: 1rem;
+    color: #000000;
+    margin: 0;
     line-height: 1.3;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.job-details {
-    flex-grow: 1;
-    margin-bottom: 1rem;
+/* Job Details Section */
+.job-details-section {
+    padding: 0 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.4rem;
 }
 
 .detail-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.4rem;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
 }
 
 .detail-label {
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
-    min-width: 100px;
+    font-weight: 700;
+    color: #000000;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .detail-value {
-    font-weight: 500;
-    color: white;
+    font-weight: 600;
+    color: #000000;
     text-align: right;
+    margin-left: 0.5rem;
 }
 
-.job-action {
+/* Action Button Section - Always Bottom Right */
+.job-action-section {
+    padding: 0.5rem 1rem 1rem 1rem;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    margin-top: auto;
+    flex-shrink: 0;
+    margin-top: auto; /* Push to bottom */
 }
 
 .more-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    color: #000000;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     text-decoration: none;
     transition: var(--transition);
-    backdrop-filter: blur(10px);
+    text-align: center;
+    white-space: nowrap;
+    display: inline-block;
+    min-width: 60px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .more-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.6);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.4);
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Modern Pagination */
@@ -650,7 +630,7 @@
 }
 
 .modern-jobs-swiper .swiper-pagination-bullet-active {
-    background: var(--primary-500);
+    background: var(--header-accent);
     transform: scale(1.5);
 }
 
@@ -673,7 +653,7 @@
 .announcement-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
-    border-color: var(--primary-200);
+    border-color: var(--header-accent);
 }
 
 .announcement-content {
@@ -683,17 +663,20 @@
 }
 
 .announcement-logo {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 80px; /* Increased width for logo */
+    height: 80px;
     border-radius: var(--radius-lg);
     overflow: hidden;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .logo-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Prevents logo from being cut */
 }
 
 .logo-placeholder {
@@ -738,7 +721,7 @@
     padding: 1.5rem !important;
 }
 
-/* Responsive Design */
+/* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
     .modern-professional-bg {
         padding: 1rem 0.5rem;
@@ -753,22 +736,39 @@
     }
 
     .blue-job-card {
-        padding: 1rem;
         height: 160px;
     }
 
+    .modern-jobs-swiper .swiper-slide {
+        height: 160px;
+    }
+
+    .job-title-section {
+        padding: 0.875rem 0.875rem 0.5rem 0.875rem;
+    }
+
     .job-title {
-        font-size: 0.9rem;
-        margin-bottom: 0.75rem;
+        font-size: 0.8125rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .job-details-section {
+        padding: 0 0.875rem;
+        gap: 0.35rem;
     }
 
     .detail-item {
-        margin-bottom: 0.3rem;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
     }
 
-    .detail-label {
-        min-width: 80px;
+    .job-action-section {
+        padding: 0.5rem 0.875rem 0.875rem 0.875rem;
+    }
+
+    .more-btn {
+        padding: 0.35rem 0.875rem;
+        font-size: 0.75rem;
+        min-width: 55px;
     }
 
     .header-content {
@@ -811,15 +811,38 @@
 
     .blue-job-card {
         height: 140px;
-        padding: 0.75rem;
+    }
+
+    .modern-jobs-swiper .swiper-slide {
+        height: 140px;
+    }
+
+    .job-title-section {
+        padding: 0.75rem 0.75rem 0.4rem 0.75rem;
     }
 
     .job-title {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .job-details-section {
+        padding: 0 0.75rem;
+        gap: 0.3rem;
     }
 
     .detail-item {
-        font-size: 0.75rem;
+        font-size: 0.65rem;
+    }
+
+    .job-action-section {
+        padding: 0.4rem 0.75rem 0.75rem 0.75rem;
+    }
+
+    .more-btn {
+        padding: 0.3rem 0.75rem;
+        font-size: 0.7rem;
+        min-width: 50px;
     }
 }
 
@@ -828,13 +851,23 @@
 .btn-modern-primary:focus,
 .btn-modern-subtle:focus,
 .more-btn:focus {
-    outline: 2px solid var(--primary-500);
+    outline: 2px solid var(--header-accent);
     outline-offset: 2px;
 }
 
 .breadcrumb-link:focus {
-    outline: 2px solid var(--primary-500);
+    outline: 2px solid var(--header-accent);
     outline-offset: 2px;
+}
+
+/* Reset any conflicting styles from previous definitions */
+.job-content,
+.job-header,
+.job-details,
+.job-action,
+.detail-row {
+    all: unset;
+    display: initial;
 }
 </style>
 
@@ -843,12 +876,12 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Modern Jobs Swiper
+    // Initialize Modern Jobs Swiper - Fixed configuration for proper display
     const modernJobsSwiper = new Swiper('.modern-jobs-swiper', {
-        slidesPerView: 1.1,
+        slidesPerView: 1,
         spaceBetween: 16,
         centeredSlides: false,
-        loop: true,
+        loop: false,
         grabCursor: true,
 
         autoplay: {
@@ -869,20 +902,28 @@ document.addEventListener('DOMContentLoaded', function() {
         },
 
         breakpoints: {
-            576: {
-                slidesPerView: 1.5,
+            320: {
+                slidesPerView: 1,
+                spaceBetween: 12,
+            },
+            480: {
+                slidesPerView: 1.2,
+                spaceBetween: 16,
+            },
+            640: {
+                slidesPerView: 2,
                 spaceBetween: 20,
             },
             768: {
-                slidesPerView: 2,
+                slidesPerView: 2.5,
                 spaceBetween: 24,
             },
-            992: {
-                slidesPerView: 2.5,
+            1024: {
+                slidesPerView: 3,
                 spaceBetween: 28,
             },
             1200: {
-                slidesPerView: 3,
+                slidesPerView: 3.5,
                 spaceBetween: 32,
             },
             1400: {
@@ -906,8 +947,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const nextBtn = document.getElementById('jobsNext');
 
         if (prevBtn && nextBtn) {
-            prevBtn.disabled = false;
-            nextBtn.disabled = false;
+            prevBtn.disabled = swiper.isBeginning;
+            nextBtn.disabled = swiper.isEnd;
         }
     }
 
