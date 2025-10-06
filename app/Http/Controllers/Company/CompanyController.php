@@ -14,6 +14,8 @@ use App\Models\Hotjob;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Services\Company\CompanyService;
+use App\Services\StatisticsService;
+use App\Services\Company\CandidateSearchService;
 
 class CompanyController extends Controller
 {
@@ -129,6 +131,33 @@ class CompanyController extends Controller
         $subadmin->update($data);
 
         return redirect()->route('company.subadmin.list')->with('success', 'Subadmin updated successfully.');
+    }
+
+    public function applied(StatisticsService $statistics)
+    {
+        $user = Auth::user();
+        $company = CompanyDetail::where('user_id', $user->id)->first();
+
+        if (!$company) {
+            abort(404, 'Company profile not found.');
+        }
+
+        $appliedStats = $statistics->getCompanyAppliedStats($company);
+
+        return view('company.statistics.applied', compact('appliedStats'));
+    }
+
+    public function searchCandidates(Request $request, CandidateSearchService $service)
+    {
+        $filters = $request->all();
+        $candidates = $service->search($filters);
+
+        // For filter dropdowns
+        $ranks = Rank::orderBy('sort')->get();
+        $shipTypes = ShipType::orderBy('sort')->get();
+        $cocCountries = ['Indian', 'UK', 'Panama', 'Marshall Islands', 'Singapore', 'Philippines', 'Other'];
+
+        return view('company.candidates.search', compact('candidates', 'ranks', 'shipTypes', 'cocCountries', 'filters'));
     }
 
 }

@@ -59,4 +59,22 @@ class CandidateResume extends Model
     {
         return $this->belongsTo(Rank::class, 'post_applied_for');
     }
+
+    public function rank()
+    {
+        // Alias for presentRank for compatibility with search code
+        return $this->presentRank();
+    }
+
+    public function shipType()
+    {
+        // If you have a single ship_type column (FK to ship_types.id)
+        return $this->belongsTo(ShipType::class, 'ship_type');
+    }
+
+    public function ship_types()
+    {
+        // If you have a pivot table for multiple ship types (optional)
+        return $this->belongsToMany(ShipType::class, 'candidate_ship_types', 'candidate_resume_id', 'ship_type_id');
+    }
 }

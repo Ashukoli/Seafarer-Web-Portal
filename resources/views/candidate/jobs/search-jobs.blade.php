@@ -195,7 +195,7 @@
                                     </div>
                                 </div>
                                 <div class="announcement-action">
-                                    <a href="{{ route('candidate.advertisements.details', $ad->id) }}">View</a>
+                                    <a href="{{ route('candidate.banner_advertisements.details', $ad->id) }}">View</a>
                                 </div>
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.candidate.app')
 @section('content')
 
 <main class="page-content professional-bg">
@@ -51,11 +51,11 @@
                     </div>
                     <!-- Banner Image -->
                     <div class="banner-image-wrapper">
-                        <img src="{{ asset('theme/assets/images/banner1.jpg') }}" 
-                             alt="Job Advertisement Banner" 
+                        <img src="{{ asset('theme/assets/images/banner1.jpg') }}"
+                             alt="Job Advertisement Banner"
                              class="banner-image">
                     </div>
-                    
+
                     <!-- Apply Button -->
                     <div class="banner-actions">
                         <a href="" class="btn btn-apply-primary">
@@ -256,22 +256,22 @@
     .banner-container {
         padding: 0 12px;
     }
-    
+
     .banner-image-wrapper {
         padding: 16px;
     }
-    
+
     .banner-actions {
         padding: 24px 20px;
     }
-    
+
     .btn-apply-primary {
         padding: 12px 24px;
         font-size: 1rem;
         width: 100%;
         justify-content: center;
     }
-    
+
     .btn-apply-primary i {
         font-size: 1.1rem;
     }
@@ -281,11 +281,11 @@
     .banner-image-wrapper {
         padding: 12px;
     }
-    
+
     .banner-actions {
         padding: 20px 16px;
     }
-    
+
     .btn-apply-primary {
         font-size: 0.95rem;
     }
@@ -304,12 +304,12 @@
     .professional-bg {
         background: #ffffff;
     }
-    
+
     .page-breadcrumb,
     .mobile-breadcrumb {
         display: none;
     }
-    
+
     .banner-actions {
         display: none;
     }

@@ -14,7 +14,8 @@ use App\Services\HotJobsService;
 use App\Models\Stat;
 use App\Services\AdvertisementMatchingService;
 use App\Models\Banner;
-
+use App\Services\StatisticsService;
+use App\Services\AdvertisementService;
 
 
 class CandidateController extends Controller
@@ -211,9 +212,13 @@ class CandidateController extends Controller
         return view('candidate.jobs.hot-jobs', compact('hotJobs', 'ranks', 'selectedRank'));
     }
 
-    public function advertisementDetails($id)
+    public function bannerAdvertisementDetails(int $id, StatisticsService $statistics, Request $request)
     {
-        $ad = Banner::with('company')->findOrFail($id);
+        $user = Auth::user();
+        $ad = $this->adMatcher->findAdvertisementForCandidate($user, $id);
+
+        $statistics->record($ad, 'view', $request, ['source' => 'banner_detail']);
+
         return view('candidate.jobs.advertisement-details', compact('ad'));
     }
 
@@ -227,7 +232,7 @@ class CandidateController extends Controller
         }
 
         // record view
-        app(\App\Services\StatisticsService::class)->record(
+        app(StatisticsService::class)->record(
             $job,
             'view',
             $request,
@@ -266,19 +271,15 @@ class CandidateController extends Controller
                 return redirect()->route('candidate.jobs.hot')->with('info', 'You have already applied for this job.');
             }
         }
-
-        // TODO: run your existing application saving logic here (store application, notify employer, etc.)
-
-        // record apply stat (non-blocking)
         try {
-            app(\App\Services\StatisticsService::class)->record(
+            app(StatisticsService::class)->record(
                 $job,
                 'apply',
                 $request,
                 ['source' => 'hotjobs_detail', 'method' => 'form']
             );
         } catch (\Throwable $e) {
-            // ignore logging errors
+
         }
 
         return redirect()->route('candidate.jobs.hot')->with('success', 'Application submitted.');
@@ -286,13 +287,17 @@ class CandidateController extends Controller
 
     public function expressService()
     {
-        return view('candidate.express.service');
+        return view('candidate.express_services.express-service');
     }
 
-    public function statisticsApplied()
+    public function statisticsApplied(StatisticsService $statistics)
     {
-        return view('candidate.statistics.applied');
+        $user = Auth::user();
+        $appliedStats = $statistics->getAppliedJobsForUser($user);
+
+        return view('candidate.statistics.applied', compact('appliedStats'));
     }
+
 
     public function statisticsViewed()
     {

@@ -24,284 +24,97 @@
     <!--end breadcrumb-->
 
     <div class="container py-4">
-        <!-- Combined Applications Section -->
         <div class="card mb-4 professional-card">
             <div class="card-header professional-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 header-title">
-                        <i class="bx bx-list-check me-2"></i>My Applications
-                    </h5>
+                    <h5 class="mb-0 header-title"><i class="bx bx-list-check me-2"></i>My Applications</h5>
                     <div class="header-stats">
                         <span class="stats-badge">
-                            <i class="bx bx-file me-1"></i>4 Total Applications
+                            <i class="bx bx-file me-1"></i>{{ $appliedStats->count() }} Total Applications
                         </span>
                     </div>
                 </div>
             </div>
+
             <div class="card-body p-4">
-                <!-- Filter/Sort Options -->
-                <div class="applications-filter mb-4">
-                    <div class="row g-3 align-items-center">
-                        <div class="col-md-6">
-                            <div class="filter-group">
-                                <label class="filter-label">Filter by Type:</label>
-                                <div class="filter-buttons">
-                                    <button class="filter-btn active" data-filter="all">
-                                        <i class="bx bx-grid-alt me-1"></i>All
-                                    </button>
-                                    <button class="filter-btn" data-filter="company-banner">
-                                        <i class="bx bx-building me-1"></i>Company Banner
-                                    </button>
-                                    <button class="filter-btn" data-filter="hot-job">
-                                        <i class="bx bx-hot me-1"></i>Hot Job
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="sort-group text-md-end">
-                                <label class="filter-label">Sort by:</label>
-                                <select class="sort-select">
-                                    <option value="recent">Most Recent</option>
-                                    <option value="oldest">Oldest First</option>
-                                    <option value="company">Company Name</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Unified Application Cards -->
                 <div class="applications-list" id="applicationsList">
-                    <!-- Application Card 1 - Company Banner -->
-                    <div class="application-card" data-type="company-banner" data-date="2025-07-30">
-                        <div class="application-type-tag company-banner-tag">
-                            <i class="bx bx-building me-1"></i>Company Banner
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="app-logo me-3">
-                                <img src="{{ asset('theme/assets/images/products/28.png') }}" alt="Company Logo" class="rounded">
-                            </div>
-                            <div class="app-info flex-grow-1">
-                                <h6 class="app-title mb-1">
-                                    <i class="bx bx-building me-1 text-muted"></i>MAS SHIP MANAGEMENT
-                                </h6>
-                                <div class="app-meta">
-                                    <span class="posted-date">
-                                        <i class="bx bx-calendar me-1"></i>Applied: 30th Jul, 2025
-                                    </span>
-                                    <span class="application-status ms-3">
-                                        <i class="bx bx-time-five me-1"></i>Under Review
-                                    </span>
-                                </div>
-                                <div class="app-description mt-2">
-                                    <p class="description-text">Applied for company banner placement and recruitment partnership</p>
-                                </div>
-                            </div>
-                            <div class="app-actions ms-3">
-                                <a href="#" class="btn btn-outline-primary btn-action">
-                                    <i class="bx bx-show me-1"></i>
-                                    <span class="d-none d-sm-inline">View Statistics</span>
-                                    <span class="d-sm-none">View</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    @forelse($appliedStats as $stat)
+                        @php
+                            $statable = $stat->statable;
+                            $meta = $stat->meta ?? [];
 
-                    <!-- Application Card 2 - Hot Job -->
-                    <div class="application-card" data-type="hot-job" data-date="2025-07-28">
-                        <div class="application-type-tag hot-job-tag">
-                            <i class="bx bx-hot me-1"></i>Hot Job
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="app-logo me-3">
-                                <img src="{{ asset('theme/assets/images/products/28.png') }}" alt="Company Logo" class="rounded">
-                            </div>
-                            <div class="app-info flex-grow-1">
-                                <h6 class="app-title mb-1">
-                                    <i class="bx bx-briefcase me-1 text-muted"></i>2nd Officer - Oil Tanker
-                                </h6>
-                                <div class="app-meta">
-                                    <span class="posted-date">
-                                        <i class="bx bx-calendar me-1"></i>Applied: 28th Jul, 2025
-                                    </span>
-                                    <span class="application-status ms-3">
-                                        <i class="bx bx-check-circle me-1"></i>Shortlisted
-                                    </span>
-                                </div>
-                                <div class="app-description mt-2">
-                                    <p class="description-text">2nd Officer position on Oil Tanker - 6 months contract, immediate joining</p>
-                                </div>
-                            </div>
-                            <div class="app-actions ms-3">
-                                <a href="#" class="btn btn-outline-secondary btn-action">
-                                    <i class="bx bx-show me-1"></i>
-                                    <span class="d-none d-sm-inline">View Details</span>
-                                    <span class="d-sm-none">View</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                            // job id (use statable id when model exists, else fallback to stat.statable_id)
+                            $jobId = $statable ? ($statable->id ?? null) : ($stat->statable_id ?? null);
 
-                    <!-- Application Card 3 - Company Banner -->
-                    <div class="application-card" data-type="company-banner" data-date="2025-07-25">
-                        <div class="application-type-tag company-banner-tag">
-                            <i class="bx bx-building me-1"></i>Company Banner
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="app-logo me-3">
-                                <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Company Logo" class="rounded">
-                            </div>
-                            <div class="app-info flex-grow-1">
-                                <h6 class="app-title mb-1">
-                                    <i class="bx bx-building me-1 text-muted"></i>SES MARINE SERVICES
-                                </h6>
-                                <div class="app-meta">
-                                    <span class="posted-date">
-                                        <i class="bx bx-calendar me-1"></i>Applied: 25th Jul, 2025
-                                    </span>
-                                    <span class="application-status ms-3">
-                                        <i class="bx bx-x-circle me-1"></i>Rejected
-                                    </span>
-                                </div>
-                                <div class="app-description mt-2">
-                                    <p class="description-text">Applied for premium banner placement and direct recruitment access</p>
-                                </div>
-                            </div>
-                            <div class="app-actions ms-3">
-                                <a href="#" class="btn btn-outline-primary btn-action">
-                                    <i class="bx bx-show me-1"></i>
-                                    <span class="d-none d-sm-inline">View Statistics</span>
-                                    <span class="d-sm-none">View</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                            // logo / company / title resolution
+                            $logo = $meta['company_logo'] ?? ($statable && isset($statable->company) ? $statable->company->company_logo : null);
+                            $companyName = $meta['company_name'] ?? ($statable && isset($statable->company) ? $statable->company->company_name : ($statable->company_name ?? null));
+                            $jobTitle = $meta['job_title'] ?? ($statable->title ?? ($statable->position ?? 'Job'));
+                            $postedDate = $stat->created_at ? $stat->created_at->format('jS M, Y') : '';
+                            $type = $meta['type'] ?? (class_basename($statable) === 'Banner' ? 'company-banner' : 'hot-job');
+                            $detailsUrl = $jobId ? route('candidate.jobs.show', $jobId) : '#';
+                        @endphp
 
-                    <!-- Application Card 4 - Hot Job -->
-                    <div class="application-card" data-type="hot-job" data-date="2025-07-20">
-                        <div class="application-type-tag hot-job-tag">
-                            <i class="bx bx-hot me-1"></i>Hot Job
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="app-logo me-3">
-                                <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Company Logo" class="rounded">
+                        <div class="application-card" data-type="{{ $type }}" data-date="{{ $stat->created_at ? $stat->created_at->format('Y-m-d') : '' }}">
+                            <div class="application-type-tag {{ $type === 'company-banner' ? 'company-banner-tag' : 'hot-job-tag' }}">
+                                <i class="bx {{ $type === 'company-banner' ? 'bx-building' : 'bx-hot' }} me-1"></i>
+                                {{ $type === 'company-banner' ? 'Company Banner' : 'Hot Job' }}
                             </div>
-                            <div class="app-info flex-grow-1">
-                                <h6 class="app-title mb-1">
-                                    <i class="bx bx-briefcase me-1 text-muted"></i>Fresher - Bulk Carrier
-                                </h6>
-                                <div class="app-meta">
-                                    <span class="posted-date">
-                                        <i class="bx bx-calendar me-1"></i>Applied: 20th Jul, 2025
-                                    </span>
-                                    <span class="application-status ms-3">
-                                        <i class="bx bx-time-five me-1"></i>Under Review
-                                    </span>
-                                </div>
-                                <div class="app-description mt-2">
-                                    <p class="description-text">Entry level position on Bulk Carrier - Training provided, global routes</p>
-                                </div>
-                            </div>
-                            <div class="app-actions ms-3">
-                                <a href="#" class="btn btn-outline-secondary btn-action">
-                                    <i class="bx bx-show me-1"></i>
-                                    <span class="d-none d-sm-inline">View Details</span>
-                                    <span class="d-sm-none">View</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Empty State (hidden by default) -->
-                <div class="empty-state d-none" id="emptyState">
-                    <i class="bx bx-inbox"></i>
-                    <h6>No applications found</h6>
-                    <p>No applications match your current filter criteria.</p>
+                            <div class="d-flex align-items-center">
+                                <div class="app-logo me-3">
+                                    @if($logo)
+                                        <img src="{{ asset('theme/assets/images/company_logo/' . $logo) }}" alt="Logo" class="rounded">
+                                    @else
+                                        <img src="{{ asset('theme/assets/images/products/100.jpg') }}" alt="Logo" class="rounded">
+                                    @endif
+                                </div>
+
+                                <div class="app-info flex-grow-1">
+                                    <h6 class="app-title mb-1">
+                                        <i class="bx {{ $type === 'company-banner' ? 'bx-building' : 'bx-briefcase' }} me-1 text-muted"></i>
+                                        {{ $companyName ?? $jobTitle }}
+                                    </h6>
+
+                                    <div class="app-meta">
+                                        <span class="posted-date"><i class="bx bx-calendar me-1"></i>Applied: {{ $postedDate }}</span>
+                                        {{-- status can come from meta if present --}}
+                                        @if(!empty($meta['status']))
+                                            <span class="application-status ms-3">
+                                                <i class="bx {{ $meta['status'] === 'Shortlisted' ? 'bx-check-circle' : ($meta['status'] === 'Rejected' ? 'bx-x-circle' : 'bx-time-five') }} me-1"></i>
+                                                {{ $meta['status'] }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    @if(!empty($meta['description']))
+                                        <div class="app-description mt-2">
+                                            <p class="description-text">{{ $meta['description'] }}</p>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div class="app-actions ms-3">
+                                    <a href="{{ $detailsUrl }}" class="btn btn-outline-primary btn-action">
+                                        <i class="bx bx-show me-1"></i>
+                                        <span class="d-none d-sm-inline">View Details</span>
+                                        <span class="d-sm-none">View</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty-state" id="emptyState">
+                            <i class="bx bx-inbox"></i>
+                            <h6>No applications found</h6>
+                            <p>No applications match your current filter criteria.</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 </main>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApplicationFilters();
-});
-
-function initializeApplicationFilters() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const sortSelect = document.querySelector('.sort-select');
-    const applicationsList = document.getElementById('applicationsList');
-    const emptyState = document.getElementById('emptyState');
-
-    // Filter functionality
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Update active button
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-
-            const filterType = this.getAttribute('data-filter');
-            filterApplications(filterType);
-        });
-    });
-
-    // Sort functionality
-    if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
-            sortApplications(this.value);
-        });
-    }
-
-    function filterApplications(type) {
-        const applications = document.querySelectorAll('.application-card');
-        let visibleCount = 0;
-
-        applications.forEach(app => {
-            if (type === 'all' || app.getAttribute('data-type') === type) {
-                app.style.display = 'block';
-                visibleCount++;
-            } else {
-                app.style.display = 'none';
-            }
-        });
-
-        // Show/hide empty state
-        if (visibleCount === 0) {
-            applicationsList.style.display = 'none';
-            emptyState.classList.remove('d-none');
-        } else {
-            applicationsList.style.display = 'block';
-            emptyState.classList.add('d-none');
-        }
-    }
-
-    function sortApplications(sortBy) {
-        const applications = Array.from(document.querySelectorAll('.application-card'));
-
-        applications.sort((a, b) => {
-            switch(sortBy) {
-                case 'recent':
-                    return new Date(b.getAttribute('data-date')) - new Date(a.getAttribute('data-date'));
-                case 'oldest':
-                    return new Date(a.getAttribute('data-date')) - new Date(b.getAttribute('data-date'));
-                case 'company':
-                    const aTitle = a.querySelector('.app-title').textContent.trim();
-                    const bTitle = b.querySelector('.app-title').textContent.trim();
-                    return aTitle.localeCompare(bTitle);
-                default:
-                    return 0;
-            }
-        });
-
-        // Re-append sorted applications
-        const container = applications[0].parentNode;
-        applications.forEach(app => container.appendChild(app));
-    }
-}
-</script>
 @endsection
 
 <style>

@@ -16,6 +16,12 @@
                 <div class="menu-title">Dashboard</div>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('company.search.candidates') }}" class="nav-link">
+                <i class="bx bx-search"></i>
+                <span>Search Candidates</span>
+            </a>
+        </li>
         <li>
             <a href="javascript:void(0);" class="has-arrow">
                 <div class="parent-icon"><i class="bx bx-home-alt"></i></div>
@@ -46,6 +52,25 @@
                 <div class="menu-title">Messages</div>
             </a>
         </li>
-    </ul>
+
+        <li>
+            <a href="javascript:void(0);" class="has-arrow">
+                <div class="parent-icon"><i class="bx bx-bar-chart-alt-2"></i></div>
+                <div class="menu-title">Statistics</div>
+            </a>
+            <ul>
+                <li>
+                    <a href="{{ route('company.statistics.applied') }}">
+                        <div class="menu-title">Directly Applied</div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <div class="menu-title">Downloaded Resumes</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>`
     <!--end navigation-->
 </aside>

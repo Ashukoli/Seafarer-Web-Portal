@@ -73,4 +73,10 @@ class AdvertisementMatchingService
 
         return compact('bannerAds', 'hotJobs');
     }
+
+    public function findAdvertisementForCandidate(?Authenticatable $user, int $id): Advertisement
+    {
+        // simple authoritative fetch; caller decides access rules
+        return Advertisement::with('company')->findOrFail($id);
+    }
 }

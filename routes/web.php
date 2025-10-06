@@ -75,6 +75,9 @@ Route::prefix('candidate')
             Route::post('resume/hide', [CandidateController::class, 'hideResume'])->name('resume.hide');
              // Candidate banner jobs
             Route::get('jobs/search', [CandidateController::class, 'searchJobs'])->name('jobs.search');
+            // Banner advertisement details (added)
+            Route::get('banner-advertisements/{id}', [CandidateController::class, 'bannerAdvertisementDetails'])
+                ->name('banner_advertisements.details');
 
           // Candidate hot jobs
             Route::get('jobs/hot', [CandidateController::class, 'hotJobs'])->name('jobs.hot');
@@ -189,12 +192,18 @@ Route::prefix('company')->name('company.')->group(function () {
         Route::get('dashboard', [CompanyController::class, 'dashboard'])->name('dashboard');
         Route::post('logout', [CompanyLoginController::class, 'logout'])->name('logout');
 
+        Route::get('search/candidates', [CompanyController::class, 'searchCandidates'])->name('search.candidates');
+
+        // hotjobs management routes
         Route::prefix('hotjobs')->name('hotjobs.')->group(function () {
             Route::get('/', [CompanyController::class, 'hotjobsIndex'])->name('index');
             Route::get('/create', [CompanyController::class, 'hotjobsCreate'])->name('create');
             Route::post('/store', [CompanyController::class, 'hotjobsStore'])->name('store');
             Route::delete('/{hotjob}', [CompanyController::class, 'hotjobsDestroy'])->name('destroy');
         });
+         // statistics management routes
+        Route::get('statistics/applied', [CompanyController::class, 'applied'])
+        ->name('statistics.applied');
 
         // Subadmin management routes
         Route::get('subadmins', [CompanyController::class, 'subadminList'])->name('subadmin.list');

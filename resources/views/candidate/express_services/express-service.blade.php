@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.candidate.app')
 @section('content')
 <main class="page-content" style="background:#f5f7fb;">
     <!--breadcrumb-->
@@ -51,7 +51,7 @@
                         </div>
 
                         <div class="mt-3 mt-md-0 ms-md-4" style="width: 120px;">
-                        <a href="{{ route('candidate.express.pay.form', ['service' => 'combo-30']) }}">Pay</a>
+                        <a href="#">Pay</a>
                         </div>
                     </div>
 
@@ -67,7 +67,7 @@
                         </div>
 
                        <div class="mt-3 mt-md-0 ms-md-4" style="width: 120px;">
-                        <a href="{{ route('candidate.express.pay.form', ['service' => 'combo-60']) }}">Pay</a>
+                        <a href="#">Pay</a>
                         </div>
                     </div>
                 </div>
