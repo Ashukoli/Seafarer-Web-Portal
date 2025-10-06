@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\Hotjobs\HotjobsController;
 use App\Http\Controllers\Admin\Message\MessageController;
 use App\Http\Controllers\Company\MessageController as CompanyMessageController;
 use App\Http\Controllers\Admin\Candidate\CandidateController as AdminCandidateController;
+use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\ExpressServiceController;
 
 // ----------------------------
 // Static / Marketing pages
@@ -120,6 +122,8 @@ Route::prefix('admin')
             Route::resource('dce-endorsements', DceEndorsementController::class);
             Route::resource('course-certificates', CourseCertificateController::class);
             Route::resource('cities', CityController::class);
+            Route::resource('packages', PackageController::class);
+            Route::resource('expressservices', ExpressServiceController::class);
              // Candidate registration (for create/store only)
             Route::resource('candidates', CandidateRegistrationController::class)->except(['index', 'edit', 'update', 'destroy']);
             Route::post('candidates/validate', [CandidateRegistrationController::class, 'ajaxValidate'])->name('candidates.ajaxValidate');
@@ -214,7 +218,9 @@ Route::prefix('company')->name('company.')->group(function () {
         Route::post('messages/send', [CompanyMessageController::class, 'send'])->name('messages.send');
         Route::get('messages/fetch', [CompanyMessageController::class, 'fetch'])->name('messages.fetch');
     });
-});
+
+      
+ });
 
 
 

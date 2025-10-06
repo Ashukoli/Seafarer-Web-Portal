@@ -4,13 +4,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Package extends Model
+class ExpressService extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'package_name',
-        'package_count',
-        'status'
+        'package_title',
+        'description',
+        'amount',
+        'image',
+        'status',
     ];
 }

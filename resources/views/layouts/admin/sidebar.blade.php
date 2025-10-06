@@ -62,6 +62,16 @@
                         <div class="menu-title">Country Codes</div>
                     </a>
                 </li>
+                  <li>
+                    <a href="{{ route('admin.packages.index') }}">
+                        <div class="menu-title">Packages</div>
+                    </a>
+                </li>
+                  <li>
+                    <a href="{{ route('admin.expressservices.index') }}">
+                        <div class="menu-title">Express Service</div>
+                    </a>
+                </li>
             </ul>
         </li>
         <li>
